@@ -19,8 +19,7 @@ HEADER = """# profile-title: 🏴WIFI🏴
 
 """
 
-BLOCKED_COUNTRIES = {"RU", "CN", "IR", "KP"}
-
+ALLOWED_COUNTRIES = {"US", "DE", "NL", "GB", "FR", "FI", "SG", "JP", "PL", "TR"}
 
 def rebuild_link_name(link: str, new_name: str) -> str:
     """
@@ -128,16 +127,22 @@ def main():
 
         resolved_ip = None
         is_alive = False
+        # Находим код страны
+        country = get_country_code(host)
 
         # Проверка страны и коннект
         if not is_ipv6(host):
-            if get_country_code(host) not in BLOCKED_COUNTRIES:
+            # ИСПРАВЛЕННАЯ ЛОГИКА: сервер должен быть в ALLOWED_COUNTRIES
+            if country in ALLOWED_COUNTRIES:
                 try:
                     resolved_ip = socket.gethostbyname(host)
                     with socket.create_connection((resolved_ip, int(port)), timeout=3.5):
                         is_alive = True
                 except: pass
+            else:
+                print(f"❌ Страна {country} не подходит для ChatGPT: {host}")
         else:
+            # Для IPv6 (если нужно тоже проверять страну, придется резолвить IP)
             try:
                 with socket.create_connection((host, int(port)), timeout=3.5):
                     is_alive = True

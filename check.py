@@ -14,7 +14,7 @@ EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com/igareck/vpn-configs-for
 GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Прив
+# announce: Привgg
 # profile-update-interval: 2
 
 """
@@ -87,7 +87,7 @@ def get_country_code(host: str) -> str:
 def fetch_external_servers() -> list:
     if not EXTERNAL_SOURCE_URL.strip(): return []
     try:
-        print(f"📥 Загрузка из {EXTERNAL_SOURCE_URL}...")
+        print(f"📥 Загрузка из {EXTERNAL_SOURCE_URL}")
         with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=8) as response:
             return response.read().decode("utf-8").splitlines()
     except: return []

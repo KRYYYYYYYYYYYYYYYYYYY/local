@@ -1,32 +1,32 @@
-name: Check Servers
+name: Auto Update VPN
 on:
   schedule:
-    - cron: '0 */6 * * *' # Автозапуск каждые 6 часов
-  workflow_dispatch:      # Кнопка для ручного запуска
+    - cron: '0 */2 * * *'  # Запуск каждые 2 часа (00:00, 02:00 и т.д.)
+  workflow_dispatch:       # Оставляет кнопку для ручного запуска
 
 jobs:
-  run-checker:
+  update:
     runs-on: ubuntu-latest
     permissions:
-      contents: write     # Даем права на запись в репозиторий
+      contents: write      # Важно: разрешаем боту изменять файлы в репо
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Run Script
+      - name: Run checker
         run: python check.py
-        
-      - name: Commit changes
+
+      - name: Commit and Push changes
         run: |
           git config --global user.name "Checker-Bot"
           git config --global user.email "bot@github.com"
-          # "git add ." добавит все новые файлы (включая kr/mob/wifi.txt)
+          # Добавляем все измененные файлы (1.txt, wifi.txt, status.json)
           git add .
-          # Если изменений нет, скрипт просто пойдет дальше (exit 0)
-          git commit -m "Update working servers in kr/mob/wifi.txt" || exit 0
+          # Если изменений нет, не падаем с ошибкой
+          git commit -m "Auto-update: DB and Subscription" || exit 0
           git push

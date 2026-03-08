@@ -71,7 +71,7 @@ def fetch_external_servers() -> list:
     if not EXTERNAL_SOURCE_URL:
         return []
     try:
-        print(f"📥 Загрузка серверов из {EXTERNAL_SOURCE_URL}...")
+        print(f"📥 Загрузка серверов из {EXTERNAL_SOURCE_URL}")
         with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=10) as response:
             return response.read().decode("utf-8").splitlines()
     except Exception as e:

@@ -39,11 +39,22 @@ def get_country_code(host: str) -> str:
     return "Unknown"
 
 def extract_host_port(link: str):
-    """Достает host/port из vless-ссылки, включая IPv6."""
-    match = re.search(r"@([\w\.-]+|\[[0-9a-fA-F:]+\]):(\d+)", link)
-    if not match:
-        return None, None, None
-    return match.group(0), match.group(1).strip("[]"), match.group(2)
+    match = re.search(r"@([\w.-]+):(\d+)", link)
+    if match: return match.group(1), match.group(2)
+    if match:
+        return match.group(0), match.group(1), match.group(2)
+    ipv6_match = re.search(r"@\[([0-9a-fA-F:]+)\]:(\d+)", link)
+    if ipv6_match: return ipv6_match.group(1), ipv6_match.group(2)
+    return None, None
+    if ipv6_match:
+        return ipv6_match.group(0), ipv6_match.group(1), ipv6_match.group(2)
+    return None, None, None
+
+
+def format_uri_host(host: str) -> str:
+    if is_ipv6(host) and not host.startswith("["):
+        return f"[{host}]"
+    return host
 
 def rebuild_link_name(link: str, new_name: str) -> str:
     """

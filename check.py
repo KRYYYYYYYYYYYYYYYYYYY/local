@@ -2,7 +2,7 @@ import socket
 import re
 
 # Настройки
-INPUT_FILE = 'local/test1/1'     # Где лежат исходники
+INPUT_FILE = '/home/runner/work/local/local/test1/1'     # Где лежат исходники
 OUTPUT_FILE = 'local/kr/mob/wifi.txt' # Куда сохранять результат
 
 def check_server(host, port):

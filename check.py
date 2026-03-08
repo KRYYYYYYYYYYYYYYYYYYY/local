@@ -139,30 +139,31 @@ def main():
         # Отрезаем старое имя для базы (до знака #)
         base_part = link.split("#", 1)[0]
 
-        if is_alive:
-            # 1. Сохраняем в базу версию без имени (как и раньше)
-            base_part = link.split("#", 1)[0]
+       if is_alive:
+            # Сервер ОК
             working_for_base.append(base_part)
-            
-            # 2. А для подписки берем ПОЛНУЮ ссылку (link), чтобы сохранить флаг
-            # Сначала меняем хост на IP в полной ссылке
-            sub_link_with_flag = link.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
-            
-            # 3. Теперь rebuild_link_name увидит флаг внутри фрагмента и сохранит его
-            final_link = rebuild_link_name(sub_link_with_flag, f"wifi {counter}")
-            
-            working_for_sub.append(final_link)
-            print(f"✅ ОК: {host} -> wifi {counter}")
+            # HARD-RESOLVE: Заменяем домен на IP в ссылке для подписки
+            sub_link = base_part.replace(f"@{host}:{port}", f"@{resolved_ip}:{port}")
+            new_name = urllib.parse.quote(f"wifi {counter}")
+            working_for_sub.append(f"{sub_link}#{new_name}")
+            resolved_host = format_uri_host(resolved_ip)
+            sub_link = link.replace(endpoint, f"@{resolved_host}:{port}", 1)
+            working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
             counter += 1
+            print(f"✅ ОК: {host} ({resolved_ip})")
         else:
-            # Логика 2-х дней. Проверяем по базе без имени
+            # Сервер упал - проверяем таймер
             fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
                 working_for_base.append(base_part)
                 new_history[base_part] = fail_time
-                working_for_sub.append(rebuild_link_name(base_part, f"wifi {counter} (DOWN)"))
+                new_name = urllib.parse.quote(f"wifi {counter} (DOWN)")
+                working_for_sub.append(f"{base_part}#{new_name}")
+                working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
                 counter += 1
-                print(f"⏳ DOWN: {host}")
+                print(f"⏳ Ждем 48ч: {host}")
+            else:
+                print(f"🗑️ Удален мусор: {host}")
     
     # Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

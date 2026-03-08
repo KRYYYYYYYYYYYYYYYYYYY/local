@@ -12,8 +12,8 @@ OUTPUT_FILE = "kr/mob/wifi.txt"
 STATUS_FILE = "test1/status.json"
 GRACE_PERIOD = 2 * 24 * 60 * 60  # 48 часов
 
-# НОВАЯ НАСТРОЙКА: Внешний репозиторий
-EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt"
+# Внешний репозиторий
+EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com"
 
 HEADER = """# profile-title: 🏴WIFI🏴
 # announce: wifi
@@ -27,7 +27,7 @@ def is_ipv6(host: str) -> bool:
     return ":" in host
 
 def get_country_code(host: str) -> str:
-    # Исправил тут небольшую опечатку в URL для API из твоего текста, чтобы работало
+    # ИСПРАВЛЕНО: Правильный путь к API
     url = f"http://ip-api.com{host}?fields=status,countryCode"
     try:
         with urllib.request.urlopen(url, timeout=3) as response:
@@ -39,20 +39,17 @@ def get_country_code(host: str) -> str:
     return "Unknown"
 
 def extract_host_port(link: str):
-    """Достает host/port из vless-ссылки, включая IPv6."""
     match = re.search(r"@([\w\.-]+|\[[0-9a-fA-F:]+\]):(\d+)", link)
     if not match:
         return None, None, None
     return match.group(0), match.group(1).strip("[]"), match.group(2)
 
 def rebuild_link_name(link: str, new_name: str) -> str:
-    """Заменяет текст после флага/решетки на wifi N."""
     base, _, fragment = link.partition("#")
     encoded_name = urllib.parse.quote(new_name)
     if not fragment:
         return f"{base}#{encoded_name}"
     
-    # Ищем разделители во фрагменте (+ или %20)
     plus_pos = fragment.find("+")
     space_pos = fragment.find("%20")
     split_positions = [pos for pos in (plus_pos, space_pos) if pos != -1]
@@ -65,10 +62,8 @@ def rebuild_link_name(link: str, new_name: str) -> str:
     prefix = fragment[:split_pos]
     return f"{base}#{prefix}{separator}{encoded_name}"
 
-# НОВАЯ ФУНКЦИЯ
 def fetch_external_servers() -> list:
-    """Скачивает серверы из внешнего источника."""
-    if not EXTERNAL_SOURCE_URL:
+    if not EXTERNAL_SOURCE_URL or EXTERNAL_SOURCE_URL == "https://raw.githubusercontent.com":
         return []
     try:
         print(f"📥 Загрузка серверов из {EXTERNAL_SOURCE_URL}...")
@@ -79,16 +74,12 @@ def fetch_external_servers() -> list:
         return []
 
 def main():
-    # 1. Загрузка локальной базы
     local_lines = []
     if os.path.exists(INPUT_FILE):
         with open(INPUT_FILE, "r", encoding="utf-8") as f:
             local_lines = f.read().splitlines()
 
-    # 2. ПОДТЯЖКА ИЗ ВНЕШНЕГО РЕПО (Новое)
     external_lines = fetch_external_servers()
-    
-    # 3. ОБЪЕДИНЕНИЕ (Новое)
     combined_lines = local_lines + external_lines
     
     history = {}
@@ -99,7 +90,6 @@ def main():
         except:
             history = {}
 
-    # Используем объединенный список combined_lines вместо current_base
     unique_links = list(dict.fromkeys(line.strip() for line in combined_lines if line.strip().startswith("vless://")))
     
     working_for_base = []
@@ -127,17 +117,17 @@ def main():
         except:
             is_alive = False
 
-        # Отрезаем старое имя для базы (до знака #)
+        # ИСПРАВЛЕНО: [0] превращает список обратно в строку
         base_part = link.split("#", 1)[0]
 
         if is_alive:
             working_for_base.append(base_part)
-            # Hard-Resolve только для подписки
-            sub_link = link.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
+            sub_link = base_part.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
             working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
             print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
         else:
+            # ТЕПЕРЬ ТУТ СТРОКА, И ПОИСК В status.json СРАБОТАЕТ
             fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
                 working_for_base.append(base_part)
@@ -146,7 +136,6 @@ def main():
                 counter += 1
                 print(f"⏳ DOWN: {host}")
 
-    # Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
     with open(INPUT_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(working_for_base))

@@ -6,6 +6,7 @@ import urllib.request
 import os
 import re
 import socket
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -35,7 +36,7 @@ def is_ipv6(host: str) -> bool:
     return ":" in host
 
 
-def extract_host_port(link: str):
+def extract_host_port(link: str) -> tuple[str | None, str | None]:
     """Достает host/port из vless-ссылки, включая IPv6 в квадратных скобках."""
     # IPv4 / домен
     match = re.search(r"@([\w.-]+):(\d+)", link)
@@ -51,6 +52,7 @@ def extract_host_port(link: str):
 
 
 def get_country_code(host: str) -> str:
+    url = f"http://ip-api.com/json/{host}?fields=status,countryCode"
     try:
         # Исправлено: добавлен /json/ и правильный формат запроса
         url = f"http://ip-api.com{host}?fields=status,countryCode"
@@ -59,13 +61,14 @@ def get_country_code(host: str) -> str:
             if data.get('status') == 'success':
                 return data.get('countryCode')
     except:
-        url = f"http://ip-api.com/json/{host}?fields=status,countryCode"
+        pass
         with urllib.request.urlopen(url, timeout=3) as response:
             data = json.loads(response.read().decode("utf-8"))
-            if data.get("status") == "success":
-                return data.get("countryCode", "Unknown")
-    except Exception:
-        pass
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError):
+        return "Unknown"
+
+    if data.get("status") == "success":
+        return data.get("countryCode", "Unknown")
     return "Unknown"
 
 def check_server_smart(host, port):
@@ -87,10 +90,16 @@ def check_server_smart(host: str, port: str) -> bool:
         with socket.create_connection((ip_address, int(port)), timeout=2.5):
             return True
     except:
-    except Exception:
+    except (socket.gaierror, socket.timeout, OSError, ValueError):
         return False
 
+def main():
+    if not os.path.exists(INPUT_FILE):
+        print(f"Ошибка: {INPUT_FILE} не найден")
+        return
 
+    with open(INPUT_FILE, 'r', encoding='utf-8') as f:
+        lines = f.read().splitlines()
 def fetch_external_servers() -> list[str]:
     """Скачивает серверы из внешнего источника, если ссылка задана."""
     if not EXTERNAL_SOURCE_URL.strip():
@@ -105,7 +114,7 @@ def fetch_external_servers() -> list[str]:
         print(f"📥 Загрузка серверов из {EXTERNAL_SOURCE_URL}...")
         with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=8) as response:
             return response.read().decode("utf-8").splitlines()
-    except Exception:
+    except (urllib.error.URLError, TimeoutError, UnicodeDecodeError, OSError):
         print("⚠️ Не удалось загрузить внешние серверы")
         return []
 
@@ -114,39 +123,42 @@ def normalize_base_link(link: str) -> str:
     return link.split("#", 1)[0].strip()
 
 
-def main():
-    if not os.path.exists(INPUT_FILE):
-        print(f"Ошибка: {INPUT_FILE} не найден")
-        return
+def main() -> None:
     current_base = []
     if os.path.exists(INPUT_FILE):
-        with open(INPUT_FILE, "r", encoding="utf-8") as f:
-            current_base = f.read().splitlines()
+        with open(INPUT_FILE, "r", encoding="utf-8") as file:
+            current_base = file.read().splitlines()
 
     external_servers = fetch_external_servers()
-
-    with open(INPUT_FILE, 'r', encoding='utf-8') as f:
-        lines = f.read().splitlines()
-    # Убираем дубли, но сохраняем порядок: сначала локальные, потом внешние
-    all_lines = current_base + external_servers
-    unique_lines = list(dict.fromkeys(line.strip() for line in all_lines if line.strip()))
 
     working_links = []
     seen_configs = set()
     counter = 1 
+    # Убираем дубли, но сохраняем порядок: сначала локальные, потом внешние
+    all_lines = current_base + external_servers
+    unique_lines = list(dict.fromkeys(line.strip() for line in all_lines if line.strip()))
+
+    print(f"Начинаю проверку и нумерацию {len(lines)} строк...")
     working_for_base = []
     working_for_sub = []
     seen_base_links = set()
     counter = 1
 
-    print(f"Начинаю проверку и нумерацию {len(lines)} строк...")
-    print(f"Начинаю проверку {len(unique_lines)} уникальных строк...")
-
     for link in lines:
         link = link.strip()
         if not link.startswith('vless://') or link in seen_configs:
+    print(f"Начинаю проверку {len(unique_lines)} уникальных строк...")
+
     for link in unique_lines:
         if not link.startswith("vless://"):
+            continue
+
+        base_part = normalize_base_link(link)
+        if base_part in seen_base_links:
+            continue
+
+        host, port = extract_host_port(base_part)
+        if not host or not port:
             continue
             
         match = re.search(r'@([\w\.-]+):(\d+)', link)
@@ -164,14 +176,6 @@ def main():
                 print(f"✅ ОК: {host} -> wifi {counter}")
                 counter += 1
 
-        base_part = normalize_base_link(link)
-        if base_part in seen_base_links:
-            continue
-
-        host, port = extract_host_port(base_part)
-        if not host or not port:
-            continue
-
         if check_server_smart(host, port):
             working_for_base.append(base_part)
             new_name = urllib.parse.quote(f"wifi {counter}")
@@ -181,16 +185,16 @@ def main():
             counter += 1
 
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
-    with open(INPUT_FILE, "w", encoding="utf-8") as f:
-        f.write("\n".join(working_for_base))
+    with open(INPUT_FILE, "w", encoding="utf-8") as file:
+        file.write("\n".join(working_for_base))
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write(HEADER + '\n'.join(working_links))
     
     print(f"Завершено. Сохранено в подписку: {len(working_links)}")
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        f.write(HEADER + "\n".join(working_for_sub))
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as file:
+        file.write(HEADER + "\n".join(working_for_sub))
 
     print(f"🏁 Готово! База очищена. В подписке {len(working_for_sub)} серверов.")
 

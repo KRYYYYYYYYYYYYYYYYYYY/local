@@ -28,7 +28,7 @@ def is_ipv6(host: str) -> bool:
 
 def get_country_code(host: str) -> str:
     # Исправил тут небольшую опечатку в URL для API из твоего текста, чтобы работало
-    url = f"http://ip-api.com{host}?fields=status,countryCode"
+     
     try:
         with urllib.request.urlopen(url, timeout=3) as response:
             data = json.loads(response.read().decode("utf-8"))

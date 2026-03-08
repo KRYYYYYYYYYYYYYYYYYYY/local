@@ -6,7 +6,7 @@ STATUS_FILE = "test1/status.json"
 GRACE_PERIOD = 2 * 24 * 60 * 60 
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Hard-Resolve IP | SID СОХРАНЕН | Нумерация исправлена
+# announce: Hard-Resolve IP | SID и Флаги Сохранены | Фильтр %20
 # profile-update-interval: 2
 
 """
@@ -36,11 +36,12 @@ def main():
     now, counter = time.time(), 1
 
     for link in unique_links:
-        # Ищем @host:port
+        # Извлекаем @host:port
         match = re.search(r"@([\w\.-]+|\[[0-9a-fA-F:]+\]):(\d+)", link)
         if not match: continue
         orig_hp, host, port = match.group(0), match.group(1).strip("[]"), match.group(2)
 
+        # Фильтр стран
         if ":" not in host and get_country_code(host) in BLOCKED_COUNTRIES: continue
 
         resolved_ip, is_alive = None, False
@@ -49,35 +50,38 @@ def main():
             with socket.create_connection((resolved_ip, int(port)), timeout=2.5): is_alive = True
         except: is_alive = False
 
+        # Отделяем техническую часть от ЛЮБОГО названия (после последней решетки)
+        if "#" in link:
+            base_part_with_flags = link.rsplit('#', 1)[0]
+        else:
+            base_part_with_flags = link
+
         if is_alive:
-            working_for_base.append(link)
-            # HARD-RESOLVE
-            res_link = link.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
-            # ЛОГИКА ИМЕНИ: Ищем "sid=..." и меняем всё, что ПОСЛЕ него
-            if "sid=" in res_link:
-                # Режем по sid=, берем первые 16 символов значения sid, остальное заменяем
-                parts = re.split(r"(sid=[a-fA-F0-9]{1,16})", res_link)
-                # parts[0] - начало, parts[1] - "sid=XXX", parts[2] - старое имя
-                res_link = f"{parts[0]}{parts[1]}+{urllib.parse.quote(f'wifi+{counter}')}"
-            else:
-                # Если sid нет, просто нумеруем в конце
-                base = res_link.rsplit("#", 1)[0] if "#" in res_link else res_link
-                res_link = f"{base}#+wifi+{counter}"
+            working_for_base.append(base_part_with_flags)
+            # 1. Hard-Resolve: меняем домен на IP только в подписке
+            sub_link = base_part_with_flags.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
+            # 2. Нумерация: добавляем +wifi+N
+            final_link = f"{sub_link}#+wifi+{counter}"
             
-            working_for_sub.append(res_link)
+            working_for_sub.append(final_link)
             print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
         else:
-            # Логика 2 дня
-            fail_time = history.get(link, now)
+            # Логика 2-х дней
+            fail_time = history.get(base_part_with_flags, now)
             if now - fail_time < GRACE_PERIOD:
-                working_for_base.append(link)
-                new_history[link] = fail_time
-                working_for_sub.append(link + "+(DOWN)")
+                working_for_base.append(base_part_with_flags)
+                new_history[base_part_with_flags] = fail_time
+                final_link = f"{base_part_with_flags}#+wifi+{counter}+(DOWN)"
+                working_for_sub.append(final_link)
                 counter += 1
+                print(f"⏳ DOWN: {host}")
 
+    # Сохранение результатов
+    os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
     with open(INPUT_FILE, "w", encoding="utf-8") as f: f.write("\n".join(working_for_base))
-    with open(STATUS_FILE, "w", encoding="utf-8") as f: json.dump(new_history, f, indent=2)
+    with open(STATUS_FILE, "w") as f: json.dump(new_history, f, indent=2)
+    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f: f.write(HEADER + "\n".join(working_for_sub))
 
 if __name__ == "__main__":

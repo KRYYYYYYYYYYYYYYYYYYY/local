@@ -118,16 +118,18 @@ def main():
     print(f"🔄 Проверка {len(unique_links)} строк...")
 
     for link in unique_links:
-        # --- НАЧАЛО БЛОКА ВНУТРИ ЦИКЛА for link in unique_links ---
         base_part = link.split("#", 1)[0].strip()
+        
+        # ВАЖНО: вызываем ОДИН раз и получаем 3 значения
         endpoint, host, port = extract_host_port(base_part)
         
-        if not endpoint or not host or not port:
+        if not endpoint or not host or not port: 
             continue
 
         resolved_ip = None
         is_alive = False
 
+        # Проверка страны и коннект
         if not is_ipv6(host):
             if get_country_code(host) not in BLOCKED_COUNTRIES:
                 try:
@@ -143,33 +145,32 @@ def main():
             except: pass
 
         if is_alive:
-            # 1. В базу (1.txt) — только чистую часть без имени
+            # 1. В базу (1.txt) сохраняем без имени
             working_for_base.append(base_part)
             
-            # 2. Для подписки: берем исходный 'link' (с флагом!), 
-            # меняем в нем домен на IP и обновляем имя через функцию
+            # 2. Для подписки: меняем домен на IP, сохраняя флаги
             resolved_host_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
             sub_link = link.replace(endpoint, f"@{resolved_host_str}:{port}", 1)
             
+            # Используем функцию пересборки имени, чтобы оставить эмодзи-флаг
             working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
+            
             print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
         else:
-            # Логика DOWN
+            # Логика DOWN серверов (48 часов)
             fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
                 working_for_base.append(base_part)
                 new_history[base_part] = fail_time
                 
-                # ОПЯТЬ берем исходный 'link', чтобы флаг не пропал в DOWN
+                # Сохраняем флаг и для упавших серверов
                 working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
-                print(f"⏳ DOWN: {host}")
+                
+                print(f"⏳ DOWN: {host} (wifi {counter})")
                 counter += 1
             else:
-                print(f"🗑️ Удален: {host}")
-        # --- КОНЕЦ БЛОКА ---
-
-        # --- КОНЕЦ БЛОКА ПРОВЕРКИ ---
+                print(f"🗑️ Удален (тайм-аут): {host}")
 
     # 3. Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

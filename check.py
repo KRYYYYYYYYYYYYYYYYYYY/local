@@ -150,7 +150,7 @@ def main():
         # Отрезаем старое имя для базы (до знака #)
         base_part = link.split("#", 1)[0]
 
-       if is_alive:
+        if is_alive:
             # Сервер ОК
             working_for_base.append(base_part)
             # HARD-RESOLVE: Заменяем домен на IP в ссылке для подписки

@@ -139,14 +139,16 @@ def main():
         # Отрезаем старое имя для базы (до знака #)
         base_part = link.split("#", 1)[0]
 
-        if is_alive:
+         if is_alive:
             working_for_base.append(base_part)
-            # Hard-Resolve только для подписки
-            sub_link = link.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
+            # Hard-Resolve для подписки
+            target_hp = f"@{resolved_ip}:{port}"
+            sub_link = base_part.replace(orig_hp, target_hp, 1)
             working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
             print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
         else:
+            # Логика 2-х дней. Проверяем по базе без имени
             fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
                 working_for_base.append(base_part)
@@ -154,7 +156,7 @@ def main():
                 working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
                 counter += 1
                 print(f"⏳ DOWN: {host}")
-
+    
     # Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
     with open(INPUT_FILE, "w", encoding="utf-8") as f:

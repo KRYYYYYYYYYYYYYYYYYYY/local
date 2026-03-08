@@ -130,22 +130,31 @@ def main():
 
     print(f"Начинаю проверку {len(unique_links)} строк...")
 
-    for link in unique_links:
-        orig_hp, host, port = extract_host_port(link)
-        if not orig_hp:
-            continue
-
-        if not is_ipv6(host) and get_country_code(host) in BLOCKED_COUNTRIES:
-            continue
+for link in unique_links:
+        base_part = link.split("#", 1)[0].strip()
+        host, port = extract_host_port(base_part)
+        if not host or not port: continue
+        endpoint, host, port = extract_host_port(base_part)
+        if not endpoint or not host or not port: continue
 
         resolved_ip = None
         is_alive = False
-        try:
-            resolved_ip = socket.gethostbyname(host) if not is_ipv6(host) else host
-            with socket.create_connection((resolved_ip, int(port)), timeout=2.5):
-                is_alive = True
-        except:
-            is_alive = False
+
+        # Проверка страны и резолв
+        if not is_ipv6(host):
+            if get_country_code(host) not in BLOCKED_COUNTRIES:
+                try:
+                    resolved_ip = socket.gethostbyname(host)
+                    with socket.create_connection((resolved_ip, int(port)), timeout=2.5):
+                        is_alive = True
+                except: pass
+        else:
+            # Для IPv6
+            try:
+                with socket.create_connection((host, int(port)), timeout=2.5):
+                    is_alive = True
+                    resolved_ip = host
+            except: pass
 
         # Отрезаем старое имя для базы (до знака #)
         base_part = link.split("#", 1)[0]

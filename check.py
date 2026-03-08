@@ -10,10 +10,10 @@ import time
 INPUT_FILE = 'test1/1.txt'
 OUTPUT_FILE = 'kr/mob/wifi.txt'
 STATUS_FILE = 'test1/status.json'
-GRACE_PERIOD = 2 * 24 * 60 * 60  # 48 часов
+GRACE_PERIOD = 2 * 24 * 60 * 60  # 2 дня
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Флаги бебебеб сохранены | Hard-Resolve IP | Ожидание 2 дня
+# announce: Reality Флаги Сохранены | Hard-Resolve IP
 # profile-update-interval: 2
 
 """
@@ -49,28 +49,25 @@ def main():
     now = time.time()
     counter = 1
 
-    print(f"🔄 Проверка {len(unique_links)} серверов...")
+    print(f"🔄 Проверка {len(unique_links)} строк...")
 
-    for link in unique_links:
-        # 1. Отделяем техническую часть от названия (если оно было)
-        # Нам нужно сохранить ВСЁ до последнего знака #
-        if '#' in link:
-            full_link_with_flags = link.rsplit('#', 1)[0]
-        else:
-            full_link_with_flags = link
+    for full_link in unique_links:
+        # 1. Сначала полностью очищаем ссылку от старого названия (всё что после #)
+        # Это нужно, чтобы в 1.txt не плодились "wifi 1", "wifi 2"
+        base_link_no_name = full_link.split('#')[0]
 
-        # 2. Ищем host и port
-        match = re.search(r"@([\w\.-]+|\[[0-9a-fA-F:]+\]):(\d+)", full_link_with_flags)
+        # 2. Ищем @хост:порт во всей этой длинной строке
+        match = re.search(r"@([\w\.-]+|\[[0-9a-fA-F:]+\]):(\d+)", base_link_no_name)
         if not match: continue
         
-        original_host_port = match.group(0) # Наприм: @ee.harknmav.fun:443
+        original_part = match.group(0) # Например: @ee.harknmav.fun:443
         host = match.group(1).strip('[]')
         port = match.group(2)
 
         resolved_ip = None
         is_alive = False
 
-        # Проверка
+        # Проверка (пропуск RU/CN и IPv6)
         if ":" not in host:
             if get_country_code(host) not in BLOCKED_COUNTRIES:
                 try:
@@ -86,12 +83,12 @@ def main():
             except: pass
 
         if is_alive:
-            # Сохраняем в базу 1.txt версию СО ВСЕМИ ФЛАГАМИ
-            working_for_base.append(full_link_with_flags)
+            # СОХРАНЕНИЕ: Пишем в базу версию со всеми параметрами (?pbk=...&sid=...)
+            working_for_base.append(base_link_no_name)
             
-            # В подписку меняем домен на IP, сохраняя всё остальное
-            target_host_port = f"@{resolved_ip}:{port}"
-            sub_link = full_link_with_flags.replace(original_host_port, target_host_port)
+            # В подписку: меняем домен на IP внутри всей строки
+            target_part = f"@{resolved_ip}:{port}"
+            sub_link = base_link_no_name.replace(original_part, target_part)
             
             new_name = urllib.parse.quote(f"wifi {counter}")
             working_for_sub.append(f"{sub_link}#{new_name}")
@@ -100,18 +97,18 @@ def main():
             counter += 1
         else:
             # Логика 2-х дней
-            fail_time = history.get(full_link_with_flags, now)
+            fail_time = history.get(base_link_no_name, now)
             if now - fail_time < GRACE_PERIOD:
-                working_for_base.append(full_link_with_flags)
-                new_history[full_link_with_flags] = fail_time
+                working_for_base.append(base_link_no_name)
+                new_history[base_link_no_name] = fail_time
                 new_name = urllib.parse.quote(f"wifi {counter} (DOWN)")
-                working_for_sub.append(f"{full_link_with_flags}#{new_name}")
+                working_for_sub.append(f"{base_link_no_name}#{new_name}")
                 counter += 1
                 print(f"⏳ DOWN: {host}")
             else:
                 print(f"🗑️ УДАЛЕН: {host}")
 
-    # Запись файлов
+    # Запись
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
     with open(INPUT_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(working_for_base))

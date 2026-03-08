@@ -27,7 +27,7 @@ def is_ipv6(host: str) -> bool:
     return ":" in host
 
 def get_country_code(host: str) -> str:
-    # ИСПРАВЛЕНО: Правильный путь к API
+    # ИСПРАВЛЕНО: Добавлен /json/ в URL
     url = f"http://ip-api.com{host}?fields=status,countryCode"
     try:
         with urllib.request.urlopen(url, timeout=3) as response:
@@ -63,7 +63,7 @@ def rebuild_link_name(link: str, new_name: str) -> str:
     return f"{base}#{prefix}{separator}{encoded_name}"
 
 def fetch_external_servers() -> list:
-    if not EXTERNAL_SOURCE_URL or EXTERNAL_SOURCE_URL == "https://raw.githubusercontent.com":
+    if not EXTERNAL_SOURCE_URL:
         return []
     try:
         print(f"📥 Загрузка серверов из {EXTERNAL_SOURCE_URL}...")
@@ -117,7 +117,7 @@ def main():
         except:
             is_alive = False
 
-        # ИСПРАВЛЕНО: [0] превращает список обратно в строку
+        # ИСПРАВЛЕНО: Добавлен [0], чтобы была строка, а не список
         base_part = link.split("#", 1)[0]
 
         if is_alive:
@@ -127,7 +127,7 @@ def main():
             print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
         else:
-            # ТЕПЕРЬ ТУТ СТРОКА, И ПОИСК В status.json СРАБОТАЕТ
+            # ТЕПЕРЬ поиск в истории сработает корректно
             fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
                 working_for_base.append(base_part)

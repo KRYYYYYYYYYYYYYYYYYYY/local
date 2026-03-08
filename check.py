@@ -10,7 +10,7 @@ import time
 INPUT_FILE = 'test1/1.txt'
 OUTPUT_FILE = 'kr/mob/wifi.txt'
 STATUS_FILE = 'test1/status.json'
-EXTERNAL_SOURCE_URL = ""
+EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt"
 GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
 
 HEADER = """# profile-title: 🏴WIFI🏴

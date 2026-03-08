@@ -1,0 +1,24 @@
+name: Check Servers
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Раз в 6 часов
+  workflow_dispatch:      # Позволяет запустить вручную кнопкой
+
+jobs:
+  run-checker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     # Разрешение на запись файлов в репозиторий
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Run Script
+        run: python check.py
+        
+      - name: Commit changes
+        run: |
+          git config --global user.name "Checker-Bot"
+          git config --global user.email "bot@github.com"
+          git add subscription.txt
+          git commit -m "Update working servers" || exit 0
+          git push

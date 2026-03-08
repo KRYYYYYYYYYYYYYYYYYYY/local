@@ -144,34 +144,33 @@ def main():
                     resolved_ip = host
             except: pass
 
-            if is_alive:
-                working_for_base.append(base_part)
-            # Убираем старую историю для этого сервера, если она была
-                if base_part in history: 
-                    history.pop(base_part, None)
+        if is_alive:
+            # 1. В базу (1.txt) сохраняем без имени
+            working_for_base.append(base_part)
             
-            # Сохраняем флаг и обновляем IP
-                sub_link = link.replace(endpoint, f"@{format_uri_host(resolved_ip)}:{port}", 1)
-                working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
-                print(f"✅ ОК: {host} -> wifi {counter}")
-                counter += 1
-            else:
-            # А вот тут уже логика «умершего»
-                fail_time = history.get(base_part, now)
-                if now - fail_time < GRACE_PERIOD:
-                    working_for_base.append(base_part)
-                    new_history[base_part] = fail_time
-                    working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
-                    print(f"⏳ DOWN: {host} (wifi {counter})")
-                    counter += 1
+            # 2. Для подписки: меняем домен на IP, сохраняя флаги
+            resolved_host_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
+            sub_link = link.replace(endpoint, f"@{resolved_host_str}:{port}", 1)
+            
+            # Используем функцию пересборки имени, чтобы оставить эмодзи-флаг
+            working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
+            
+            print(f"✅ ОК: {host} -> wifi {counter}")
+            counter += 1
+        else:
+            # Логика DOWN серверов (48 часов)
+            fail_time = history.get(base_part, now)
+            if now - fail_time < GRACE_PERIOD:
+                working_for_base.append(base_part)
+                new_history[base_part] = fail_time
                 
                 # Сохраняем флаг и для упавших серверов
-                    working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
+                working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
                 
-                    print(f"⏳ DOWN: {host} (wifi {counter})")
-                    counter += 1
-                else:
-                    print(f"🗑️ Удален (тайм-аут): {host}")
+                print(f"⏳ DOWN: {host} (wifi {counter})")
+                counter += 1
+            else:
+                print(f"🗑️ Удален (тайм-аут): {host}")
         # --- КОНЕЦ БЛОКА ПРОВЕРКИ ---
 
     # 3. Сохранение

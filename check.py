@@ -8,7 +8,7 @@ OUTPUT_FILE = 'kr/mob/wifi.txt'
 
 # Ваши сервисные строки (заголовки подписки)
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Подписка для на wifi!
+# announce: Подписка для использования на wifi.
 # profile-update-interval: 2
 
 """

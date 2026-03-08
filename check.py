@@ -4,15 +4,17 @@ import os
 import json
 import urllib.parse
 import urllib.request
+import time
 
 # Настройки путей
 INPUT_FILE = 'test1/1.txt'
 OUTPUT_FILE = 'kr/mob/wifi.txt'
-# Ссылка на RAW-файл (вставьте, если нужно)
+STATUS_FILE = 'test1/status.json'
 EXTERNAL_SOURCE_URL = ""
+GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Подписка для на wifi! (Нумерованная, без IPv6 и RU/CN)
+# announce: Удаление через 2 дня | Hard-Resolve IP (No DNS)
 # profile-update-interval: 2
 
 """
@@ -23,15 +25,10 @@ def is_ipv6(host: str) -> bool:
     return ":" in host
 
 def extract_host_port(link: str):
-    """Достает host/port из vless-ссылки, включая IPv6."""
-    # Стандартный формат @host:port
     match = re.search(r"@([\w.-]+):(\d+)", link)
-    if match:
-        return match.group(1), match.group(2)
-    # Формат IPv6 @[2001:db8::1]:443
+    if match: return match.group(1), match.group(2)
     ipv6_match = re.search(r"@\[([0-9a-fA-F:]+)\]:(\d+)", link)
-    if ipv6_match:
-        return ipv6_match.group(1), ipv6_match.group(2)
+    if ipv6_match: return ipv6_match.group(1), ipv6_match.group(2)
     return None, None
 
 def get_country_code(host: str) -> str:
@@ -41,88 +38,98 @@ def get_country_code(host: str) -> str:
             data = json.loads(response.read().decode("utf-8"))
             if data.get("status") == "success":
                 return data.get("countryCode", "Unknown")
-    except Exception:
-        pass
+    except: pass
     return "Unknown"
 
-def check_server_smart(host: str, port: str) -> bool:
-    if is_ipv6(host):
-        print(f"⏩ Пропуск IPv6: {host}")
-        return False
-    
-    country = get_country_code(host)
-    if country in BLOCKED_COUNTRIES:
-        print(f"🚩 Пропуск {country} (No ChatGPT): {host}")
-        return False
-
-    try:
-        # Проверка DNS и порта
-        ip_address = socket.gethostbyname(host)
-        with socket.create_connection((ip_address, int(port)), timeout=2.5):
-            return True
-    except Exception:
-        return False
-
 def fetch_external_servers() -> list:
-    if not EXTERNAL_SOURCE_URL.strip():
-        return []
+    if not EXTERNAL_SOURCE_URL.strip(): return []
     try:
         print(f"📥 Загрузка из {EXTERNAL_SOURCE_URL}...")
         with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=8) as response:
             return response.read().decode("utf-8").splitlines()
-    except Exception:
-        print("⚠️ Ошибка загрузки внешних серверов")
-        return []
+    except: return []
 
 def main():
-    # 1. Загрузка локальной базы
+    # 1. Загрузка базы и истории
     current_base = []
     if os.path.exists(INPUT_FILE):
         with open(INPUT_FILE, "r", encoding="utf-8") as f:
             current_base = f.read().splitlines()
 
-    # 2. Сбор всех уникальных ссылок
+    history = {}
+    if os.path.exists(STATUS_FILE):
+        try:
+            with open(STATUS_FILE, "r") as f: history = json.load(f)
+        except: history = {}
+
     external_servers = fetch_external_servers()
     all_lines = current_base + external_servers
-    # Чистим дубликаты, сохраняя порядок
     unique_links = list(dict.fromkeys(line.strip() for line in all_lines if line.strip().startswith("vless://")))
 
     working_for_base = []
     working_for_sub = []
+    new_history = {}
+    now = time.time()
     counter = 1
 
-    print(f"Начинаю проверку {len(unique_links)} уникальных строк...")
+    print(f"🔄 Проверка {len(unique_links)} строк...")
 
     for link in unique_links:
-        # СОХРАНЕНИЕ ФЛАГОВ: Отрезаем только часть после знака #
-        # split('#', 1)[0] берет всё до первой решетки (включая все параметры ?)
         base_part = link.split("#", 1)[0].strip()
-        
         host, port = extract_host_port(base_part)
-        
-        if not host or not port:
-            continue
+        if not host or not port: continue
 
-        if check_server_smart(host, port):
-            # Сохраняем ссылку со всеми флагами в базу 1.txt
+        resolved_ip = None
+        is_alive = False
+
+        # Проверка страны и резолв
+        if not is_ipv6(host):
+            if get_country_code(host) not in BLOCKED_COUNTRIES:
+                try:
+                    resolved_ip = socket.gethostbyname(host)
+                    with socket.create_connection((resolved_ip, int(port)), timeout=2.5):
+                        is_alive = True
+                except: pass
+        else:
+            # Для IPv6
+            try:
+                with socket.create_connection((host, int(port)), timeout=2.5):
+                    is_alive = True
+                    resolved_ip = host
+            except: pass
+
+        if is_alive:
+            # Сервер ОК
             working_for_base.append(base_part)
-            # Создаем пронумерованную ссылку для wifi.txt
+            # HARD-RESOLVE: Заменяем домен на IP в ссылке для подписки
+            sub_link = base_part.replace(f"@{host}:{port}", f"@{resolved_ip}:{port}")
             new_name = urllib.parse.quote(f"wifi {counter}")
-            working_for_sub.append(f"{base_part}#{new_name}")
-            
-            print(f"✅ ОК: {host} -> wifi {counter}")
+            working_for_sub.append(f"{sub_link}#{new_name}")
             counter += 1
+            print(f"✅ ОК: {host} ({resolved_ip})")
+        else:
+            # Сервер упал - проверяем таймер
+            fail_time = history.get(base_part, now)
+            if now - fail_time < GRACE_PERIOD:
+                working_for_base.append(base_part)
+                new_history[base_part] = fail_time
+                new_name = urllib.parse.quote(f"wifi {counter} (DOWN)")
+                working_for_sub.append(f"{base_part}#{new_name}")
+                counter += 1
+                print(f"⏳ Ждем 48ч: {host}")
+            else:
+                print(f"🗑️ Удален мусор: {host}")
 
-    # 3. Сохранение результатов
+    # 3. Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
-    with open(INPUT_FILE, "w", encoding="utf-8") as f:
-        f.write("\n".join(working_for_base))
+    with open(INPUT_FILE, "w", encoding="utf-8") as f: f.write("\n".join(working_for_base))
+    with open(STATUS_FILE, "w") as f: json.dump(new_history, f)
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(HEADER + "\n".join(working_for_sub))
 
-    print(f"🏁 Готово! В базе и подписке осталось {len(working_for_sub)} серверов.")
+    print(f"🏁 Готово! Подписка обновлена.")
 
 if __name__ == "__main__":
     main()

@@ -134,43 +134,44 @@ def main():
             if get_country_code(host) not in BLOCKED_COUNTRIES:
                 try:
                     resolved_ip = socket.gethostbyname(host)
-                    with socket.create_connection((resolved_ip, int(port)), timeout=2.5):
+                    with socket.create_connection((resolved_ip, int(port)), timeout=3.5):
                         is_alive = True
                 except: pass
         else:
             try:
-                with socket.create_connection((host, int(port)), timeout=2.5):
+                with socket.create_connection((host, int(port)), timeout=3.5):
                     is_alive = True
                     resolved_ip = host
             except: pass
 
-        if is_alive:
+            if is_alive:
             # 1. В базу (1.txt) сохраняем без имени
-            working_for_base.append(base_part)
+                working_for_base.append(base_part)
             
             # 2. Для подписки: меняем домен на IP, сохраняя флаги
-            resolved_host_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
-            sub_link = link.replace(endpoint, f"@{resolved_host_str}:{port}", 1)
+                resolved_host_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
+                sub_link = link.replace(endpoint, f"@{resolved_host_str}:{port}", 1)
             
             # Используем функцию пересборки имени, чтобы оставить эмодзи-флаг
-            working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
+                working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
             
-            print(f"✅ ОК: {host} -> wifi {counter}")
-            counter += 1
-        else:
-            # Логика DOWN серверов (48 часов)
-            fail_time = history.get(base_part, now)
-            if now - fail_time < GRACE_PERIOD:
-                working_for_base.append(base_part)
-                new_history[base_part] = fail_time
-                
-                # Сохраняем флаг и для упавших серверов
-                working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
-                
-                print(f"⏳ DOWN: {host} (wifi {counter})")
+                print(f"✅ ОК: {host} -> wifi {counter}")
                 counter += 1
             else:
-                print(f"🗑️ Удален (тайм-аут): {host}")
+            # Логика DOWN серверов (48 часов)
+                fail_time = history.get(base_part, now)
+                if now - fail_time < GRACE_PERIOD:
+                    working_for_base.append(base_part)
+                    new_history[base_part] = fail_time
+                
+                # Сохраняем флаг и для упавших серверов
+                    working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
+                
+                    print(f"⏳ DOWN: {host} (wifi {counter})")
+                    counter += 1
+                else:
+                    print(f"🗑️ Удален (тайм-аут): {host}")
+        # --- КОНЕЦ БЛОКА ПРОВЕРКИ ---
 
     # 3. Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

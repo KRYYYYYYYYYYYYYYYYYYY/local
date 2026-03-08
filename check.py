@@ -130,19 +130,22 @@ def main():
         is_alive = False
 
         # Проверка страны и коннект
+        # --- НАЧАЛО БЛОКА ПРОВЕРКИ (внутри цикла for link in unique_links) ---
         if not is_ipv6(host):
             if get_country_code(host) not in BLOCKED_COUNTRIES:
                 try:
                     resolved_ip = socket.gethostbyname(host)
                     with socket.create_connection((resolved_ip, int(port)), timeout=2.5):
                         is_alive = True
-                except: pass
+                except:
+                    pass
         else:
             try:
                 with socket.create_connection((host, int(port)), timeout=2.5):
                     is_alive = True
                     resolved_ip = host
-            except: pass
+            except:
+                pass
 
         if is_alive:
             # 1. В базу (1.txt) сохраняем без имени
@@ -171,6 +174,7 @@ def main():
                 counter += 1
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")
+        # --- КОНЕЦ БЛОКА ПРОВЕРКИ ---
 
     # 3. Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

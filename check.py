@@ -139,7 +139,7 @@ def main():
         # Отрезаем старое имя для базы (до знака #)
         base_part = link.split("#", 1)[0]
 
-         if is_alive:
+        if is_alive:
             working_for_base.append(base_part)
             # Hard-Resolve для подписки
             target_hp = f"@{resolved_ip}:{port}"

@@ -13,7 +13,7 @@ STATUS_FILE = "test1/status.json"
 GRACE_PERIOD = 2 * 24 * 60 * 60  # 48 часов
 
 # НОВАЯ НАСТРОЙКА: Внешний репозиторий
-EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com"
+EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt"
 
 HEADER = """# profile-title: 🏴WIFI🏴
 # announce: wifi

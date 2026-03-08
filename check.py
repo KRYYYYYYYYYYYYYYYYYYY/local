@@ -94,15 +94,17 @@ def main():
     print(f"Начинаю проверку {len(unique_links)} уникальных строк...")
 
     for link in unique_links:
-        # Убираем старое имя сервера для проверки
-        base_part = link.split("#")[0].strip()
+        # СОХРАНЕНИЕ ФЛАГОВ: Отрезаем только часть после знака #
+        # split('#', 1)[0] берет всё до первой решетки (включая все параметры ?)
+        base_part = link.split("#", 1)[0].strip()
+        
         host, port = extract_host_port(base_part)
         
         if not host or not port:
             continue
 
         if check_server_smart(host, port):
-            # Сохраняем "чистую" ссылку в базу 1.txt
+            # Сохраняем ссылку со всеми флагами в базу 1.txt
             working_for_base.append(base_part)
             # Создаем пронумерованную ссылку для wifi.txt
             new_name = urllib.parse.quote(f"wifi {counter}")

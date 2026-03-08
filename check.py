@@ -118,61 +118,54 @@ def main():
 
     for link in unique_links:
         base_part = link.split("#", 1)[0].strip()
-        
-        # ВАЖНО: вызываем ОДИН раз и получаем 3 значения
         endpoint, host, port = extract_host_port(base_part)
         
-        if not endpoint or not host or not port: 
+        if not endpoint or not host or not port:
             continue
+
+        # 1. СРАЗУ ПРОВЕРЯЕМ СТРАНУ
+        country = get_country_code(host)
+        
+        # Если страна НЕ в белом списке — удаляем (просто не добавляем никуда)
+        if country not in ALLOWED_COUNTRIES:
+            print(f"🗑️ Удален (неподходящая страна {country}): {host}")
+            continue # Переходим к следующей ссылке, в базу это не попадет
 
         resolved_ip = None
         is_alive = False
-        # Находим код страны
-        country = get_country_code(host)
 
-        # Проверка страны и коннект
-        if not is_ipv6(host):
-            # ИСПРАВЛЕННАЯ ЛОГИКА: сервер должен быть в ALLOWED_COUNTRIES
-            if country in ALLOWED_COUNTRIES:
-                try:
-                    resolved_ip = socket.gethostbyname(host)
-                    with socket.create_connection((resolved_ip, int(port)), timeout=3.5):
-                        is_alive = True
-                except: pass
+        # 2. ПРОВЕРЯЕМ КОННЕКТ (только если страна подошла)
+        try:
+            if not is_ipv6(host):
+                resolved_ip = socket.gethostbyname(host)
+                with socket.create_connection((resolved_ip, int(port)), timeout=3.0):
+                    is_alive = True
             else:
-                print(f"❌ Страна {country} не подходит для ChatGPT: {host}")
-        else:
-            # Для IPv6 (если нужно тоже проверять страну, придется резолвить IP)
-            try:
-                with socket.create_connection((host, int(port)), timeout=3.5):
+                with socket.create_connection((host, int(port)), timeout=3.0):
                     is_alive = True
                     resolved_ip = host
-            except: pass
+        except:
+            is_alive = False
 
         if is_alive:
-            # 1. В базу (1.txt) сохраняем без имени
+            # Сервер ОК и страна ОК -> Сохраняем везде
             working_for_base.append(base_part)
             
-            # 2. Для подписки: меняем домен на IP, сохраняя флаги
+            # Сохраняем флаг при замене IP
             resolved_host_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
             sub_link = link.replace(endpoint, f"@{resolved_host_str}:{port}", 1)
             
-            # Используем функцию пересборки имени, чтобы оставить эмодзи-флаг
             working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
-            
-            print(f"✅ ОК: {host} -> wifi {counter}")
+            print(f"✅ ОК ({country}): {host} -> wifi {counter}")
             counter += 1
         else:
-            # Логика DOWN серверов (48 часов)
+            # Сервер упал, но страна правильная -> даем шанс 48 часов
             fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
                 working_for_base.append(base_part)
                 new_history[base_part] = fail_time
-                
-                # Сохраняем флаг и для упавших серверов
                 working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
-                
-                print(f"⏳ DOWN: {host} (wifi {counter})")
+                print(f"⏳ DOWN ({country}): {host}")
                 counter += 1
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")

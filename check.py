@@ -2,8 +2,8 @@ import socket
 import re
 
 # Настройки
-INPUT_FILE = '1.txt'  # Файл, где лежат ваши VLESS ссылки
-OUTPUT_FILE = 'wifi.txt' # Итоговый файл-подписка
+INPUT_FILE = 'local/test1/1.txt'     # Где лежат исходники
+OUTPUT_FILE = 'local/kr/mob/wifi.txt' # Куда сохранять результат
 
 def check_server(host, port):
     try:

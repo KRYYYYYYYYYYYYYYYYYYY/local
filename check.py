@@ -2,59 +2,25 @@ import socket
 import re
 import os
 import json
-import time
 import urllib.parse
 import urllib.request
+import time
 
 # Настройки путей
-INPUT_FILE = "test1/1.txt"
-OUTPUT_FILE = "kr/mob/wifi.txt"
-STATUS_FILE = "test1/status.json"
-GRACE_PERIOD = 2 * 24 * 60 * 60  # 48 часов
-
-# НОВАЯ НАСТРОЙКА: Внешний репозиторий
-EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt"
+INPUT_FILE = 'test1/1.txt'
+OUTPUT_FILE = 'kr/mob/wifi.txt'
+STATUS_FILE = 'test1/status.json'
+EXTERNAL_SOURCE_URL = ""
+GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: wifi
+# announce: Прив
 # profile-update-interval: 2
 
 """
 
 BLOCKED_COUNTRIES = {"RU", "CN", "IR", "KP"}
 
-def is_ipv6(host: str) -> bool:
-    return ":" in host
-
-def get_country_code(host: str) -> str:
-    # Исправил тут небольшую опечатку в URL для API из твоего текста, чтобы работало
-    url = f"http://ip-api.com/json/{host}?fields=status,countryCode"
-    try:
-        with urllib.request.urlopen(url, timeout=3) as response:
-            data = json.loads(response.read().decode("utf-8"))
-            if data.get("status") == "success":
-                return data.get("countryCode", "Unknown")
-    except:
-        pass
-    return "Unknown"
-
-def extract_host_port(link: str):
-    match = re.search(r"@([\w.-]+):(\d+)", link)
-    if match: return match.group(1), match.group(2)
-    if match:
-        return match.group(0), match.group(1), match.group(2)
-    ipv6_match = re.search(r"@\[([0-9a-fA-F:]+)\]:(\d+)", link)
-    if ipv6_match: return ipv6_match.group(1), ipv6_match.group(2)
-    return None, None
-    if ipv6_match:
-        return ipv6_match.group(0), ipv6_match.group(1), ipv6_match.group(2)
-    return None, None, None
-
-
-def format_uri_host(host: str) -> str:
-    if is_ipv6(host) and not host.startswith("["):
-        return f"[{host}]"
-    return host
 
 def rebuild_link_name(link: str, new_name: str) -> str:
     """
@@ -85,52 +51,71 @@ def rebuild_link_name(link: str, new_name: str) -> str:
 
     return f"{base}#{prefix}{separator}{encoded_name}"
 
-# НОВАЯ ФУНКЦИЯ
-def fetch_external_servers() -> list:
-    """Скачивает серверы из внешнего источника."""
-    if not EXTERNAL_SOURCE_URL:
-        return []
+def is_ipv6(host: str) -> bool:
+    return ":" in host
+
+def extract_host_port(link: str):
+    match = re.search(r"@([\w.-]+):(\d+)", link)
+    if match: return match.group(1), match.group(2)
+    if match:
+        return match.group(0), match.group(1), match.group(2)
+    ipv6_match = re.search(r"@\[([0-9a-fA-F:]+)\]:(\d+)", link)
+    if ipv6_match: return ipv6_match.group(1), ipv6_match.group(2)
+    return None, None
+    if ipv6_match:
+        return ipv6_match.group(0), ipv6_match.group(1), ipv6_match.group(2)
+    return None, None, None
+
+
+def format_uri_host(host: str) -> str:
+    if is_ipv6(host) and not host.startswith("["):
+        return f"[{host}]"
+    return host
+
+def get_country_code(host: str) -> str:
     try:
-        print(f"📥 Загрузка серверов из {EXTERNAL_SOURCE_URL}")
-        with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=10) as response:
+        url = f"http://ip-api.com/json/{host}?fields=status,countryCode"
+        with urllib.request.urlopen(url, timeout=3) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            if data.get("status") == "success":
+                return data.get("countryCode", "Unknown")
+    except: pass
+    return "Unknown"
+
+def fetch_external_servers() -> list:
+    if not EXTERNAL_SOURCE_URL.strip(): return []
+    try:
+        print(f"📥 Загрузка из {EXTERNAL_SOURCE_URL}...")
+        with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=8) as response:
             return response.read().decode("utf-8").splitlines()
-    except Exception as e:
-        print(f"⚠️ Ошибка загрузки внешних серверов: {e}")
-        return []
+    except: return []
 
 def main():
-    # 1. Загрузка локальной базы
-    local_lines = []
+    # 1. Загрузка базы и истории
+    current_base = []
     if os.path.exists(INPUT_FILE):
         with open(INPUT_FILE, "r", encoding="utf-8") as f:
-            local_lines = f.read().splitlines()
+            current_base = f.read().splitlines()
 
-    # 2. ПОДТЯЖКА ИЗ ВНЕШНЕГО РЕПО (Новое)
-    external_lines = fetch_external_servers()
-    
-    # 3. ОБЪЕДИНЕНИЕ (Новое)
-    combined_lines = local_lines + external_lines
-    
     history = {}
     if os.path.exists(STATUS_FILE):
         try:
-            with open(STATUS_FILE, "r", encoding="utf-8") as f:
-                history = json.load(f)
-        except:
-            history = {}
+            with open(STATUS_FILE, "r") as f: history = json.load(f)
+        except: history = {}
 
-    # Используем объединенный список combined_lines вместо current_base
-    unique_links = list(dict.fromkeys(line.strip() for line in combined_lines if line.strip().startswith("vless://")))
-    
+    external_servers = fetch_external_servers()
+    all_lines = current_base + external_servers
+    unique_links = list(dict.fromkeys(line.strip() for line in all_lines if line.strip().startswith("vless://")))
+
     working_for_base = []
     working_for_sub = []
     new_history = {}
     now = time.time()
     counter = 1
 
-    print(f"Начинаю проверку {len(unique_links)} строк...")
+    print(f"🔄 Проверка {len(unique_links)} строк...")
 
-for link in unique_links:
+    for link in unique_links:
         base_part = link.split("#", 1)[0].strip()
         host, port = extract_host_port(base_part)
         if not host or not port: continue
@@ -155,9 +140,6 @@ for link in unique_links:
                     is_alive = True
                     resolved_ip = host
             except: pass
-
-        # Отрезаем старое имя для базы (до знака #)
-        base_part = link.split("#", 1)[0]
 
         if is_alive:
             # Сервер ОК
@@ -184,18 +166,17 @@ for link in unique_links:
                 print(f"⏳ Ждем 48ч: {host}")
             else:
                 print(f"🗑️ Удален мусор: {host}")
-    
-    # Сохранение
-    os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
-    with open(INPUT_FILE, "w", encoding="utf-8") as f:
-        f.write("\n".join(working_for_base))
 
-    with open(STATUS_FILE, "w", encoding="utf-8") as f:
-        json.dump(new_history, f, ensure_ascii=False, indent=2)
+    # 3. Сохранение
+    os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
+    with open(INPUT_FILE, "w", encoding="utf-8") as f: f.write("\n".join(working_for_base))
+    with open(STATUS_FILE, "w") as f: json.dump(new_history, f)
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(HEADER + "\n".join(working_for_sub))
+
+    print(f"🏁 Готово! Подписка обновлена.")
 
 if __name__ == "__main__":
     main()

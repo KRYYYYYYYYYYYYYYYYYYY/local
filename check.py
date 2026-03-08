@@ -144,7 +144,7 @@ def main():
                     resolved_ip = host
             except: pass
 
-              if is_alive:
+            if is_alive:
             working_for_base.append(base_part)
             # Убираем старую историю для этого сервера, если она была
             if base_part in history: 

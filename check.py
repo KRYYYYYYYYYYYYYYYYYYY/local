@@ -76,7 +76,7 @@ def format_uri_host(host: str) -> str:
 
 def get_country_code(host: str) -> str:
     try:
-        url = f"http://ip-api.com{host}?fields=status,countryCode"
+        url = f"http://ip-api.com/{host}?fields=status,countryCode"
         with urllib.request.urlopen(url, timeout=3) as response:
             data = json.loads(response.read().decode("utf-8"))
             if data.get("status") == "success":

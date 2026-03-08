@@ -1,5 +1,5 @@
 # profile-title: 🏴WIFI🏴
-# announce: Reality Флаги Сохранены | Hard-Resolve IP
+# announce: Hard-Resolve IP | SID и Reality Флаги Сохранены
 # profile-update-interval: 2
 
 vless://adad2034-0510-4a4e-8759-77a8244e521a@45.83.181.135:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=chrome&security=reality&pbk=Fv6JEb-tPKhgQcwZCxDvWcDUR49FM-pXSS88-FtqX2s&sid=2e552a0d4d15e0f9#wifi%201
@@ -8,7 +8,7 @@ vless://adad2034-0510-4a4e-8759-77a8244e521a@85.192.33.64:443/?type=tcp&encrypti
 vless://adad2034-0510-4a4e-8759-77a8244e521a@5.188.143.115:10443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=chrome&security=reality&pbk=29Nj1TexJekHKphyU1kpPxV_VKMz2pgAZ96V1VKmYn0&sid=bd1c2c12ca44261a#wifi%204
 vless://1fb62a35-b930-485d-9eb7-5a660d28a78a@138.124.70.90:23151/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=cms-res-web.online.sberbank.ru&fp=safari&security=reality&pbk=eP0MKUFOcNVSVFbHT8GgBLP4LIHZFq8JuVGlCAlH1HI&sid=#wifi%205
 vless://adad2034-0510-4a4e-8759-77a8244e521a@193.177.0.69:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=eh.vk.com&fp=chrome&security=reality&pbk=Gq8bYHkvOwewZM5Kw3TuqmxfBVj6kwCEgi2QigUdomo&sid=8dc90eb531158ffa#wifi%206
-vless://0f44079e-f740-4c28-aac7-7898abdb3252@84.201.137.233:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=random&security=reality&pbk=v6rib0-2FxBd1MnBxdylbIRIhvXywSj56QEtCkaEuBo&sid=27e53bbcab7593d7#wifi%207
+vless://0f44079e-f740-4c28-aac7-7898abdb3252@84.201.147.46:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=random&security=reality&pbk=v6rib0-2FxBd1MnBxdylbIRIhvXywSj56QEtCkaEuBo&sid=27e53bbcab7593d7#wifi%207
 vless://1fb62a35-b930-485d-9eb7-5a660d28a78a@193.23.201.98:7702/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=82.img.avito.st&fp=chrome&security=reality&pbk=WyUUOJJujjHHSsFFaftoOSE63GorNX_oMeduiInnpxQ&sid=#wifi%208
 vless://1fb62a35-b930-485d-9eb7-5a660d28a78a@213.176.78.83:11445/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=sso.passport.yandex.ru&fp=chrome&security=reality&pbk=MEK-NUsOv98VElJAZbabpunRMsK-wXSu6NYOc56gPkU&sid=#wifi%209
 vless://7a1f4deb-0ea9-427e-bc9d-9297a08afa12@213.165.52.51:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=vk.com&security=reality&pbk=nBxkzpHPJpW3AXzEZSQc8V00RuPj1zrxe-hYSgNtzUY&sid=b7#wifi%2010
@@ -24,7 +24,7 @@ vless://a774f61d-a518-4c61-902f-807797da6caf@89.185.82.146:44444/?type=grpc&encr
 vless://adad2034-0510-4a4e-8759-77a8244e521a@212.233.78.161:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=eh.vk.com&fp=chrome&security=reality&pbk=AmcTYjbCAn33BFmg55kFKIIbNRBmQWan9RDl8lZuHgo&sid=bd3c2c10ca44261a#wifi%2020
 vless://1fb62a35-b930-485d-9eb7-5a660d28a78a@138.124.19.132:2554/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=sun9-38.userapi.com&fp=chrome&security=reality&pbk=BhrJYwEJdjXpMv6Jol7NBsdaO4kL8yh5ZRYQXNphThU&sid=#wifi%2021
 vless://51c87b87-6099-4b24-a5f6-7fd90231654a@193.17.183.83:3440/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=yandex.net&fp=random&security=reality&pbk=FsvBAlh5sdzEKr2mnFU9eFZKUPMcYf_gxcN08owMxyw&sid=e265b68a#wifi%2022
-vless://53d12182-cbc1-4910-b16d-d0b9abe186c8@5.188.141.54:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=www.x5.ru&security=reality&pbk=XyvxY0XhCEFt6s3LVjsQ1sYxk0nc6R99CKZ_Lv3YkTo&sid=#wifi%2023
+vless://53d12182-cbc1-4910-b16d-d0b9abe186c8@vk6a.dostup.lat:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=www.x5.ru&security=reality&pbk=XyvxY0XhCEFt6s3LVjsQ1sYxk0nc6R99CKZ_Lv3YkTo&sid=#wifi%2023%20%28DOWN%29
 vless://1fb62a35-b930-485d-9eb7-5a660d28a78a@193.68.89.85:15518/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=yabro-wbplugin.edadeal.yandex.ru&fp=chrome&security=reality&pbk=OX-N6M3HbuQEkJzz06aDO6YNEt6nNSfcikNiB0mRRDI&sid=#wifi%2024
 vless://53d12182-cbc1-4910-b16d-d0b9abe186c8@5.188.141.75:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=www.x5.ru&security=reality&pbk=IubD_n_Pz0YmqQEJQ-6bjW_9bU4aZVYo_CxfgngGC0A&sid=#wifi%2025
 vless://adad2034-0510-4a4e-8759-77a8244e521a@144.31.130.234:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=chrome&security=reality&pbk=Q3LeFdt8Tl-yS9xTD9Q4GONrA9yqXYxbHsrCU2-BvQQ&sid=6e752a0d4d15e0f9#wifi%2026

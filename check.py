@@ -14,7 +14,7 @@ EXTERNAL_SOURCE_URL = ""
 GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Удаление через 2 дня | Hard-Resolve IP (No DNS)
+# announce: Прив
 # profile-update-interval: 2
 
 """

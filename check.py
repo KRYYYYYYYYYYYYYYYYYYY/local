@@ -55,15 +55,17 @@ def is_ipv6(host: str) -> bool:
     return ":" in host
 
 def extract_host_port(link: str):
-    match = re.search(r"@([\w.-]+):(\d+)", link)
-    if match: return match.group(1), match.group(2)
+    # Поиск для обычного хоста или домена
+    match = re.search(r"(@)([\w.-]+):(\d+)", link)
     if match:
-        return match.group(0), match.group(1), match.group(2)
-    ipv6_match = re.search(r"@\[([0-9a-fA-F:]+)\]:(\d+)", link)
-    if ipv6_match: return ipv6_match.group(1), ipv6_match.group(2)
-    return None, None
+        # group(0) содержит '@host:port', group(2) - host, group(3) - port
+        return match.group(0), match.group(2), match.group(3)
+    
+    # Поиск для IPv6 в скобках
+    ipv6_match = re.search(r"(@)\[([0-9a-fA-F:]+)\]:(\d+)", link)
     if ipv6_match:
-        return ipv6_match.group(0), ipv6_match.group(1), ipv6_match.group(2)
+        return ipv6_match.group(0), ipv6_match.group(2), ipv6_match.group(3)
+        
     return None, None, None
 
 
@@ -117,15 +119,17 @@ def main():
 
     for link in unique_links:
         base_part = link.split("#", 1)[0].strip()
-        host, port = extract_host_port(base_part)
-        if not host or not port: continue
+        
+        # ВАЖНО: вызываем ОДИН раз и получаем 3 значения
         endpoint, host, port = extract_host_port(base_part)
-        if not endpoint or not host or not port: continue
+        
+        if not endpoint or not host or not port: 
+            continue
 
         resolved_ip = None
         is_alive = False
 
-        # Проверка страны и резолв
+        # Проверка страны и коннект
         if not is_ipv6(host):
             if get_country_code(host) not in BLOCKED_COUNTRIES:
                 try:
@@ -134,7 +138,6 @@ def main():
                         is_alive = True
                 except: pass
         else:
-            # Для IPv6
             try:
                 with socket.create_connection((host, int(port)), timeout=2.5):
                     is_alive = True
@@ -142,30 +145,32 @@ def main():
             except: pass
 
         if is_alive:
-            # Сервер ОК
+            # 1. В базу (1.txt) сохраняем без имени
             working_for_base.append(base_part)
-            # HARD-RESOLVE: Заменяем домен на IP в ссылке для подписки
-            sub_link = base_part.replace(f"@{host}:{port}", f"@{resolved_ip}:{port}")
-            new_name = urllib.parse.quote(f"wifi {counter}")
-            working_for_sub.append(f"{sub_link}#{new_name}")
-            resolved_host = format_uri_host(resolved_ip)
-            sub_link = link.replace(endpoint, f"@{resolved_host}:{port}", 1)
+            
+            # 2. Для подписки: меняем домен на IP, сохраняя флаги
+            resolved_host_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
+            sub_link = link.replace(endpoint, f"@{resolved_host_str}:{port}", 1)
+            
+            # Используем функцию пересборки имени, чтобы оставить эмодзи-флаг
             working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
+            
+            print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
-            print(f"✅ ОК: {host} ({resolved_ip})")
         else:
-            # Сервер упал - проверяем таймер
+            # Логика DOWN серверов (48 часов)
             fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
                 working_for_base.append(base_part)
                 new_history[base_part] = fail_time
-                new_name = urllib.parse.quote(f"wifi {counter} (DOWN)")
-                working_for_sub.append(f"{base_part}#{new_name}")
+                
+                # Сохраняем флаг и для упавших серверов
                 working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
+                
+                print(f"⏳ DOWN: {host} (wifi {counter})")
                 counter += 1
-                print(f"⏳ Ждем 48ч: {host}")
             else:
-                print(f"🗑️ Удален мусор: {host}")
+                print(f"🗑️ Удален (тайм-аут): {host}")
 
     # 3. Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

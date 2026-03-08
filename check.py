@@ -1,32 +1,16 @@
-import socket
-import re
-
-# Настройки
-INPUT_FILE = 'local/test1/1'     # Где лежат исходники
-OUTPUT_FILE = 'local/kr/mob/wifi.txt' # Куда сохранять результат
-
-def check_server(host, port):
-    try:
-        with socket.create_connection((host, int(port)), timeout=3):
-            return True
-    except:
-        return False
-
 def main():
+    # --- БЛОК ОТЛАДКИ ---
+    print("--- Список всех файлов в репозитории ---")
+    for root, dirs, files in os.walk("."):
+        for file in files:
+            if ".git" not in root: # Пропускаем системные файлы
+                print(f"Путь для скрипта: {os.path.join(root, file).lstrip('./')}")
+    print("---------------------------------------")
+
+    if not os.path.exists(INPUT_FILE):
+        print(f"ОШИБКА: Скрипт ищет '{INPUT_FILE}', но не видит его.")
+        return
+    # --- КОНЕЦ БЛОКА ОТЛАДКИ ---
+
     with open(INPUT_FILE, 'r') as f:
-        lines = f.read().splitlines()
-
-    working_links = []
-    for link in lines:
-        # Извлекаем адрес и порт из vless://... @host:port...
-        match = re.search(r'@([\w\.-]+):(\d+)', link)
-        if match:
-            host, port = match.groups()
-            if check_server(host, port):
-                working_links.append(link)
-    
-    with open(OUTPUT_FILE, 'w') as f:
-        f.write('\n'.join(working_links))
-
-if __name__ == "__main__":
-    main()
+        # ... дальше ваш старый код ...

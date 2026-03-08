@@ -1,17 +1,23 @@
 name: Check Servers
 on:
   schedule:
-    - cron: '0 */6 * * *' # Раз в 6 часов
-  workflow_dispatch:      # Позволяет запустить вручную кнопкой
+    - cron: '0 */6 * * *' # Автозапуск каждые 6 часов
+  workflow_dispatch:      # Кнопка для ручного запуска
 
 jobs:
   run-checker:
     runs-on: ubuntu-latest
     permissions:
-      contents: write     # Разрешение на запись файлов в репозиторий
+      contents: write     # Даем права на запись в репозиторий
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
       
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
       - name: Run Script
         run: python check.py
         
@@ -19,6 +25,8 @@ jobs:
         run: |
           git config --global user.name "Checker-Bot"
           git config --global user.email "bot@github.com"
-          git add subscription.txt
-          git commit -m "Update working servers" || exit 0
+          # "git add ." добавит все новые файлы (включая kr/mob/wifi.txt)
+          git add .
+          # Если изменений нет, скрипт просто пойдет дальше (exit 0)
+          git commit -m "Update working servers in kr/mob/wifi.txt" || exit 0
           git push

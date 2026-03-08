@@ -143,7 +143,7 @@ def main():
             working_for_base.append(base_part)
             # Hard-Resolve для подписки
             target_hp = f"@{resolved_ip}:{port}"
-            sub_link = base_part.replace(orig_hp, target_hp, 1)
+            sub_link = base_part.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
             working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
             print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
@@ -153,7 +153,7 @@ def main():
             if now - fail_time < GRACE_PERIOD:
                 working_for_base.append(base_part)
                 new_history[base_part] = fail_time
-                working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
+                working_for_sub.append(rebuild_link_name(base_part, f"wifi {counter} (DOWN)"))
                 counter += 1
                 print(f"⏳ DOWN: {host}")
     

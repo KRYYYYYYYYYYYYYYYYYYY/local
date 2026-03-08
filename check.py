@@ -22,33 +22,23 @@ HEADER = """# profile-title: 🏴WIFI🏴
 ALLOWED_COUNTRIES = {"US", "DE", "NL", "GB", "FR", "FI", "SG", "JP", "PL", "TR"}
 
 def rebuild_link_name(link: str, new_name: str) -> str:
-    """
-    Обновляет только имя узла (часть после #) в vless-ссылке.
-
-    Логика:
-    - сохраняет префикс фрагмента до первого "+" или "%20"
-      (например флаг-эмодзи в URL-кодировке);
-    - заменяет текстовое имя на new_name;
-    - если во фрагменте нет разделителя, просто ставит новый фрагмент целиком.
-    """
     base, _, fragment = link.partition("#")
-    encoded_name = urllib.parse.quote(new_name)
-
     if not fragment:
-        return f"{base}#{encoded_name}"
+        return f"{base}#{urllib.parse.quote(new_name)}"
 
-    plus_pos = fragment.find("+")
-    space_pos = fragment.find("%20")
-
-    split_positions = [pos for pos in (plus_pos, space_pos) if pos != -1]
-    if not split_positions:
-        return f"{base}#{encoded_name}"
-
-    split_pos = min(split_positions)
-    separator = "+" if split_pos == plus_pos else "%20"
-    prefix = fragment[:split_pos]
-
-    return f"{base}#{prefix}{separator}{encoded_name}"
+    # Декодируем фрагмент (то, что после #), чтобы найти флаг
+    fragment_dec = urllib.parse.unquote(fragment)
+    
+    # Регулярка ищет эмодзи или спецсимволы в начале строки
+    # (обычно это и есть флаг)
+    match = re.match(r"^([^\w\s\d]|[^\x00-\x7F])+", fragment_dec)
+    if match:
+        prefix = match.group(0).strip()
+        # Возвращаем: База#Флаг + пробел + НовоеИмя
+        return f"{base}#{urllib.parse.quote(prefix + ' ' + new_name)}"
+    
+    # Если флага нет, просто ставим имя
+    return f"{base}#{urllib.parse.quote(new_name)}"
 
 def is_ipv6(host: str) -> bool:
     return ":" in host
@@ -148,16 +138,24 @@ def main():
             is_alive = False
 
         if is_alive:
-            # Сервер ОК и страна ОК -> Сохраняем везде
+            # 1. В базу (1.txt) сохраняем ЧИСТУЮ ссылку (без имени)
             working_for_base.append(base_part)
             
-            # Сохраняем флаг при замене IP
-            resolved_host_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
-            sub_link = link.replace(endpoint, f"@{resolved_host_str}:{port}", 1)
+            # 2. Для подписки: берем ОРИГИНАЛЬНЫЙ link (со всеми флагами)
+            # Формируем правильный формат хоста (добавляем [] если это IPv6)
+            ip_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
             
-            working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
+            # ВАЖНО: заменяем только часть @host:port на @ip:port
+            # Используем переменную 'endpoint', которую получили из extract_host_port
+            sub_link = link.replace(endpoint, f"@{ip_str}:{port}", 1)
+            
+            # Пересобираем имя, сохраняя флаг
+            final_link = rebuild_link_name(sub_link, f"wifi {counter}")
+            working_for_sub.append(final_link)
+            
             print(f"✅ ОК ({country}): {host} -> wifi {counter}")
             counter += 1
+
         else:
             # Сервер упал, но страна правильная -> даем шанс 48 часов
             fail_time = history.get(base_part, now)

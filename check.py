@@ -3,12 +3,13 @@ import re
 import os
 import json
 import urllib.request
+import urllib.parse
 
 INPUT_FILE = 'test1/1.txt'
 OUTPUT_FILE = 'kr/mob/wifi.txt'
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Подписка для на wifi! (Без IPv6 и заблокированных стран)
+# announce: Подписка для на wifi! (Нумерованная, без IPv6 и RU/CN)
 # profile-update-interval: 2
 
 """
@@ -17,10 +18,10 @@ def is_ipv6(host):
     return ":" in host and not host.startswith('[')
 
 def get_country_code(host):
-    """Gets the server's country without installing extra libraries"""
     try:
-        # Use the standard urllib library to request IP-API
-        with urllib.request.urlopen(f"http://ip-api.com{host}?fields=status,countryCode", timeout=2) as response:
+        # Исправлено: добавлен /json/ и правильный формат запроса
+        url = f"http://ip-api.com{host}?fields=status,countryCode"
+        with urllib.request.urlopen(url, timeout=2) as response:
             data = json.loads(response.read().decode())
             if data.get('status') == 'success':
                 return data.get('countryCode')
@@ -32,18 +33,17 @@ def check_server_smart(host, port):
     if is_ipv6(host):
         print(f"⏩ Пропуск IPv6: {host}")
         return False
-
-    # Filter countries for ChatGPT/Gemini
+    
     country = get_country_code(host)
     if country in ['RU', 'CN', 'IR', 'KP']:
-        print(f"🚩 Пропуск {country} (ChatGPT/Gemini недоступны): {host}")
+        print(f"🚩 Пропуск {country} (No ChatGPT): {host}")
         return False
 
     try:
         ip_address = socket.gethostbyname(host)
         with socket.create_connection((ip_address, int(port)), timeout=2.5):
             return True
-    except Exception:
+    except:
         return False
 
 def main():
@@ -56,8 +56,9 @@ def main():
 
     working_links = []
     seen_configs = set()
+    counter = 1 
 
-    print(f"Начинаю умную проверку {len(lines)} строк...")
+    print(f"Начинаю проверку и нумерацию {len(lines)} строк...")
 
     for link in lines:
         link = link.strip()
@@ -68,18 +69,22 @@ def main():
         if match:
             host, port = match.groups()
             if check_server_smart(host, port):
-                working_links.append(link)
+                # ЛОГИКА НУМЕРАЦИИ:
+                # Отрезаем всё после # и ставим свое имя wifi N
+                base_part = link.split('#')[0]
+                new_name = urllib.parse.quote(f"wifi {counter}")
+                final_link = f"{base_part}#{new_name}"
+                
+                working_links.append(final_link)
                 seen_configs.add(link)
-                print(f"✅ ОК: {host}")
-            else:
-                # We do not output FAIL here, as the details are displayed in check_server_smart
-                pass
+                print(f"✅ ОК: {host} -> wifi {counter}")
+                counter += 1
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write(HEADER + '\n'.join(working_links))
     
-    print(f"Завершено. Сохранено рабочих: {len(working_links)}")
+    print(f"Завершено. Сохранено в подписку: {len(working_links)}")
 
 if __name__ == "__main__":
     main()

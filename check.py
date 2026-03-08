@@ -46,23 +46,32 @@ def extract_host_port(link: str):
     return match.group(0), match.group(1).strip("[]"), match.group(2)
 
 def rebuild_link_name(link: str, new_name: str) -> str:
-    """Заменяет текст после флага/решетки на wifi N."""
+    """
+    Обновляет только имя узла (часть после #) в vless-ссылке.
+
+    Логика:
+    - сохраняет префикс фрагмента до первого "+" или "%20"
+      (например флаг-эмодзи в URL-кодировке);
+    - заменяет текстовое имя на new_name;
+    - если во фрагменте нет разделителя, просто ставит новый фрагмент целиком.
+    """
     base, _, fragment = link.partition("#")
     encoded_name = urllib.parse.quote(new_name)
+
     if not fragment:
         return f"{base}#{encoded_name}"
-    
-    # Ищем разделители во фрагменте (+ или %20)
+
     plus_pos = fragment.find("+")
     space_pos = fragment.find("%20")
+
     split_positions = [pos for pos in (plus_pos, space_pos) if pos != -1]
-    
     if not split_positions:
-        return f"{base}#{fragment}+{encoded_name}"
-    
+        return f"{base}#{encoded_name}"
+
     split_pos = min(split_positions)
     separator = "+" if split_pos == plus_pos else "%20"
     prefix = fragment[:split_pos]
+
     return f"{base}#{prefix}{separator}{encoded_name}"
 
 # НОВАЯ ФУНКЦИЯ

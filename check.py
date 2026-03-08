@@ -21,6 +21,36 @@ HEADER = """# profile-title: 🏴WIFI🏴
 
 BLOCKED_COUNTRIES = {"RU", "CN", "IR", "KP"}
 
+
+def rebuild_link_name(link: str, new_name: str) -> str:
+    """
+    Обновляет только имя узла (часть после #) в vless-ссылке.
+
+    Логика:
+    - сохраняет префикс фрагмента до первого "+" или "%20"
+      (например флаг-эмодзи в URL-кодировке);
+    - заменяет текстовое имя на new_name;
+    - если во фрагменте нет разделителя, просто ставит новый фрагмент целиком.
+    """
+    base, _, fragment = link.partition("#")
+    encoded_name = urllib.parse.quote(new_name)
+
+    if not fragment:
+        return f"{base}#{encoded_name}"
+
+    plus_pos = fragment.find("+")
+    space_pos = fragment.find("%20")
+
+    split_positions = [pos for pos in (plus_pos, space_pos) if pos != -1]
+    if not split_positions:
+        return f"{base}#{encoded_name}"
+
+    split_pos = min(split_positions)
+    separator = "+" if split_pos == plus_pos else "%20"
+    prefix = fragment[:split_pos]
+
+    return f"{base}#{prefix}{separator}{encoded_name}"
+
 def is_ipv6(host: str) -> bool:
     return ":" in host
 
@@ -46,38 +76,7 @@ def fetch_external_servers() -> list:
     try:
         print(f"📥 Загрузка из {EXTERNAL_SOURCE_URL}...")
         with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=8) as response:
-            return response.read().decode("utf-8").splitlines()
-    except: return []
-
-def main():
-    # 1. Загрузка базы и истории
-    current_base = []
-    if os.path.exists(INPUT_FILE):
-        with open(INPUT_FILE, "r", encoding="utf-8") as f:
-            current_base = f.read().splitlines()
-
-    history = {}
-    if os.path.exists(STATUS_FILE):
-        try:
-            with open(STATUS_FILE, "r") as f: history = json.load(f)
-        except: history = {}
-
-    external_servers = fetch_external_servers()
-    all_lines = current_base + external_servers
-    unique_links = list(dict.fromkeys(line.strip() for line in all_lines if line.strip().startswith("vless://")))
-
-    working_for_base = []
-    working_for_sub = []
-    new_history = {}
-    now = time.time()
-    counter = 1
-
-    print(f"🔄 Проверка {len(unique_links)} строк...")
-
-    for link in unique_links:
-        base_part = link.split("#", 1)[0].strip()
-        host, port = extract_host_port(base_part)
-        if not host or not port: continue
+@@ -81,55 +111,53 @@ def main():
 
         resolved_ip = None
         is_alive = False
@@ -105,6 +104,7 @@ def main():
             sub_link = base_part.replace(f"@{host}:{port}", f"@{resolved_ip}:{port}")
             new_name = urllib.parse.quote(f"wifi {counter}")
             working_for_sub.append(f"{sub_link}#{new_name}")
+            working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
             counter += 1
             print(f"✅ ОК: {host} ({resolved_ip})")
         else:
@@ -115,6 +115,7 @@ def main():
                 new_history[base_part] = fail_time
                 new_name = urllib.parse.quote(f"wifi {counter} (DOWN)")
                 working_for_sub.append(f"{base_part}#{new_name}")
+                working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
                 counter += 1
                 print(f"⏳ Ждем 48ч: {host}")
             else:

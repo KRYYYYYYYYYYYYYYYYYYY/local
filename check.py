@@ -118,62 +118,57 @@ def main():
     print(f"🔄 Проверка {len(unique_links)} строк...")
 
     for link in unique_links:
+        # --- НАЧАЛО БЛОКА ВНУТРИ ЦИКЛА for link in unique_links ---
         base_part = link.split("#", 1)[0].strip()
-        
-        # ВАЖНО: вызываем ОДИН раз и получаем 3 значения
         endpoint, host, port = extract_host_port(base_part)
         
-        if not endpoint or not host or not port: 
+        if not endpoint or not host or not port:
             continue
 
         resolved_ip = None
         is_alive = False
 
-        # Проверка страны и коннект
-        # --- НАЧАЛО БЛОКА ПРОВЕРКИ (внутри цикла for link in unique_links) ---
         if not is_ipv6(host):
             if get_country_code(host) not in BLOCKED_COUNTRIES:
                 try:
                     resolved_ip = socket.gethostbyname(host)
                     with socket.create_connection((resolved_ip, int(port)), timeout=2.5):
                         is_alive = True
-                except:
-                    pass
+                except: pass
         else:
             try:
                 with socket.create_connection((host, int(port)), timeout=2.5):
                     is_alive = True
                     resolved_ip = host
-            except:
-                pass
+            except: pass
 
         if is_alive:
-            # 1. В базу (1.txt) сохраняем без имени
+            # 1. В базу (1.txt) — только чистую часть без имени
             working_for_base.append(base_part)
             
-            # 2. Для подписки: меняем домен на IP, сохраняя флаги
+            # 2. Для подписки: берем исходный 'link' (с флагом!), 
+            # меняем в нем домен на IP и обновляем имя через функцию
             resolved_host_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
             sub_link = link.replace(endpoint, f"@{resolved_host_str}:{port}", 1)
             
-            # Используем функцию пересборки имени, чтобы оставить эмодзи-флаг
             working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
-            
             print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
         else:
-            # Логика DOWN серверов (48 часов)
+            # Логика DOWN
             fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
                 working_for_base.append(base_part)
                 new_history[base_part] = fail_time
                 
-                # Сохраняем флаг и для упавших серверов
+                # ОПЯТЬ берем исходный 'link', чтобы флаг не пропал в DOWN
                 working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
-                
-                print(f"⏳ DOWN: {host} (wifi {counter})")
+                print(f"⏳ DOWN: {host}")
                 counter += 1
             else:
-                print(f"🗑️ Удален (тайм-аут): {host}")
+                print(f"🗑️ Удален: {host}")
+        # --- КОНЕЦ БЛОКА ---
+
         # --- КОНЕЦ БЛОКА ПРОВЕРКИ ---
 
     # 3. Сохранение

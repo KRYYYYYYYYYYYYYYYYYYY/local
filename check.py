@@ -1,100 +1,162 @@
-import socket, re, os, json, time, urllib.parse, urllib.request
+import socket
+import re
+import os
+import json
+import time
+import urllib.parse
+import urllib.request
 
-# Настройки
+# Настройки путей
 INPUT_FILE = "test1/1.txt"
 OUTPUT_FILE = "kr/mob/wifi.txt"
 STATUS_FILE = "test1/status.json"
-EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt"
-GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
+GRACE_PERIOD = 2 * 24 * 60 * 60  # 48 часов
+
+# НОВАЯ НАСТРОЙКА: Внешний репозиторий
+EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com"
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Авто-сбор (2ч) | SID сохранен | Hard-Resolve
+# announce: wifi
 # profile-update-interval: 2
 
 """
 
 BLOCKED_COUNTRIES = {"RU", "CN", "IR", "KP"}
 
-def get_country_code(host):
-    try:
-        url = f"http://ip-api.com{host}?fields=status,countryCode"
-        with urllib.request.urlopen(url, timeout=3) as r:
-            data = json.loads(r.read().decode())
-            return data.get("countryCode", "Unknown") if data.get("status") == "success" else "Unknown"
-    except: return "Unknown"
+def is_ipv6(host: str) -> bool:
+    return ":" in host
 
-def fetch_external():
-    if not EXTERNAL_SOURCE_URL: return []
+def get_country_code(host: str) -> str:
+    # Исправил тут небольшую опечатку в URL для API из твоего текста, чтобы работало
+    url = f"http://ip-api.com{host}?fields=status,countryCode"
     try:
-        print("📥 Качаю сервера из внешнего репо...")
-        with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=10) as r:
-            return r.read().decode("utf-8").splitlines()
-    except: return []
+        with urllib.request.urlopen(url, timeout=3) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            if data.get("status") == "success":
+                return data.get("countryCode", "Unknown")
+    except:
+        pass
+    return "Unknown"
 
-def rebuild_link_name(link, counter, suffix=""):
-    """Обновляет имя после эмодзи/флага"""
+def extract_host_port(link: str):
+    """Достает host/port из vless-ссылки, включая IPv6."""
+    match = re.search(r"@([\w\.-]+|\[[0-9a-fA-F:]+\]):(\d+)", link)
+    if not match:
+        return None, None, None
+    return match.group(0), match.group(1).strip("[]"), match.group(2)
+
+def rebuild_link_name(link: str, new_name: str) -> str:
+    """Заменяет текст после флага/решетки на wifi N."""
     base, _, fragment = link.partition("#")
-    if not fragment: return f"{base}#+wifi+{counter}{suffix}"
+    encoded_name = urllib.parse.quote(new_name)
+    if not fragment:
+        return f"{base}#{encoded_name}"
     
-    # Сохраняем эмодзи (всё до первого + или %20)
-    match = re.search(r"^(.*?)(?:\+|\s|%20)", fragment)
-    prefix = match.group(1) if match else fragment
-    return f"{base}#{prefix}+wifi+{counter}{suffix}"
+    # Ищем разделители во фрагменте (+ или %20)
+    plus_pos = fragment.find("+")
+    space_pos = fragment.find("%20")
+    split_positions = [pos for pos in (plus_pos, space_pos) if pos != -1]
+    
+    if not split_positions:
+        return f"{base}#{fragment}+{encoded_name}"
+    
+    split_pos = min(split_positions)
+    separator = "+" if split_pos == plus_pos else "%20"
+    prefix = fragment[:split_pos]
+    return f"{base}#{prefix}{separator}{encoded_name}"
+
+# НОВАЯ ФУНКЦИЯ
+def fetch_external_servers() -> list:
+    """Скачивает серверы из внешнего источника."""
+    if not EXTERNAL_SOURCE_URL:
+        return []
+    try:
+        print(f"📥 Загрузка серверов из {EXTERNAL_SOURCE_URL}...")
+        with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=10) as response:
+            return response.read().decode("utf-8").splitlines()
+    except Exception as e:
+        print(f"⚠️ Ошибка загрузки внешних серверов: {e}")
+        return []
 
 def main():
+    # 1. Загрузка локальной базы
     local_lines = []
     if os.path.exists(INPUT_FILE):
-        with open(INPUT_FILE, "r", encoding="utf-8") as f: local_lines = f.read().splitlines()
+        with open(INPUT_FILE, "r", encoding="utf-8") as f:
+            local_lines = f.read().splitlines()
+
+    # 2. ПОДТЯЖКА ИЗ ВНЕШНЕГО РЕПО (Новое)
+    external_lines = fetch_external_servers()
     
-    external_lines = fetch_external()
-    # Объединяем и чистим дубли
-    all_links = list(dict.fromkeys([l.strip() for l in (local_lines + external_lines) if l.strip().startswith("vless://")]))
+    # 3. ОБЪЕДИНЕНИЕ (Новое)
+    combined_lines = local_lines + external_lines
     
     history = {}
     if os.path.exists(STATUS_FILE):
         try:
-            with open(STATUS_FILE, "r") as f: history = json.load(f)
-        except: history = {}
+            with open(STATUS_FILE, "r", encoding="utf-8") as f:
+                history = json.load(f)
+        except:
+            history = {}
 
-    working_for_base, working_for_sub, new_history = [], [], {}
-    now, counter = time.time(), 1
+    # Используем объединенный список combined_lines вместо current_base
+    unique_links = list(dict.fromkeys(line.strip() for line in combined_lines if line.strip().startswith("vless://")))
+    
+    working_for_base = []
+    working_for_sub = []
+    new_history = {}
+    now = time.time()
+    counter = 1
 
-    for link in all_links:
-        # Убираем старое имя для базы и поиска host/port
-        base_link = link.split('#')[0]
-        match = re.search(r"@([\w.-]+|\[[0-9a-fA-F:]+\]):(\d+)", base_link)
-        if not match: continue
-        orig_hp, host, port = match.group(0), match.group(1).strip("[]"), match.group(2)
+    print(f"Начинаю проверку {len(unique_links)} строк...")
 
-        if ":" not in host and get_country_code(host) in BLOCKED_COUNTRIES: continue
+    for link in unique_links:
+        orig_hp, host, port = extract_host_port(link)
+        if not orig_hp:
+            continue
 
-        resolved_ip, is_alive = None, False
+        if not is_ipv6(host) and get_country_code(host) in BLOCKED_COUNTRIES:
+            continue
+
+        resolved_ip = None
+        is_alive = False
         try:
-            resolved_ip = socket.gethostbyname(host) if ":" not in host else host
-            with socket.create_connection((resolved_ip, int(port)), timeout=2.5): is_alive = True
-        except: is_alive = False
+            resolved_ip = socket.gethostbyname(host) if not is_ipv6(host) else host
+            with socket.create_connection((resolved_ip, int(port)), timeout=2.5):
+                is_alive = True
+        except:
+            is_alive = False
+
+        # Отрезаем старое имя для базы (до знака #)
+        base_part = link.split("#", 1)[0]
 
         if is_alive:
-            working_for_base.append(base_link)
-            res_link = base_link.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
-            # Если в оригинальной ссылке был флаг-эмодзи, сохраняем его
-            working_for_sub.append(rebuild_link_name(link.replace(orig_hp, f"@{resolved_ip}:{port}", 1), counter))
-            print(f"✅ ОК: {host}")
+            working_for_base.append(base_part)
+            # Hard-Resolve только для подписки
+            sub_link = link.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
+            working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
+            print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
         else:
-            fail_time = history.get(base_link, now)
+            fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
-                working_for_base.append(base_link)
-                new_history[base_link] = fail_time
-                working_for_sub.append(rebuild_link_name(link, counter, "+(DOWN)"))
+                working_for_base.append(base_part)
+                new_history[base_part] = fail_time
+                working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
                 counter += 1
+                print(f"⏳ DOWN: {host}")
 
     # Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
-    with open(INPUT_FILE, "w", encoding="utf-8") as f: f.write("\n".join(working_for_base))
-    with open(STATUS_FILE, "w") as f: json.dump(new_history, f, indent=2)
+    with open(INPUT_FILE, "w", encoding="utf-8") as f:
+        f.write("\n".join(working_for_base))
+
+    with open(STATUS_FILE, "w", encoding="utf-8") as f:
+        json.dump(new_history, f, ensure_ascii=False, indent=2)
+
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f: f.write(HEADER + "\n".join(working_for_sub))
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        f.write(HEADER + "\n".join(working_for_sub))
 
 if __name__ == "__main__":
     main()

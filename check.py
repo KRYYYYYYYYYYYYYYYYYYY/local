@@ -57,6 +57,7 @@ def rebuild_link_name(link: str, new_name: str) -> str:
     if not fragment:
         return f"{base}#{encoded_name}"
     
+    # Ищем разделители во фрагменте (+ или %20)
     plus_pos = fragment.find("+")
     space_pos = fragment.find("%20")
     split_positions = [pos for pos in (plus_pos, space_pos) if pos != -1]

@@ -6,7 +6,7 @@ STATUS_FILE = "test1/status.json"
 GRACE_PERIOD = 2 * 24 * 60 * 60 
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Hard-Resolve IP | SID и Флаги Сохранены | Фильтр %20
+# announce: SID любой длины сохранен | Hard-Resolve IP
 # profile-update-interval: 2
 
 """
@@ -23,7 +23,7 @@ def get_country_code(host):
 
 def main():
     if not os.path.exists(INPUT_FILE): return
-    with open(INPUT_FILE, "r", encoding="utf-8") as f: current_base = f.read().splitlines()
+    with open(INPUT_FILE, "r", encoding="utf-8") as f: lines = f.read().splitlines()
     
     history = {}
     if os.path.exists(STATUS_FILE):
@@ -31,17 +31,16 @@ def main():
             with open(STATUS_FILE, "r") as f: history = json.load(f)
         except: history = {}
 
-    unique_links = list(dict.fromkeys(line.strip() for line in current_base if line.strip().startswith("vless://")))
+    unique_links = list(dict.fromkeys(l.strip() for l in lines if l.strip().startswith("vless://")))
     working_for_base, working_for_sub, new_history = [], [], {}
     now, counter = time.time(), 1
 
     for link in unique_links:
-        # Извлекаем @host:port
+        # 1. Извлекаем host:port для Hard-Resolve
         match = re.search(r"@([\w\.-]+|\[[0-9a-fA-F:]+\]):(\d+)", link)
         if not match: continue
         orig_hp, host, port = match.group(0), match.group(1).strip("[]"), match.group(2)
 
-        # Фильтр стран
         if ":" not in host and get_country_code(host) in BLOCKED_COUNTRIES: continue
 
         resolved_ip, is_alive = None, False
@@ -50,34 +49,36 @@ def main():
             with socket.create_connection((resolved_ip, int(port)), timeout=2.5): is_alive = True
         except: is_alive = False
 
-        # Отделяем техническую часть от ЛЮБОГО названия (после последней решетки)
-        if "#" in link:
-            base_part_with_flags = link.rsplit('#', 1)[0]
+        # 2. ЛОГИКА СОХРАНЕНИЯ SID (Любой длины)
+        # Ищем sid= и забираем ВСЁ до первого разделителя (+, %20, #) или конца строки
+        # Шаблон: (.*?sid=[^+#% ]+) - Группа 1: всё до конца значения sid
+        # Остальное (имя) просто игнорируем
+        sid_match = re.search(r"(.*?sid=[^+#% ]+)", link)
+        
+        if sid_match:
+            # base_part содержит vless://...sid=ЗНАЧЕНИЕ_ЛЮБОЙ_ДЛИНЫ
+            base_part = sid_match.group(1)
         else:
-            base_part_with_flags = link
+            # Если sid нет (мало ли), режем по старинке до первой решетки или пробела
+            base_part = re.split(r'[#+ ]', link)[0]
 
         if is_alive:
-            working_for_base.append(base_part_with_flags)
-            # 1. Hard-Resolve: меняем домен на IP только в подписке
-            sub_link = base_part_with_flags.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
-            # 2. Нумерация: добавляем +wifi+N
-            final_link = f"{sub_link}#+wifi+{counter}"
-            
-            working_for_sub.append(final_link)
+            working_for_base.append(base_part)
+            # Hard-Resolve (замена домена на IP) в базе
+            sub_link = base_part.replace(orig_hp, f"@{resolved_ip}:{port}", 1)
+            # Приклеиваем НОВОЕ имя
+            working_for_sub.append(f"{sub_link}+wifi+{counter}")
             print(f"✅ ОК: {host} -> wifi {counter}")
             counter += 1
         else:
-            # Логика 2-х дней
-            fail_time = history.get(base_part_with_flags, now)
+            fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
-                working_for_base.append(base_part_with_flags)
-                new_history[base_part_with_flags] = fail_time
-                final_link = f"{base_part_with_flags}#+wifi+{counter}+(DOWN)"
-                working_for_sub.append(final_link)
+                working_for_base.append(base_part)
+                new_history[base_part] = fail_time
+                working_for_sub.append(f"{base_part}+wifi+{counter}+(DOWN)")
                 counter += 1
-                print(f"⏳ DOWN: {host}")
 
-    # Сохранение результатов
+    # Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
     with open(INPUT_FILE, "w", encoding="utf-8") as f: f.write("\n".join(working_for_base))
     with open(STATUS_FILE, "w") as f: json.dump(new_history, f, indent=2)

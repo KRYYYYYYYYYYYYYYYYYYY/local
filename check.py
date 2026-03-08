@@ -145,25 +145,25 @@ def main():
             except: pass
 
             if is_alive:
-            working_for_base.append(base_part)
+                working_for_base.append(base_part)
             # Убираем старую историю для этого сервера, если она была
-            if base_part in history: 
-                history.pop(base_part, None)
+                if base_part in history: 
+                    history.pop(base_part, None)
             
             # Сохраняем флаг и обновляем IP
-            sub_link = link.replace(endpoint, f"@{format_uri_host(resolved_ip)}:{port}", 1)
-            working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
-            print(f"✅ ОК: {host} -> wifi {counter}")
-            counter += 1
-        else:
-            # А вот тут уже логика «умершего»
-            fail_time = history.get(base_part, now)
-            if now - fail_time < GRACE_PERIOD:
-                working_for_base.append(base_part)
-                new_history[base_part] = fail_time
-                working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
-                print(f"⏳ DOWN: {host} (wifi {counter})")
+                sub_link = link.replace(endpoint, f"@{format_uri_host(resolved_ip)}:{port}", 1)
+                working_for_sub.append(rebuild_link_name(sub_link, f"wifi {counter}"))
+                print(f"✅ ОК: {host} -> wifi {counter}")
                 counter += 1
+            else:
+            # А вот тут уже логика «умершего»
+                fail_time = history.get(base_part, now)
+                if now - fail_time < GRACE_PERIOD:
+                    working_for_base.append(base_part)
+                    new_history[base_part] = fail_time
+                    working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
+                    print(f"⏳ DOWN: {host} (wifi {counter})")
+                    counter += 1
                 
                 # Сохраняем флаг и для упавших серверов
                     working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))

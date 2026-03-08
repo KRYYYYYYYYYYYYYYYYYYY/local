@@ -14,7 +14,7 @@ EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com/igareck/vpn-configs-for
 GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
 
 HEADER = """# profile-title: 🏴WIFI🏴
-# announce: Прив
+# announce: Подписка для использования на wifi.
 # profile-update-interval: 2
 
 """

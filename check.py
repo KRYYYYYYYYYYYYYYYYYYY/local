@@ -123,7 +123,7 @@ def main():
     now = time.time()
     counter = 1
 
-    print(f"🔄 Проверка {len(unique_links)} строк...")
+    print(f"🔄 Проверка {len(unique_links)} строк")
     
     seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
     for link in unique_links:

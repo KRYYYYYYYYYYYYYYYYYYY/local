@@ -122,36 +122,15 @@ def main():
     print(f"🔄 Проверка {len(unique_links)} строк...")
 
     for link in unique_links:
-        # Извлекаем основную часть ссылки до названия (после #)
         base_part = link.split("#", 1)[0].strip()
-        
-        # 1. ПРОВЕРКА ШИФРОВАНИЯ (Безопасность прежде всего)
-        # Ищем только надежные протоколы: TLS или REALITY
-        is_secure = ("security=tls" in base_part.lower()) or ("security=reality" in base_part.lower())
-        
-        if not is_secure:
-            # Если шифрования нет (security=none или пусто), выкидываем сразу
-            print(f"❌ НЕНАДЕЖНО (нет TLS/Reality): {base_part[:40]}...")
-            continue
-
-        # Извлекаем хост и порт для дальнейших проверок
         endpoint, host, port = extract_host_port(base_part)
+        
         if not endpoint or not host or not port:
             continue
 
-        # 2. ПРОВЕРКА СТРАНЫ (География)
-        country = get_country_code(host)
-        
-        # Если страна не входит в список ALLOWED_COUNTRIES — удаляем
-        if country not in ALLOWED_COUNTRIES:
-            print(f"🗑️ СТРАНА МИМО ({country}): {host}")
-            continue 
-
-        # 3. ПРОВЕРКА КОННЕКТА (Техническая доступность)
+        # --- ЭТАП 1: ПРОВЕРКА ПОРТА ---
         resolved_ip = None
         is_alive = False
-        # ... далее ваш код с блоком try/except для проверки socket.create_connection
-        # 2. ПРОВЕРЯЕМ КОННЕКТ (только если страна подошла)
         try:
             if not is_ipv6(host):
                 resolved_ip = socket.gethostbyname(host)
@@ -164,34 +143,41 @@ def main():
         except:
             is_alive = False
 
+        # --- ЭТАП 2 И 3: ТОЛЬКО ЕСЛИ ЖИВОЙ ---
         if is_alive:
-            # 1. В базу (1.txt) сохраняем ЧИСТУЮ ссылку (без имени)
+            # Проверка шифрования
+            if "security=none" in base_part.lower():
+                print(f"❌ БЕЗ ШИФРОВАНИЯ: {host}")
+                continue
+
+            # Проверка страны
+            country = get_country_code(host)
+            if country not in ALLOWED_COUNTRIES:
+                print(f"🗑️ НЕ ТА СТРАНА ({country}): {host}")
+                continue 
+
+            # СОХРАНЕНИЕ РАБОЧЕГО
             working_for_base.append(base_part)
-            
-            # 2. Для подписки: берем ОРИГИНАЛЬНЫЙ link (со всеми флагами)
-            # Формируем правильный формат хоста (добавляем [] если это IPv6)
             ip_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
-            
-            # ВАЖНО: заменяем только часть @host:port на @ip:port
-            # Используем переменную 'endpoint', которую получили из extract_host_port
             sub_link = link.replace(endpoint, f"@{ip_str}:{port}", 1)
-            
-            # Пересобираем имя, сохраняя флаг
             final_link = rebuild_link_name(sub_link, f"wifi {counter}")
             working_for_sub.append(final_link)
-            
             print(f"✅ ОК ({country}): {host} -> wifi {counter}")
             counter += 1
 
         else:
-            # Сервер упал, но страна правильная -> даем шанс 48 часов
+            # ЛОГИКА GRACE PERIOD (из твоего исходного кода)
             fail_time = history.get(base_part, now)
             if now - fail_time < GRACE_PERIOD:
-                working_for_base.append(base_part)
-                new_history[base_part] = fail_time
-                working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
-                print(f"⏳ DOWN ({country}): {host}")
-                counter += 1
+                # Проверим страну даже для упавших, чтобы не держать мусор
+                country = get_country_code(host)
+                if country in ALLOWED_COUNTRIES:
+                    working_for_base.append(base_part)
+                    new_history[base_part] = fail_time
+                    working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
+                    print(f"⏳ DOWN ({country}): {host}")
+                    counter += 1
+
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")
         # --- КОНЕЦ БЛОКА ПРОВЕРКИ ---

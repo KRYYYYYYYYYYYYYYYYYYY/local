@@ -19,6 +19,10 @@ jobs:
           python-version: '3.10'
 
       # ТЕПЕРЬ СТАВИМ ТУТ (когда Python уже готов)
+      - name: Run checker
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Даем доступ к управлению задачами
+        run: python check.py
       
       - name: Install dependencies
         run: |

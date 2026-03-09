@@ -7,7 +7,6 @@ import urllib.parse
 import urllib.request
 import time
 import requests
-import subprocess
 
 # Настройки путей
 INPUT_FILE = 'test1/1.txt'
@@ -97,8 +96,11 @@ def fetch_external_servers() -> list:
     return all_configs
 
 def main():
-    blacklist = set()
+    import subprocess
     token = os.getenv("GH_TOKEN")
+    repo = os.getenv("GITHUB_REPOSITORY")
+    
+    blacklist = set()
     
     # 1. Читаем существующий файл (если есть)
     if os.path.exists('test1/blacklist.txt'):
@@ -106,12 +108,12 @@ def main():
             blacklist = {line.strip() for line in f if line.strip()}
 
     # 2. Проверяем галочки в GitHub Issue (если есть токен)
-    if token:
+    if token and repo: # Добавь проверку и на токен, и на репо
         try:
             # Ищем Issue с меткой 'control'
+            cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'body,number', '--limit', '1']
             issue_data = subprocess.check_output(
-                repo = os.getenv("GITHUB_REPOSITORY")
-                ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'body,number', '--limit', '1'],
+                cmd, 
                 env={**os.environ, "GH_TOKEN": token},
                 stderr=subprocess.DEVNULL
             ).decode()
@@ -248,9 +250,8 @@ def main():
         f.write(HEADER + "\n".join(working_for_sub))
 
     print(f"🏁 Готово! Подписка обновлена.")
-       # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---
     # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---
-    if token and repo:
+    if token and repo:  # Теперь repo точно определена
         try:
             # Нам нужно вытащить номер (number) той самой задачи, которую нашли в начале
             # Если ты не сохранил номер в переменную, можно найти его еще раз быстро:

@@ -162,7 +162,22 @@ def main():
             
             # ВАЖНО: заменяем только часть @host:port на @ip:port
             # Используем переменную 'endpoint', которую получили из extract_host_port
-            sub_link = link.replace(endpoint, f"@{ip_str}:{port}", 1)
+            parts = link.split("@", 1)
+            if len(parts) > 1:
+    # Разрезаем вторую часть по первому знаку "?"
+                after_host = parts[1].split("?", 1)
+    # Если параметры есть, берем их, если нет — ищем только имя после "#"
+                if len(after_host) > 1:
+                    params_part = "?" + after_host[1]
+                else:
+        # Случай, если параметров нет, но есть имя после #
+                    name_only = parts[1].split("#", 1)
+                    params_part = "#" + name_only[1] if len(name_only) > 1 else ""
+    
+                sub_link = f"{parts[0]}@{ip_str}:{port}{params_part}"
+            else:
+                sub_link = link
+
             
             # Пересобираем имя, сохраняя флаг
             final_link = rebuild_link_name(sub_link, f"wifi {counter}")

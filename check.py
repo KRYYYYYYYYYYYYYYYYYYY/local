@@ -1,6 +1,7 @@
 import socket
 import re
 import os
+import ssl
 import json
 import urllib.parse
 import urllib.request
@@ -123,74 +124,78 @@ def main():
     counter = 1
 
     print(f"🔄 Проверка {len(unique_links)} строк...")
-
+    
+    seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
     for link in unique_links:
         base_part = link.split("#", 1)[0].strip()
-        endpoint, host, port = extract_host_port(base_part)
         
+        # --- ФУНКЦИЯ 1: ВАЛИДАЦИЯ UUID ---
+        if not re.search(r'[a-f0-9\-]{36}@', base_part):
+            continue # Пропускаем ключи без пароля
+
+        endpoint, host, port = extract_host_port(base_part)
         if not endpoint or not host or not port:
             continue
 
-        # --- ЭТАП 1: ПРОВЕРКА ПОРТА ---
-        # --- ЭТАП 1: ГЛУБОКАЯ ПРОВЕРКА ПОРТА И HANDSHAKE ---
+        # --- ЭТАП 1: ПРОВЕРКА ПОРТА + TLS + ЗАДЕРЖКА ---
         resolved_ip = None
         is_alive = False
+        latency = 9999
+        
         try:
-            # Определяем тип адреса и делаем резолвинг (Хард-резолвинг)
-            if not is_ipv6(host):
-                resolved_ip = socket.gethostbyname(host)
-                addr_family = socket.AF_INET
-            else:
-                resolved_ip = host
-                addr_family = socket.AF_INET6
+            resolved_ip = socket.gethostbyname(host) if not is_ipv6(host) else host
             
-            # Создаем сокет для глубокой проверки
-            sock = socket.socket(addr_family, socket.SOCK_STREAM)
-            sock.settimeout(4.0) # Увеличили до 4.0 для надежности
+            # --- ФУНКЦИЯ 2: УДАЛЕНИЕ ДУБЛИКАТОВ ПО IP ---
+            if resolved_ip in seen_ips:
+                continue # Скипаем, если этот IP уже был проверен
             
-            # Пробуем подключиться
-            if sock.connect_ex((resolved_ip, int(port))) == 0:
-                try:
-                    # Имитируем начало данных (Handshake). 
-                    # Если провайдер блокирует протокол, сокет разорвет соединение здесь.
-                    sock.sendall(b'\x16\x03\x01\x00\x00') 
-                    is_alive = True
-                except:
-                    is_alive = False
-            sock.close()
+            start_time = time.time()
+            use_tls = "security=tls" in base_part.lower() or "security=reality" in base_part.lower()
+            
+            with socket.create_connection((resolved_ip, int(port)), timeout=4.0) as sock:
+                if use_tls:
+                    context = ssl.create_default_context()
+                    with context.wrap_socket(sock, server_hostname=host) as ssock:
+                        pass
+                else:
+                    sock.sendall(b'\x16\x03\x01\x00\x00')
+                
+                is_alive = True
+                latency = int((time.time() - start_time) * 1000)
+                seen_ips.add(resolved_ip) # Помечаем IP как рабочий
         except:
             is_alive = False
 
         # --- ЭТАП 2 И 3: ТОЛЬКО ЕСЛИ ЖИВОЙ ---
         if is_alive:
-            # Проверка шифрования
             if "security=none" in base_part.lower():
-                print(f"❌ БЕЗ ШИФРОВАНИЯ: {host}")
+                print(f"❌ НЕТ ШИФРОВАНИЯ: {host}")
                 continue
 
-            # Проверка страны
             country = get_country_code(host)
             if country not in ALLOWED_COUNTRIES:
-                print(f"🗑️ НЕ ТА СТРАНА ({country}): {host}")
-                continue 
+                continue
 
-            # СОХРАНЕНИЕ РАБОЧЕГО
             working_for_base.append(base_part)
-            # Формируем корректный IP для ссылки (IPv6 оборачиваем в скобки)
             ip_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
-            
             sub_link = link.replace(endpoint, f"@{ip_str}:{port}", 1)
-            final_link = rebuild_link_name(sub_link, f"wifi {counter}")
+            # Добавил latency в название, чтобы было видно пинг
+            final_link = rebuild_link_name(sub_link, f"wifi {counter} [{latency}ms]")
             working_for_sub.append(final_link)
             
             print(f"✅ ОК ({country}): {host} -> wifi {counter}")
             counter += 1
 
         else:
-            # ЛОГИКА GRACE PERIOD (из твоего исходного кода)
+            # --- ФУНКЦИЯ 3: АВТООЧИСТКА МУСОРА (7 дней) ---
             fail_time = history.get(base_part, now)
+            
+            if now - fail_time > 604800: # 7 суток
+                print(f"🗑️ УДАЛЕН (7 дней оффлайн): {host}")
+                continue # Ссылка больше не попадет в 1.txt
+
+            # ЛОГИКА GRACE PERIOD (твоя старая)
             if now - fail_time < GRACE_PERIOD:
-                # Проверим страну даже для упавших, чтобы не держать мусор
                 country = get_country_code(host)
                 if country in ALLOWED_COUNTRIES:
                     working_for_base.append(base_part)
@@ -198,10 +203,8 @@ def main():
                     working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
                     print(f"⏳ DOWN ({country}): {host}")
                     counter += 1
-
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")
-        # --- КОНЕЦ БЛОКА ПРОВЕРКИ ---
 
     # 3. Сохранение
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

@@ -7,6 +7,7 @@ import urllib.parse
 import urllib.request
 import time
 import requests
+import subprocess
 
 # Настройки путей
 INPUT_FILE = 'test1/1.txt'
@@ -101,6 +102,36 @@ def fetch_external_servers() -> list:
     return all_configs
 
 def main():
+    blacklist = set()
+    token = os.getenv("GH_TOKEN")
+    
+    # 1. Читаем существующий файл (если есть)
+    if os.path.exists('test1/blacklist.txt'):
+        with open('test1/blacklist.txt', 'r') as f:
+            blacklist = {line.strip() for line in f if line.strip()}
+
+    # 2. Проверяем галочки в GitHub Issue (если есть токен)
+    if token:
+        try:
+            # Ищем Issue с меткой 'control'
+            issue_data = subprocess.check_output(
+                ['gh', 'issue', 'list', '--label', 'control', '--json', 'body,number', '--limit', '1'],
+                env={**os.environ, "GH_TOKEN": token}
+            ).decode()
+            
+            if issue_data and issue_data != "[]":
+                issue = json.loads(issue_data)[0]
+                # Находим все ссылки, помеченные [x]
+                checked = re.findall(r'- \[x\] (vless://[^\s]+)', issue['body'])
+                for s in checked:
+                    clean_s = s.split('#')[0] # Берем только саму ссылку
+                    blacklist.add(clean_s)
+                
+                # Сохраняем обновленный черный список в файл
+                with open('test1/blacklist.txt', 'w') as f:
+                    f.write("\n".join(list(blacklist)))
+        except Exception as e:
+            print(f"⚠️ Ошибка чтения галочек: {e}")
     # 1. Загрузка базы и истории
     current_base = []
     if os.path.exists(INPUT_FILE):
@@ -128,6 +159,10 @@ def main():
     seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
     for link in unique_links:
         base_part = link.split("#", 1)[0].strip()
+                # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
+        if base_part in blacklist:
+            print(f"🚫 ЗАБЛОКИРОВАН ГАЛОЧКОЙ: {host}")
+            continue
         
         # --- ФУНКЦИЯ 1: ВАЛИДАЦИЯ UUID ---
         if not re.search(r'[a-f0-9\-]{36}@', base_part):
@@ -216,6 +251,26 @@ def main():
         f.write(HEADER + "\n".join(working_for_sub))
 
     print(f"🏁 Готово! Подписка обновлена.")
+       # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---
+    if token:
+        try:
+            # Формируем текст: [ ] для рабочих, [x] для тех, кто уже в черном списке
+            issue_body = "### Панель управления серверами\n"
+            issue_body += "Отметь [x] и сохрани, чтобы отправить в черный список:\n\n"
+            
+            # Добавляем рабочие серверы
+            for i, link in enumerate(working_for_base, 1):
+                status = "[x]" if link in blacklist else "[ ]"
+                issue_body += f"- {status} {link} (wifi {i})\n"
+
+            with open("issue_body.txt", "w") as f: f.write(issue_body)
+            
+            # Редактируем Issue (метка control должна быть создана в репо заранее)
+            subprocess.run(['gh', 'issue', 'edit', '--label', 'control', '--body-file', 'issue_body.txt'], 
+                           env={**os.environ, "GH_TOKEN": token})
+            print("📝 Список галочек в GitHub Issue обновлен.")
+        except Exception as e:
+            print(f"⚠️ Не удалось обновить Issue: {e}")
 
 if __name__ == "__main__":
     main()

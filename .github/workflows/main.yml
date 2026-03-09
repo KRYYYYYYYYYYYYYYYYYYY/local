@@ -38,14 +38,13 @@ jobs:
           git config --global user.name "Checker-Bot"
           git config --global user.email "bot@github.com"
           
-          # 1. Сначала "добавляем" все изменения в индекс
+          # 1. Добавляем и СРАЗУ коммитим локально (это очистит индекс)
           git add .
+          git commit -m "Auto-update: DB and Subscription" || echo "No changes to commit"
           
-          # 2. Теперь делаем pull с ребейзом (теперь гит не будет ругаться на незатейдженные файлы)
-          git pull --rebase origin main
+          # 2. Теперь подтягиваем изменения из репозитория
+          # Стратегия -X theirs скажет гиту: "Если есть конфликт в файлах, мои (новые) важнее"
+          git pull --rebase -X theirs origin main
           
-          # 3. Коммитим (если есть что коммитить)
-          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-update: DB and Subscription"
-          
-          # 4. Пушим
+          # 3. Пушим
           git push origin main

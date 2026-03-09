@@ -122,23 +122,35 @@ def main():
     print(f"🔄 Проверка {len(unique_links)} строк...")
 
     for link in unique_links:
+        # Извлекаем основную часть ссылки до названия (после #)
         base_part = link.split("#", 1)[0].strip()
-        endpoint, host, port = extract_host_port(base_part)
         
+        # 1. ПРОВЕРКА ШИФРОВАНИЯ (Безопасность прежде всего)
+        # Ищем только надежные протоколы: TLS или REALITY
+        is_secure = ("security=tls" in base_part.lower()) or ("security=reality" in base_part.lower())
+        
+        if not is_secure:
+            # Если шифрования нет (security=none или пусто), выкидываем сразу
+            print(f"❌ НЕНАДЕЖНО (нет TLS/Reality): {base_part[:40]}...")
+            continue
+
+        # Извлекаем хост и порт для дальнейших проверок
+        endpoint, host, port = extract_host_port(base_part)
         if not endpoint or not host or not port:
             continue
 
-        # 1. СРАЗУ ПРОВЕРЯЕМ СТРАНУ
+        # 2. ПРОВЕРКА СТРАНЫ (География)
         country = get_country_code(host)
         
-        # Если страна НЕ в белом списке — удаляем (просто не добавляем никуда)
+        # Если страна не входит в список ALLOWED_COUNTRIES — удаляем
         if country not in ALLOWED_COUNTRIES:
-            print(f"🗑️ Удален (неподходящая страна {country}): {host}")
-            continue # Переходим к следующей ссылке, в базу это не попадет
+            print(f"🗑️ СТРАНА МИМО ({country}): {host}")
+            continue 
 
+        # 3. ПРОВЕРКА КОННЕКТА (Техническая доступность)
         resolved_ip = None
         is_alive = False
-
+        # ... далее ваш код с блоком try/except для проверки socket.create_connection
         # 2. ПРОВЕРЯЕМ КОННЕКТ (только если страна подошла)
         try:
             if not is_ipv6(host):

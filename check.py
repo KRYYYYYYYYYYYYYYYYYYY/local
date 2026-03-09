@@ -38,7 +38,7 @@ def rebuild_link_name(link: str, new_name: str) -> str:
     
     # Регулярка ищет эмодзи или спецсимволы в начале строки
     # (обычно это и есть флаг)
-    match = re.match(r"^([^\w\s\d]|[^\x00-\x7F])+", fragment_dec)
+    match = re.match(r"^[\s]*([^\w\s\d]|[^\x00-\x7F]|\U0001F1E6-\U0001F1FF)+", fragment_dec)
     if match:
         prefix = match.group(0).strip()
         # Возвращаем: База#Флаг + пробел + НовоеИмя
@@ -52,7 +52,7 @@ def is_ipv6(host: str) -> bool:
 
 def extract_host_port(link: str):
     # Поиск для обычного хоста или домена
-    match = re.match(r"^[\s]*([^\w\s\d]|[^\x00-\x7F]|\U0001F1E6-\U0001F1FF)+", fragment_dec)
+    match = re.search(r"(@)([\w.-]+):(\d+)", link)
     if match:
         # group(0) содержит '@host:port', group(2) - host, group(3) - port
         return match.group(0), match.group(2), match.group(3)

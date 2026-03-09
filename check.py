@@ -110,7 +110,8 @@ def main():
         try:
             # Ищем Issue с меткой 'control'
             issue_data = subprocess.check_output(
-                ['gh', 'issue', 'list', '--label', 'control', '--json', 'body,number', '--limit', '1'],
+                repo = os.getenv("GITHUB_REPOSITORY")
+                ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'body,number', '--limit', '1'],
                 env={**os.environ, "GH_TOKEN": token}
             ).decode()
             

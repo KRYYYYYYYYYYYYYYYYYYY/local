@@ -249,23 +249,28 @@ def main():
 
     print(f"🏁 Готово! Подписка обновлена.")
        # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---
-    if token:
+    # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---
+    if token and repo:
         try:
-            # Формируем текст: [ ] для рабочих, [x] для тех, кто уже в черном списке
-            issue_body = "### Панель управления серверами\n"
-            issue_body += "Отметь [x] и сохрани, чтобы отправить в черный список:\n\n"
+            # Нам нужно вытащить номер (number) той самой задачи, которую нашли в начале
+            # Если ты не сохранил номер в переменную, можно найти его еще раз быстро:
+            find_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'number', '--limit', '1']
+            out = subprocess.check_output(find_cmd, env={**os.environ, "GH_TOKEN": token}).decode()
             
-            # Добавляем рабочие серверы
-            for i, link in enumerate(working_for_base, 1):
-                status = "[x]" if link in blacklist else "[ ]"
-                issue_body += f"- {status} {link} (wifi {i})\n"
+            if out and out != "[]":
+                issue_number = str(json.loads(out)[0]['number'])
+                
+                issue_body = "### Панель управления серверами\nОтметь [x] и сохрани, чтобы отправить в черный список:\n\n"
+                for i, link in enumerate(working_for_base, 1):
+                    status = "[x]" if link in blacklist else "[ ]"
+                    issue_body += f"- {status} {link} (wifi {i})\n"
 
-            with open("issue_body.txt", "w") as f: f.write(issue_body)
-            
-            # Редактируем Issue (метка control должна быть создана в репо заранее)
-            subprocess.run(['gh', 'issue', 'edit', '--label', 'control', '--body-file', 'issue_body.txt'], 
-                           env={**os.environ, "GH_TOKEN": token})
-            print("📝 Список галочек в GitHub Issue обновлен.")
+                with open("issue_body.txt", "w") as f: f.write(issue_body)
+                
+                # Добавлен номер задачи и --repo
+                subprocess.run(['gh', 'issue', 'edit', issue_number, '--repo', repo, '--body-file', 'issue_body.txt'], 
+                               env={**os.environ, "GH_TOKEN": token})
+                print(f"📝 Список галочек в Issue #{issue_number} обновлен.")
         except Exception as e:
             print(f"⚠️ Не удалось обновить Issue: {e}")
 

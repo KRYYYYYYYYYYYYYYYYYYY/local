@@ -38,10 +38,14 @@ jobs:
           git config --global user.name "Checker-Bot"
           git config --global user.email "bot@github.com"
           
-          # --- ДОБАВЬ ЭТУ СТРОКУ ТУТ ---
-          git pull --rebase origin main
-          # -----------------------------
-          
+          # 1. Сначала "добавляем" все изменения в индекс
           git add .
-          git commit -m "Auto-update: DB and Subscription" || exit 0
-          git push
+          
+          # 2. Теперь делаем pull с ребейзом (теперь гит не будет ругаться на незатейдженные файлы)
+          git pull --rebase origin main
+          
+          # 3. Коммитим (если есть что коммитить)
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-update: DB and Subscription"
+          
+          # 4. Пушим
+          git push origin main

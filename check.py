@@ -10,7 +10,14 @@ import time
 INPUT_FILE = 'test1/1.txt'
 OUTPUT_FILE = 'kr/mob/wifi.txt'
 STATUS_FILE = 'test1/status.json'
-EXTERNAL_SOURCE_URL = "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt"
+
+EXTERNAL_SOURCE_URL = [
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt,
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS%2BAll_RUS.txt"
+]
+
 GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
 
 HEADER = """# profile-title: 🏴WIFI🏴
@@ -74,12 +81,20 @@ def get_country_code(host: str) -> str:
     return "Unknown"
 
 def fetch_external_servers() -> list:
-    if not EXTERNAL_SOURCE_URL.strip(): return []
-    try:
-        print(f"📥 Загрузка из {EXTERNAL_SOURCE_URL}...")
-        with urllib.request.urlopen(EXTERNAL_SOURCE_URL, timeout=8) as response:
-            return response.read().decode("utf-8").splitlines()
-    except: return []
+    # Если вдруг в переменной осталась просто строка, превращаем её в список для совместимости
+    urls = [EXTERNAL_SOURCE_URL] if isinstance(EXTERNAL_SOURCE_URL, str) else EXTERNAL_SOURCE_URL
+    
+    all_configs = []
+    for url in urls:
+        if not url.strip(): continue
+        try:
+            print(f"📥 Загрузка из {url}...")
+            with urllib.request.urlopen(url, timeout=8) as response:
+                configs = response.read().decode("utf-8").splitlines()
+                all_configs.extend(configs)
+        except Exception as e:
+            print(f"❌ Ошибка загрузки {url}: {e}")
+    return all_configs
 
 def main():
     # 1. Загрузка базы и истории

@@ -161,7 +161,7 @@ def main():
         base_part = link.split("#", 1)[0].strip()
                 # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
         if base_part in blacklist:
-            print(f"🚫 ЗАБЛОКИРОВАН ГАЛОЧКОЙ: {host}")
+            print(f"🚫 ЗАБЛОКИРОВАН ГАЛОЧКОЙ: {base_part[:40]}...")
             continue
         
         # --- ФУНКЦИЯ 1: ВАЛИДАЦИЯ UUID ---

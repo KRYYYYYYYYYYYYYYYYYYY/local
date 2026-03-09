@@ -88,7 +88,7 @@ def fetch_external_servers() -> list:
     for url in urls:
         if not url.strip(): continue
         try:
-            print(f"📥 Загрузка из {url}...")
+            print(f"📥 Загрузка из {url}")
             with urllib.request.urlopen(url, timeout=8) as response:
                 configs = response.read().decode("utf-8").splitlines()
                 all_configs.extend(configs)

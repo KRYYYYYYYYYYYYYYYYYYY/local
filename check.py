@@ -52,7 +52,7 @@ def is_ipv6(host: str) -> bool:
 
 def extract_host_port(link: str):
     # Поиск для обычного хоста или домена
-    match = re.search(r"(@)([\w.-]+):(\d+)", link)
+    match = re.match(r"^[\s]*([^\w\s\d]|[^\x00-\x7F]|\U0001F1E6-\U0001F1FF)+", fragment_dec)
     if match:
         # group(0) содержит '@host:port', group(2) - host, group(3) - port
         return match.group(0), match.group(2), match.group(3)

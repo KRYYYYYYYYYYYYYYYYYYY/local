@@ -28,7 +28,8 @@ jobs:
 
       - name: Run checker
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Даем доступ к управлению задачами
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GH_PROMPT_DISABLED: 1 # Даем доступ к управлению задачами
         run: python check.py
 
       - name: Commit and Push changes

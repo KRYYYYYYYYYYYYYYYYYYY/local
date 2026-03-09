@@ -38,7 +38,7 @@ def rebuild_link_name(link: str, new_name: str) -> str:
     
     # Регулярка ищет эмодзи или спецсимволы в начале строки
     # (обычно это и есть флаг)
-    match = re.match(r"^[\s]*([^\w\s\d]|[^\x00-\x7F]|\U0001F1E6-\U0001F1FF)+", fragment_dec)
+    match = re.match(r"^([^\w\s\d]|[^\x00-\x7F])+", fragment_dec)
     if match:
         prefix = match.group(0).strip()
         # Возвращаем: База#Флаг + пробел + НовоеИмя
@@ -88,7 +88,7 @@ def fetch_external_servers() -> list:
     for url in urls:
         if not url.strip(): continue
         try:
-            print(f"📥 Загрузка из {url}")
+            print(f"📥 Загрузка из {url}...")
             with urllib.request.urlopen(url, timeout=8) as response:
                 configs = response.read().decode("utf-8").splitlines()
                 all_configs.extend(configs)
@@ -162,22 +162,7 @@ def main():
             
             # ВАЖНО: заменяем только часть @host:port на @ip:port
             # Используем переменную 'endpoint', которую получили из extract_host_port
-            parts = link.split("@", 1)
-            if len(parts) > 1:
-    # Разрезаем вторую часть по первому знаку "?"
-                after_host = parts[1].split("?", 1)
-    # Если параметры есть, берем их, если нет — ищем только имя после "#"
-                if len(after_host) > 1:
-                    params_part = "?" + after_host[1]
-                else:
-        # Случай, если параметров нет, но есть имя после #
-                    name_only = parts[1].split("#", 1)
-                    params_part = "#" + name_only[1] if len(name_only) > 1 else ""
-    
-                sub_link = f"{parts[0]}@{ip_str}:{port}{params_part}"
-            else:
-                sub_link = link
-
+            sub_link = link.replace(endpoint, f"@{ip_str}:{port}", 1)
             
             # Пересобираем имя, сохраняя флаг
             final_link = rebuild_link_name(sub_link, f"wifi {counter}")

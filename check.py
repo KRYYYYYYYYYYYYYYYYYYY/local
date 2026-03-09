@@ -112,7 +112,8 @@ def main():
             issue_data = subprocess.check_output(
                 repo = os.getenv("GITHUB_REPOSITORY")
                 ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'body,number', '--limit', '1'],
-                env={**os.environ, "GH_TOKEN": token}
+                env={**os.environ, "GH_TOKEN": token},
+                stderr=subprocess.DEVNULL
             ).decode()
             
             if issue_data and issue_data != "[]":

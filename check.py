@@ -264,6 +264,12 @@ def main():
     # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---
     if token and repo:  # Теперь repo точно определена
         try:
+                        # Получаем текущее время (МСК +3 или по UTC, как на сервере)
+            update_time = time.strftime("%d.%m.%Y %H:%M:%S")
+            
+            issue_body = f"### 🎮 Панель управления серверами\n"
+            issue_body += f"🕒 **Последнее обновление:** `{update_time}`\n\n" # <--- ДОБАВЬ ЭТО
+            issue_body += "Отметь [x] и сохрани, чтобы отправить в черный список:\n\n---\n\n"
             # Нам нужно вытащить номер (number) той самой задачи, которую нашли в начале
             # Если ты не сохранил номер в переменную, можно найти его еще раз быстро:
             find_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'number', '--limit', '1']
@@ -272,11 +278,12 @@ def main():
             if out and out != "[]":
                 issue_number = str(json.loads(out)[0]['number'])
                 
-                issue_body = "### Панель управления серверами\nОтметь [x] и сохрани, чтобы отправить в черный список:\n\n"
                 for i, link in enumerate(working_for_base, 1):
                     status = "[x]" if link in blacklist else "[ ]"
-                    issue_body += f"- {status} {link} (wifi {i})\n"
-
+                    issue_body += f"- {status} {link} (wifi {i})\n\n"
+            
+                    # ЛИНИЯ-РАЗДЕЛИТЕЛЬ ПОСЛЕ КАЖДОЙ ССЫЛКИ
+                    issue_body += "---\n\n"
                 with open("issue_body.txt", "w") as f: f.write(issue_body)
                 
                 # Добавлен номер задачи и --repo

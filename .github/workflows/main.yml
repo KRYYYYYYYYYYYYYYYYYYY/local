@@ -8,7 +8,8 @@ jobs:
   update:
     runs-on: ubuntu-latest
     permissions:
-      contents: write      # Важно: разрешаем боту изменять файлы в репо
+      contents: write
+      issues: write # Важно: разрешаем боту изменять файлы в репо
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

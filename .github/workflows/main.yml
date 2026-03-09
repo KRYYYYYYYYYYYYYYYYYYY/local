@@ -32,6 +32,11 @@ jobs:
         run: |
           git config --global user.name "Checker-Bot"
           git config --global user.email "bot@github.com"
+          
+          # --- ДОБАВЬ ЭТУ СТРОКУ ТУТ ---
+          git pull --rebase origin main
+          # -----------------------------
+          
           git add .
           git commit -m "Auto-update: DB and Subscription" || exit 0
           git push

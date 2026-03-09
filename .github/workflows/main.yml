@@ -10,6 +10,11 @@ jobs:
     permissions:
       contents: write      # Важно: разрешаем боту изменять файлы в репо
     steps:
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests cryptography
+    
       - name: Checkout code
         uses: actions/checkout@v3
 

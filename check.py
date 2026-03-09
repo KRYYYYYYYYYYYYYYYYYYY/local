@@ -14,6 +14,11 @@ OUTPUT_FILE = 'kr/mob/wifi.txt'
 STATUS_FILE = 'test1/status.json'
 
 EXTERNAL_SOURCE_URL = [
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS%2BAll_RUS.txt",
+    "https://raw.githubusercontent.com/KiryaScript/white-lists/refs/heads/main/githubmirror/26.txt",
+    "https://raw.githubusercontent.com/KiryaScript/white-lists/refs/heads/main/githubmirror/27.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt"
 ]
 
@@ -221,12 +226,18 @@ def main():
             counter += 1
 
         else:
-            # --- ФУНКЦИЯ 3: АВТООЧИСТКА МУСОРА (7 дней) ---
+            # --- ФУНКЦИЯ 3: АВТООЧИСТКА МУСОРА (1 день) ---
             fail_time = history.get(base_part, now)
             
-            if now - fail_time > 604800: # 7 суток
-                print(f"🗑️ УДАЛЕН (7 дней оффлайн): {host}")
-                continue # Ссылка больше не попадет в 1.txt
+            if now - fail_time > 86400: # 1 день (86400 сек)
+                print(f"🗑️ УДАЛЕН И ЗАБЛОКИРОВАН (1 день оффлайн): {host}")
+                
+                # --- ДОБАВЛЯЕМ В BLACKLIST АВТОМАТИЧЕСКИ ---
+                with open('test1/blacklist.txt', 'a') as bl:
+                    bl.write(base_part + "\n")
+                # -------------------------------------------
+                
+                continue # Ссылка больше не попадет в 1.txt и в проверку
 
             # ЛОГИКА GRACE PERIOD (твоя старая)
             if now - fail_time < GRACE_PERIOD:

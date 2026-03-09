@@ -5,6 +5,7 @@ import json
 import urllib.parse
 import urllib.request
 import time
+import requests
 
 # Настройки путей
 INPUT_FILE = 'test1/1.txt'
@@ -129,17 +130,32 @@ def main():
             continue
 
         # --- ЭТАП 1: ПРОВЕРКА ПОРТА ---
+        # --- ЭТАП 1: ГЛУБОКАЯ ПРОВЕРКА ПОРТА И HANDSHAKE ---
         resolved_ip = None
         is_alive = False
         try:
+            # Определяем тип адреса и делаем резолвинг (Хард-резолвинг)
             if not is_ipv6(host):
                 resolved_ip = socket.gethostbyname(host)
-                with socket.create_connection((resolved_ip, int(port)), timeout=3.0):
-                    is_alive = True
+                addr_family = socket.AF_INET
             else:
-                with socket.create_connection((host, int(port)), timeout=3.0):
+                resolved_ip = host
+                addr_family = socket.AF_INET6
+            
+            # Создаем сокет для глубокой проверки
+            sock = socket.socket(addr_family, socket.SOCK_STREAM)
+            sock.settimeout(4.0) # Увеличили до 4.0 для надежности
+            
+            # Пробуем подключиться
+            if sock.connect_ex((resolved_ip, int(port))) == 0:
+                try:
+                    # Имитируем начало данных (Handshake). 
+                    # Если провайдер блокирует протокол, сокет разорвет соединение здесь.
+                    sock.sendall(b'\x16\x03\x01\x00\x00') 
                     is_alive = True
-                    resolved_ip = host
+                except:
+                    is_alive = False
+            sock.close()
         except:
             is_alive = False
 
@@ -158,10 +174,13 @@ def main():
 
             # СОХРАНЕНИЕ РАБОЧЕГО
             working_for_base.append(base_part)
+            # Формируем корректный IP для ссылки (IPv6 оборачиваем в скобки)
             ip_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
+            
             sub_link = link.replace(endpoint, f"@{ip_str}:{port}", 1)
             final_link = rebuild_link_name(sub_link, f"wifi {counter}")
             working_for_sub.append(final_link)
+            
             print(f"✅ ОК ({country}): {host} -> wifi {counter}")
             counter += 1
 

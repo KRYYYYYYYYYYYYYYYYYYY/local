@@ -16,8 +16,10 @@ def extract_host_port(link):
 def is_pinned(base_part):
     if not os.path.exists(PINNED_FILE): return False
     with open(PINNED_FILE, 'r', encoding='utf-8') as f:
-        return base_part in f.read()
-
+        # Читаем файл и для каждой строки берем только часть до знака #
+        pinned_bases = [line.split('#')[0].strip() for line in f if 'vless://' in line]
+        return base_part in pinned_bases
+        
 def add_to_blacklist(base_part):
     existing = set()
     if os.path.exists(BLACKLIST_FILE):
@@ -45,11 +47,13 @@ def remove_from_all(base_part):
 def deep_kill_check(link):
     base_part = link.split("#")[0].strip()
     
-    # --- ДОБАВЛЕН ВЫВОД ДЛЯ ЗАКРЕПОВ ---
+    # --- УЛУЧШЕННЫЙ ИММУНИТЕТ ---
     if is_pinned(base_part): 
-        print(f"🛡️ ЗАКРЕП ПРОПУЩЕН (ИММУНИТЕТ): {base_part[:30]}...") 
+        # Если это закреп, мы возвращаем True, как будто он прошел все проверки идеально
+        print(f"🛡️ [MONITOR] ЗАКРЕП ИГНОРИРУЕТСЯ: {base_part[:30]}...") 
         return True, 200 
     
+    # Дальше идет обычная проверка для всех остальных...
     host, port = extract_host_port(base_part)
 
     if not host: return False, 404

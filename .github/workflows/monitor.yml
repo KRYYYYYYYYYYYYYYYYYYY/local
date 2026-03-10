@@ -7,6 +7,10 @@ concurrency:
 on:
   schedule:
     - cron: '*/15 * * * *' # Запуск каждые 15 минут
+  workflow_run:           # ПО СИГНАЛУ
+    workflows: ["Auto Update VPN"] # Название твоего основного воркфлоу
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:

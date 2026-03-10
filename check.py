@@ -423,4 +423,5 @@ def main():
         except Exception as e:
             print(f"⚠️ Не удалось обновить Issue: {e}")
 
-if __name__ == "
+if __name__ == "__main__":
+    main()

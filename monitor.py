@@ -39,7 +39,7 @@ def remove_from_all(base_part):
 
 def deep_kill_check(link):
     base_part = link.split("#")[0].strip()
-    if is_pinned(base_part): return True, 0 # ИММУНИТЕТ
+    if is_pinned(base_part): return True, 200 # ИСПРАВЛЕНО: добавил второе число
     
     host, port = extract_host_port(base_part)
     if not host: return False, 404
@@ -72,22 +72,27 @@ def main_monitor():
                 with open(f, 'r', encoding='utf-8') as file:
                     all_to_check.extend([l.strip() for l in file if 'vless://' in l])
         
-        for link in set(all_to_check):
+         for link in set(all_to_check):
             is_ok, status_code = deep_kill_check(link)
             if not is_ok:
                 base = link.split("#")[0].strip()
-                # 3. ВЫКИДЫВАЕМ ИЗ СПИСКОВ В ЛЮБОМ СЛУЧАЕ
+                
+                # 1. УДАЛЯЕМ ВЕЗДЕ (из wifi.txt, deferred.txt, 1.txt)
                 remove_from_all(base)
                 
-                # 4. В БАН ТОЛЬКО ЕСЛИ СДОХ ИЛИ > 1000мс
-                if status_code == 404 or status_code == 1001:
-                    print(f"💀 КИЛЛЕР (БАН): {base[:30]} - Сдох или >1000мс")
+                # 2. В БАН ТОЛЬКО ЕСЛИ НЕДОСТУПЕН (Н/Д)
+                if status_code == 404:
+                    print(f"💀 КИЛЛЕР (БАН): {base[:30]} - СДОХ (Н/Д)")
                     add_to_blacklist(base)
+                
+                # 3. ЕСЛИ ТОРМОЗ (>1000мс) - ПРОСТО УДАЛИЛИ И ВСЁ
+                elif status_code == 1001:
+                    print(f"🐢 ТОРМОЗ: {base[:30]} - Удален из списков (>1000мс), НЕ забанен")
+                
                 else:
-                    # Если какая-то другая ошибка (джиттер и т.д.) - просто выкидываем
-                    print(f"⚠️ ВЫБРОС (VETTED): {base[:30]} - Не прошел проверку, но жив")
+                    print(f"⚠️ ВЫБРОС: {base[:30]} - Нестабилен, удален из списков")
         
-        time.sleep(60) # Пауза между кругами ада
+        time.sleep(60) # Пауза между кругами ада # Пауза между кругами ада
 
 if __name__ == "__main__":
     main_monitor()

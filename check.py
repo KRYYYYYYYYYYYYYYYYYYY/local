@@ -421,7 +421,7 @@ def main():
     # Для отладки в консоли
     print(f"🏁 Итог за запуск:")
     print(f"✅ В подписке (wifi.txt): {len(final_to_sub)}")
-    print(f"📦 В отложенных (deferred.txt): {len(deferred_final)} (из них {len(new_deferred)} не проверялись)")------------------
+    print(f"📦 В отложенных (deferred.txt): {len(deferred_final)} (из них {len(new_deferred)} не проверялись)")
     
     # 3. Сохранение (ТВОЙ БЛОК БЕЗ ИЗМЕНЕНИЙ НАДПИСЕЙ)
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

@@ -265,6 +265,9 @@ def main():
                 break
 
         if found_pinned_full:
+            
+            seen_parts.add(base_part)
+            
             working_for_base.append(base_part)
             
             # Извлекаем текущее имя (там может быть флаг, если он был вpinned.txt)

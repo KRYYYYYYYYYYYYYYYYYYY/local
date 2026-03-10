@@ -72,7 +72,7 @@ def main_monitor():
         
         for link in set(all_to_check):
             if not deep_kill_check(link):
-                base = link.split("#")[0].strip()
+                base = link.split("#")[0]
                 print(f"💀 КИЛЛЕР: Удаляю {base[:30]}")
                 remove_from_all(base)
                 add_to_blacklist(base)

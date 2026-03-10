@@ -28,21 +28,22 @@ ALLOWED_COUNTRIES = {"US", "DE", "NL", "GB", "FR", "FI", "SG", "JP", "PL", "TR"}
 
 def rebuild_link_name(link: str, new_name: str) -> str:
     base, _, fragment = link.partition("#")
+    
+    # Если это уже закреп (есть слово FIXED), возвращаем как есть
+    if fragment and "FIXED" in urllib.parse.unquote(fragment):
+        return link
+
     if not fragment:
         return f"{base}#{urllib.parse.quote(new_name)}"
 
-    # Декодируем фрагмент (то, что после #), чтобы найти флаг
     fragment_dec = urllib.parse.unquote(fragment)
     
-    # Регулярка ищет эмодзи или спецсимволы в начале строки
-    # (обычно это и есть флаг)
+    # Пытаемся сохранить флаг/эмодзи, если он есть
     match = re.match(r"^([^\w\s\d]|[^\x00-\x7F])+", fragment_dec)
     if match:
         prefix = match.group(0).strip()
-        # Возвращаем: База#Флаг + пробел + НовоеИмя
         return f"{base}#{urllib.parse.quote(prefix + ' ' + new_name)}"
     
-    # Если флага нет, просто ставим имя
     return f"{base}#{urllib.parse.quote(new_name)}"
 
 def is_ipv6(host: str) -> bool:
@@ -229,22 +230,25 @@ def main():
     
     print(f"🔄 Проверка {len(unique_links)} строк")
     # ----------------------------------------------------------
+# --- ЦИКЛ ПРОВЕРКИ ---
     for link in unique_links:
         clean_link = link.replace("- [x] ", "").replace("- [ ] ", "").strip()
+        # Извлекаем чистую базу для сравнения (всё до #)
         base_part = clean_link.split("#", 1)[0].strip()
         
-        # --- ИММУНИТЕТ ДЛЯ ЗАКРЕПЛЕННЫХ ---
-        if base_part in pinned_list:
+        # Проверяем, есть ли эта база в списке закрепов
+        # Мы ищем base_part в pinned_list, где тоже могут быть полные ссылки
+        is_pinned = any(base_part in p for p in pinned_list)
+
+        if is_pinned:
+            # Находим оригинальную строку из pinned.txt, чтобы сохранить флаги и имя
+            original_pinned = next((p for p in pinned_list if base_part in p), clean_link)
+            
             working_for_base.append(base_part)
+            working_for_sub.append(original_pinned) # Сохраняем как есть!
             
-            # берем ссылку полностью (с флагом)
-            original_with_flag = clean_link
-            
-            final_link = original_with_flag
-            working_for_sub.append(final_link)
-            
-            print(f"✅ ЗАКРЕП СОХРАНЕН С ФЛАГОМ: {base_part[:30]}...")
-            counter += 1
+            print(f"✅ ЗАКРЕП СОХРАНЕН (БЕЗ ИЗМЕНЕНИЙ): {original_pinned[:50]}...")
+            # counter не увеличиваем для закрепов, чтобы не сбивать нумерацию обычных wifi
             continue
         # ---------------------------------------------------------
     

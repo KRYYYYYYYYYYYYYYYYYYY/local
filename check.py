@@ -225,16 +225,28 @@ def main():
             with open(STATUS_FILE, "r") as f: history = json.load(f)
         except: history = {}
 
-    external_servers = fetch_external_servers()
-    all_lines = pinned_list + current_base + deferred_base + external_servers
-    unique_links = list(dict.fromkeys(line.strip() for line in all_lines if "vless://" in line))
+# --- ИЗМЕНЕНИЕ ТУТ: МЕНЯЕМ ПОРЯДОК ОЧЕРЕДИ ---
+    # Сначала отложенные с прошлого раза, потом новые, потом старые из базы
+    all_lines = deferred_base + external_servers + current_base
+    
+    # Убираем дубликаты, сохраняя этот новый приоритетный порядок
+    unique_links = []
+    seen_parts = set()
+    for l in all_lines:
+        base = l.split("#")[0].strip()
+        if base not in seen_parts and "vless://" in l:
+            unique_links.append(l)
+            seen_parts.add(base)
     
     working_for_base = []
     working_for_sub = []
+    new_deferred = []   # <--- ДОБАВЬ ЭТО (сюда пойдут те, кто не влез в лимит)
     new_history = {}
     now = time.time()
     counter = 1
-    seen_ips = set()  # <--- перед циклом
+    checked_today = 0   # <--- ДОБАВЬ ЭТО (счетчик реальных проверок)
+    MAX_TO_CHECK = 300  # <--- ДОБАВЬ ЭТО (лимит, чтобы скрипт не шел до конца очереди вечно)
+    seen_ips = set()
     # ----------------------------------------------------------
 # --- ЦИКЛ ПРОВЕРКИ ---
     print(f"📡 Начинаю проверку. Всего закрепов в памяти: {len(pinned_list)}")
@@ -264,6 +276,19 @@ def main():
             
             print(f"💎 [PINNED] OK: {current_name}")
             continue # Уходим на следующий круг
+
+            # Фильтруем мусор
+        if base_part in blacklist:
+            continue
+
+        # Проверяем, не достигли ли мы лимита 300 проверок
+        if checked_today >= MAX_TO_CHECK:
+            new_deferred.append(link) # Записываем в список "на завтра"
+            continue # Пропускаем саму проверку и идем к следующей ссылке
+            
+        checked_today += 1 # Если прошли фильтры, увеличиваем счетчик и идем пинговать
+        
+        # --- КОНЕЦ НОВОГО КУСКА ---
     
 # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
         if base_part in blacklist:
@@ -378,15 +403,21 @@ def main():
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")
     # --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ДОБАВИТЬ ПЕРЕД СОХРАНЕНИЕМ) ---
-    # 1. Берем всё, что прошло проверку (working_for_sub)
-    # 2. Первые 200 — в подписку, остальное — в отложенные
-    final_to_sub = working_for_sub[:200]
-    deferred_links = working_for_sub[200:]
+# 1 Формируем финальный список отложенных:
+    #Те, до кого не дошла очередь (new_deferred) + Те, кто прошел проверку, но не влез в топ-200 (working_for_sub[200:])
+    deferred_final = new_deferred + working_for_sub[200:]
     
-    # Сохраняем отложенные (те, что не влезли)
+    # 2. Берем первые 200 для подписки
+    final_to_sub = working_for_sub[:200]
+    
+    # 3. Сохраняем отложенные (на завтра)
     with open('test1/deferred.txt', "w", encoding="utf-8") as f:
-        f.write("\n".join(deferred_links))
-    # -----------------------------------------------------------
+        f.write("\n".join(deferred_final))
+
+    # Для отладки в консоли
+    print(f"🏁 Итог за запуск:")
+    print(f"✅ В подписке (wifi.txt): {len(final_to_sub)}")
+    print(f"📦 В отложенных (deferred.txt): {len(deferred_final)} (из них {len(new_deferred)} не проверялись)")------------------
     
     # 3. Сохранение (ТВОЙ БЛОК БЕЗ ИЗМЕНЕНИЙ НАДПИСЕЙ)
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

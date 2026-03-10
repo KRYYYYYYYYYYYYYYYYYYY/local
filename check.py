@@ -377,13 +377,27 @@ def main():
             rank = ranking_db.get(base_part, 0) + 1
             ranking_db[base_part] = rank
 
+            # Вывод прогресса в консоль
             print(f"📈 Рейтинг {host}: {rank}/12")
             
-            if rank >= 12 and base_part not in vetted_list:
-                with open('test1/vetted.txt', 'a', encoding='utf-8') as vf:
-                    vf.write(base_part + "\n")
-                vetted_list.append(base_part)
-                print(f"🎖️ ПОВЫШЕН ДО VETTED (рейтинг {rank}): {host}")
+            # Логика повышения
+            if rank >= 12:
+                # 1. Читаем файл целиком, чтобы проверить наличие по base_part
+                vetted_content = ""
+                if os.path.exists('test1/vetted.txt'):
+                    with open('test1/vetted.txt', 'r', encoding='utf-8') as vf:
+                        vetted_content = vf.read()
+                
+                # 2. Если адреса (base_part) еще нет в файле — записываем
+                if base_part not in vetted_content:
+                    with open('test1/vetted.txt', 'a', encoding='utf-8') as vf:
+                        vf.write(link + "\n") # Записываем ПОЛНУЮ ссылку с флагом/именем
+                    
+                    # Обновляем vetted_list в памяти, чтобы не читать файл снова в этом же запуске
+                    if base_part not in vetted_list:
+                        vetted_list.append(base_part)
+                        
+                    print(f"🎖️ ПОВЫШЕН ДО VETTED (рейтинг {rank}): {host}")
     
         # --- ЭТАП 3: ЕСЛИ СЕРВЕР НЕ ОТВЕЧАЕТ ---
         else:

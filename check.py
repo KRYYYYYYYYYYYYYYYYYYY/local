@@ -131,7 +131,7 @@ def main():
     pinned_list = []
     if os.path.exists('test1/pinned.txt'):
         with open('test1/pinned.txt', 'r', encoding='utf-8') as f:
-            # Отрезаем всё после # при загрузке, чтобы в памяти были только чистые ссылки
+            # Отрезаем хвост после # ТОЛЬКО в этой переменной (в файле всё останется!)
             pinned_list = [line.split('#')[0].strip() for line in f if line.strip()]
 
     # 2. Загружаем Отложенные (Deferred)
@@ -230,19 +230,18 @@ def main():
     for link in unique_links:
         base_part = link.split("#", 1)[0].strip()
         
-        # --- ИММУНИТЕТ ДЛЯ ЗАКРЕПЛЕННЫХ (БЕЗ ПРОВЕРОК) ---
+        # --- ИММУНИТЕТ ДЛЯ ЗАКРЕПЛЕННЫХ ---
         if base_part in pinned_list:
             working_for_base.append(base_part)
             
-            # ВМЕСТО rebuild_link_name используем твой оригинальный link
-            # Просто убираем лишние символы в начале, если они есть
-            clean_link = link.strip().lstrip("- [ ]").lstrip("[x] ").strip()
+            # ВМЕСТО rebuild_link_name берем ВЕСЬ link (с твоим флагом!)
+            # Просто чистим от мусора в начале, если он есть
+            original_with_flag = link.strip().lstrip("- [ ]").lstrip("[x] ").strip()
             
-            # Добавляем значок 💎 и сохраняем твое название с флагом целиком
-            final_link = f"💎 FIXED {clean_link}"
-            
+            final_link = f"💎 FIXED {original_with_flag}"
             working_for_sub.append(final_link)
-            print(f"✅ ЗАКРЕП СОХРАНЕН (С ФЛАГОМ): {base_part[:30]}...")
+            
+            print(f"✅ ЗАКРЕП СОХРАНЕН С ФЛАГОМ: {base_part[:30]}...")
             counter += 1
             continue 
         # ---------------------------------------------------------

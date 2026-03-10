@@ -131,7 +131,7 @@ def main():
     # --- ДОБАВЛЯЕМ ЗАГРУЗКУ СПЕЦФАЙЛОВ ТУТ ---
     
     # 1. Загружаем Закрепленные (Pinned)
-pinned_list = []
+    pinned_list = []
     if os.path.exists('test1/pinned.txt'):
         with open('test1/pinned.txt', 'r', encoding='utf-8') as f:
             # Читаем всё целиком, убираем пустые строки

@@ -257,29 +257,31 @@ def main():
             continue # Важно: уходим на следующий круг, не заходя в проверки порта и пинга
         # ---------------------------------------------------------
     
-        # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
+# --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
         if base_part in blacklist:
             print(f"🚫 ЗАБЛОКИРОВАН ГАЛОЧКОЙ: {base_part[:40]}...")
             continue
         
-        # --- ФУНКЦИЯ 1: ВАЛИДАЦИЯ UUID ---
+        # --- ВАЛИДАЦИЯ UUID ---
         if not re.search(r'[a-f0-9\-]{36}@', base_part):
             continue 
     
         endpoint, host, port = extract_host_port(base_part)
         if not endpoint or not host or not port:
             continue
-        # --- ЭТАП 1: ПРОВЕРКА ПОРТА + TLS + ЗАДЕРЖКА ---
+
+        # --- ЭТАП 1: ХАРД-РЕЗОЛВИНГ + ПРОВЕРКА СВЯЗИ ---
         resolved_ip = None
         is_alive = False
         latency = 9999
         
         try:
+            # Превращаем буквы в IP (Хард-резолвинг)
             resolved_ip = socket.gethostbyname(host) if not is_ipv6(host) else host
             
-            # --- ФУНКЦИЯ 2: УДАЛЕНИЕ ДУБЛИКАТОВ ПО IP ---
+            # Удаление дубликатов по реальному IP
             if resolved_ip in seen_ips:
-                continue # Скипаем, если этот IP уже был проверен
+                continue 
             
             start_time = time.time()
             use_tls = "security=tls" in base_part.lower() or "security=reality" in base_part.lower()
@@ -287,6 +289,8 @@ def main():
             with socket.create_connection((resolved_ip, int(port)), timeout=4.0) as sock:
                 if use_tls:
                     context = ssl.create_default_context()
+                    context.check_hostname = False
+                    context.verify_mode = ssl.CERT_NONE
                     with context.wrap_socket(sock, server_hostname=host) as ssock:
                         pass
                 else:
@@ -294,11 +298,11 @@ def main():
             
             is_alive = True
             latency = int((time.time() - start_time) * 1000)
-            seen_ips.add(resolved_ip) # Помечаем IP как рабочий
+            seen_ips.add(resolved_ip) 
         except:
             is_alive = False
     
-        # --- ЭТАП 2 И 3: ТОЛЬКО ЕСЛИ ЖИВОЙ ---
+        # --- ЭТАП 2: ЕСЛИ СЕРВЕР РАБОТАЕТ ---
         if is_alive:
             if "security=none" in base_part.lower():
                 print(f"❌ НЕТ ШИФРОВАНИЯ: {host}")
@@ -308,44 +312,50 @@ def main():
             if country not in ALLOWED_COUNTRIES:
                 continue
     
+            # Сохраняем оригинал в 1.txt
             working_for_base.append(base_part)
+            
+            # Подставляем IP в ссылку для подписки (wifi.txt)
             ip_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
-            sub_link = link.replace(endpoint, f"@{ip_str}:{port}", 1)
-            # Добавил latency в название, чтобы было видно пинг
+            sub_link = base_part.replace(endpoint, f"@{ip_str}:{port}", 1)
+            
+            # Генерируем SNI, если его нет (нужно для работы по IP)
+            if "sni=" not in sub_link.lower() and not is_ipv6(host):
+                sep = "&" if "?" in sub_link else "?"
+                sub_link += f"{sep}sni={host}"
+            
+            # Называем ссылку
             final_link = rebuild_link_name(sub_link, f"wifi {counter} [{latency}ms]")
             working_for_sub.append(final_link)
             
-            print(f"✅ ОК ({country}): {host} -> wifi {counter}")
+            print(f"✅ ОК ({country}): {host} -> {resolved_ip} (wifi {counter})")
             counter += 1
-    
-                        # --- ФУНКЦИЯ: РЕЙТИНГ ВЫСЛУГИ ---
+
+            # --- РЕЙТИНГ ВЫСЛУГИ ---
             rank = ranking_db.get(base_part, 0) + 1
             ranking_db[base_part] = rank
             
-            # Если выжил 12 проверок (сутки стабильности) — переносим в vetted.txt
             if rank >= 12 and base_part not in vetted_list:
                 with open('test1/vetted.txt', 'a', encoding='utf-8') as vf:
                     vf.write(base_part + "\n")
-                vetted_list.append(base_part) # Добавляем в память
+                vetted_list.append(base_part)
                 print(f"🎖️ ПОВЫШЕН ДО VETTED (рейтинг {rank}): {host}")
     
+        # --- ЭТАП 3: ЕСЛИ СЕРВЕР НЕ ОТВЕЧАЕТ ---
         else:
             if base_part in ranking_db:
                 del ranking_db[base_part]
-            # --- ФУНКЦИЯ 3: АВТООЧИСТКА МУСОРА (1 день) ---
+            
             fail_time = history.get(base_part, now)
             
-            if now - fail_time > 86400: # 1 день (86400 сек)
+            # Автоочистка если лежит больше суток
+            if now - fail_time > 86400: 
                 print(f"🗑️ УДАЛЕН И ЗАБЛОКИРОВАН (1 день оффлайн): {host}")
-                
-                # --- ДОБАВЛЯЕМ В BLACKLIST АВТОМАТИЧЕСКИ ---
                 with open('test1/blacklist.txt', 'a') as bl:
                     bl.write(base_part + "\n")
-                # -------------------------------------------
-                
-                continue # Ссылка больше не попадет в 1.txt и в проверку
+                continue 
     
-            # ЛОГИКА GRACE PERIOD (твоя старая)
+            # Grace Period (временный DOWN)
             if now - fail_time < GRACE_PERIOD:
                 country = get_country_code(host)
                 if country in ALLOWED_COUNTRIES:

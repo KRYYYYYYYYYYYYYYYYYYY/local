@@ -418,7 +418,7 @@ def main():
                 subprocess.run(['gh', 'issue', 'edit', num_unp, '--repo', repo, '--body-file', 'unpin_body.txt'], 
                                env={**os.environ, "GH_TOKEN": token})
             with open('test1/ranking.json', "w") as f:
-            json.dump(ranking_db, f)
+                json.dump(ranking_db, f)
 
         except Exception as e:
             print(f"⚠️ Не удалось обновить Issue: {e}")

@@ -106,11 +106,37 @@ def main():
     repo = os.getenv("GITHUB_REPOSITORY")
     
     blacklist = set()
-    
-    # 1. Читаем существующий файл (если есть)
     if os.path.exists('test1/blacklist.txt'):
         with open('test1/blacklist.txt', 'r') as f:
             blacklist = {line.strip() for line in f if line.strip()}
+
+    # --- ДОБАВЛЯЕМ ЗАГРУЗКУ СПЕЦФАЙЛОВ ТУТ ---
+    
+    # 1. Загружаем Закрепленные (Pinned)
+    pinned_list = []
+    if os.path.exists('test1/pinned.txt'):
+        with open('test1/pinned.txt', 'r', encoding='utf-8') as f:
+            pinned_list = [line.strip() for line in f if line.strip()]
+
+    # 2. Загружаем Отложенные (Deferred)
+    deferred_base = []
+    if os.path.exists('test1/deferred.txt'):
+        with open('test1/deferred.txt', 'r', encoding='utf-8') as f:
+            deferred_base = [line.strip() for line in f if line.strip()]
+
+    # ------------------------------------------
+
+    # Дальше твоя стандартная загрузка
+    current_base = []
+    if os.path.exists(INPUT_FILE):
+        with open(INPUT_FILE, "r", encoding="utf-8") as f:
+            current_base = f.read().splitlines()
+
+    external_servers = fetch_external_servers()
+    
+    # СОБИРАЕМ ОЧЕРЕДЬ: База + Отложенные + Новые
+    # Это гарантирует, что "старички" из очереди проверятся раньше новичков
+    all_lines = current_base + deferred_base + external_servers
 
     # 2. Проверяем галочки в GitHub Issue (если есть токен)
     if token and repo: # Добавь проверку и на токен, и на репо
@@ -136,6 +162,30 @@ def main():
                     f.write("\n".join(list(blacklist)))
         except Exception as e:
             print(f"⚠️ Ошибка чтения галочек: {e}")
+
+            pin_read = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env={**os.environ, "GH_TOKEN": token}).decode()
+            if pin_read and pin_read != "[]":
+                issue_pin = json.loads(pin_read)[0]
+                to_pin = re.findall(r'- \[x\] (vless://[^\s#\s]+)', issue_pin['body'])
+                if to_pin:
+                    with open('test1/pinned.txt', 'a', encoding='utf-8') as pf:
+                        for s in to_pin:
+                            if s.strip() not in pinned_list:
+                                pf.write(s.strip() + "\n")
+                                pinned_list.append(s.strip())
+
+            # ЧИТАЕМ ГАЛОЧКИ ДЛЯ РАЗЗАКРЕПЛЕНИЯ (unpin_control)
+            unpin_read = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'body', '--limit', '1'], env={**os.environ, "GH_TOKEN": token}).decode()
+            if unpin_read and unpin_read != "[]":
+                issue_unp = json.loads(unpin_read)[0]
+                to_unpin = re.findall(r'- \[x\] (vless://[^\s#\s]+)', issue_unp['body'])
+                if to_unpin:
+                    pinned_list = [s for s in pinned_list if s not in to_unpin]
+                    with open('test1/pinned.txt', 'w', encoding='utf-8') as pf:
+                        pf.write("\n".join(pinned_list) + "\n")
+        except Exception as e:
+            print(f"⚠️ Ошибка чтения команд: {e}")
+
     # 1. Загрузка базы и истории
     current_base = []
     if os.path.exists(INPUT_FILE):
@@ -161,21 +211,32 @@ def main():
     print(f"🔄 Проверка {len(unique_links)} строк")
     
     seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
-    for link in unique_links:
+     for link in unique_links:
         base_part = link.split("#", 1)[0].strip()
-                # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
+        
+        # --- ДОБАВИТЬ: ИММУНИТЕТ ДЛЯ ЗАКРЕПЛЕННЫХ (БЕЗ ПРОВЕРОК) ---
+        if base_part in pinned_list:
+            working_for_base.append(base_part)
+            # Сразу формируем ссылку, пропуская все тесты
+            final_link = rebuild_link_name(link, f"💎 FIXED {counter}")
+            working_for_sub.append(final_link)
+            print(f"✅ ЗАКРЕП (ИММУНИТЕТ): {base_part[:30]}...")
+            counter += 1
+            continue # ПЕРЕХОД К СЛЕДУЮЩЕЙ ССЫЛКЕ
+        # ---------------------------------------------------------
+
+        # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
         if base_part in blacklist:
             print(f"🚫 ЗАБЛОКИРОВАН ГАЛОЧКОЙ: {base_part[:40]}...")
             continue
         
         # --- ФУНКЦИЯ 1: ВАЛИДАЦИЯ UUID ---
         if not re.search(r'[a-f0-9\-]{36}@', base_part):
-            continue # Пропускаем ключи без пароля
+            continue 
 
         endpoint, host, port = extract_host_port(base_part)
         if not endpoint or not host or not port:
             continue
-
         # --- ЭТАП 1: ПРОВЕРКА ПОРТА + TLS + ЗАДЕРЖКА ---
         resolved_ip = None
         is_alive = False
@@ -250,48 +311,86 @@ def main():
                     counter += 1
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")
+    # --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ДОБАВИТЬ ПЕРЕД СОХРАНЕНИЕМ) ---
+    # 1. Берем всё, что прошло проверку (working_for_sub)
+    # 2. Первые 200 — в подписку, остальное — в отложенные
+    final_to_sub = working_for_sub[:200]
+    deferred_links = working_for_sub[200:]
 
-    # 3. Сохранение
+    # Сохраняем отложенные (те, что не влезли)
+    with open('test1/deferred.txt', "w", encoding="utf-8") as f:
+        f.write("\n".join(deferred_links))
+    # -----------------------------------------------------------
+
+    # 3. Сохранение (ТВОЙ БЛОК БЕЗ ИЗМЕНЕНИЙ НАДПИСЕЙ)
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
-    with open(INPUT_FILE, "w", encoding="utf-8") as f: f.write("\n".join(working_for_base))
-    with open(STATUS_FILE, "w") as f: json.dump(new_history, f)
+    with open(INPUT_FILE, "w", encoding="utf-8") as f: 
+        f.write("\n".join(working_for_base))
+    
+    with open(STATUS_FILE, "w") as f: 
+        json.dump(new_history, f)
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        f.write(HEADER + "\n".join(working_for_sub))
+        # ЗАМЕНИ ТУТ working_for_sub на final_to_sub
+        f.write(HEADER + "\n".join(final_to_sub))
 
     print(f"🏁 Готово! Подписка обновлена.")
     # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---
     if token and repo:  # Теперь repo точно определена
         try:
-                        # Получаем текущее время (МСК +3 или по UTC, как на сервере)
+            # Получаем текущее время
             update_time = time.strftime("%d.%m.%Y %H:%M:%S")
             
             issue_body = f"### 🎮 Панель управления серверами\n"
-            issue_body += f"🕒 **Последнее обновление:** `{update_time}`\n\n" # <--- ДОБАВЬ ЭТО
+            issue_body += f"🕒 **Последнее обновление:** `{update_time}`\n\n"
             issue_body += "Отметь [x] и сохрани, чтобы отправить в черный список:\n\n---\n\n"
-            # Нам нужно вытащить номер (number) той самой задачи, которую нашли в начале
-            # Если ты не сохранил номер в переменную, можно найти его еще раз быстро:
+
             find_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'number', '--limit', '1']
             out = subprocess.check_output(find_cmd, env={**os.environ, "GH_TOKEN": token}).decode()
             
             if out and out != "[]":
                 issue_number = str(json.loads(out)[0]['number'])
-                
                 for i, link in enumerate(working_for_base, 1):
                     status = "[x]" if link in blacklist else "[ ]"
                     issue_body += f"- {status} {link} (wifi {i})\n\n"
-            
-                    # ЛИНИЯ-РАЗДЕЛИТЕЛЬ ПОСЛЕ КАЖДОЙ ССЫЛКИ
                     issue_body += "---\n\n"
-                with open("issue_body.txt", "w") as f: f.write(issue_body)
                 
-                # Добавлен номер задачи и --repo
+                with open("issue_body.txt", "w", encoding="utf-8") as f: 
+                    f.write(issue_body)
+                
                 subprocess.run(['gh', 'issue', 'edit', issue_number, '--repo', repo, '--body-file', 'issue_body.txt'], 
                                env={**os.environ, "GH_TOKEN": token})
                 print(f"📝 Список галочек в Issue #{issue_number} обновлен.")
+
+            # --- ПАНЕЛЬ 2: КАНДИДАТЫ В ЗАКРЕП (PIN) ---
+            pin_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'number', '--limit', '1']
+            out_pin = subprocess.check_output(pin_cmd, env={**os.environ, "GH_TOKEN": token}).decode()
+            if out_pin and out_pin != "[]":
+                num_pin = str(json.loads(out_pin)[0]['number'])
+                body_pin = f"### 💎 Кандидаты в закреп\n🕒 Обновлено: `{update_time}`\n\n"
+                for i, link in enumerate(working_for_base, 1):
+                    if link not in pinned_list:
+                        body_pin += f"- [ ] {link} (wifi {i})\n\n---\n\n"
+                with open("pin_body.txt", "w", encoding="utf-8") as f: 
+                    f.write(body_pin)
+                subprocess.run(['gh', 'issue', 'edit', num_pin, '--repo', repo, '--body-file', 'pin_body.txt'], 
+                               env={**os.environ, "GH_TOKEN": token})
+
+            # --- ПАНЕЛЬ 3: УПРАВЛЕНИЕ ЗАКРЕПАМИ (UNPIN) ---
+            unpin_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'number', '--limit', '1']
+            out_unp = subprocess.check_output(unpin_cmd, env={**os.environ, "GH_TOKEN": token}).decode()
+            if out_unp and out_unp != "[]":
+                num_unp = str(json.loads(out_unp)[0]['number'])
+                body_unp = f"### 👑 Ваши закрепленные сервера\n🕒 Обновлено: `{update_time}`\n\n"
+                for i, link in enumerate(pinned_list, 1):
+                    body_unp += f"- [ ] {link} (FIXED {i})\n\n---\n\n"
+                with open("unpin_body.txt", "w", encoding="utf-8") as f: 
+                    f.write(body_unp)
+                subprocess.run(['gh', 'issue', 'edit', num_unp, '--repo', repo, '--body-file', 'unpin_body.txt'], 
+                               env={**os.environ, "GH_TOKEN": token})
+
         except Exception as e:
             print(f"⚠️ Не удалось обновить Issue: {e}")
 
-if __name__ == "__main__":
-    main()
+if __name__ == "

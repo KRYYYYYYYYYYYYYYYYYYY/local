@@ -220,144 +220,144 @@ def main():
 
     print(f"🔄 Проверка {len(unique_links)} строк")
     
-seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
-# ----------------- ВСТАВИТЬ ПЕРЕД ЦИКЛОМ -----------------
-all_lines = pinned_list + current_base + deferred_base + external_servers
-unique_links = list(dict.fromkeys(line.strip() for line in all_lines if "vless://" in line))
-# ----------------------------------------------------------
-for link in unique_links:
-    clean_link = link.replace("- [x] ", "").replace("- [ ] ", "").strip()
-    base_part = clean_link.split("#", 1)[0].strip()
+    seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
+    # ----------------- ВСТАВИТЬ ПЕРЕД ЦИКЛОМ -----------------
+    all_lines = pinned_list + current_base + deferred_base + external_servers
+    unique_links = list(dict.fromkeys(line.strip() for line in all_lines if "vless://" in line))
+    # ----------------------------------------------------------
+    for link in unique_links:
+        clean_link = link.replace("- [x] ", "").replace("- [ ] ", "").strip()
+        base_part = clean_link.split("#", 1)[0].strip()
+        
+        # --- ИММУНИТЕТ ДЛЯ ЗАКРЕПЛЕННЫХ ---
+        if base_part in pinned_list:
+            working_for_base.append(base_part)
+            
+            # берем ссылку полностью (с флагом)
+            original_with_flag = clean_link
+            
+            final_link = original_with_flag
+            working_for_sub.append(final_link)
+            
+            print(f"✅ ЗАКРЕП СОХРАНЕН С ФЛАГОМ: {base_part[:30]}...")
+            counter += 1
+            continue
+        # ---------------------------------------------------------
     
-    # --- ИММУНИТЕТ ДЛЯ ЗАКРЕПЛЕННЫХ ---
-    if base_part in pinned_list:
-        working_for_base.append(base_part)
+        # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
+        if base_part in blacklist:
+            print(f"🚫 ЗАБЛОКИРОВАН ГАЛОЧКОЙ: {base_part[:40]}...")
+            continue
         
-        # берем ссылку полностью (с флагом)
-        original_with_flag = clean_link
-        
-        final_link = original_with_flag
-        working_for_sub.append(final_link)
-        
-        print(f"✅ ЗАКРЕП СОХРАНЕН С ФЛАГОМ: {base_part[:30]}...")
-        counter += 1
-        continue
-    # ---------------------------------------------------------
-
-    # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
-    if base_part in blacklist:
-        print(f"🚫 ЗАБЛОКИРОВАН ГАЛОЧКОЙ: {base_part[:40]}...")
-        continue
+        # --- ФУНКЦИЯ 1: ВАЛИДАЦИЯ UUID ---
+        if not re.search(r'[a-f0-9\-]{36}@', base_part):
+            continue 
     
-    # --- ФУНКЦИЯ 1: ВАЛИДАЦИЯ UUID ---
-    if not re.search(r'[a-f0-9\-]{36}@', base_part):
-        continue 
-
-    endpoint, host, port = extract_host_port(base_part)
-    if not endpoint or not host or not port:
-        continue
-    # --- ЭТАП 1: ПРОВЕРКА ПОРТА + TLS + ЗАДЕРЖКА ---
-    resolved_ip = None
-    is_alive = False
-    latency = 9999
-    
-    try:
-        resolved_ip = socket.gethostbyname(host) if not is_ipv6(host) else host
-        
-        # --- ФУНКЦИЯ 2: УДАЛЕНИЕ ДУБЛИКАТОВ ПО IP ---
-        if resolved_ip in seen_ips:
-            continue # Скипаем, если этот IP уже был проверен
-        
-        start_time = time.time()
-        use_tls = "security=tls" in base_part.lower() or "security=reality" in base_part.lower()
-        
-        with socket.create_connection((resolved_ip, int(port)), timeout=4.0) as sock:
-            if use_tls:
-                context = ssl.create_default_context()
-                with context.wrap_socket(sock, server_hostname=host) as ssock:
-                    pass
-            else:
-                sock.sendall(b'\x16\x03\x01\x00\x00')
-        
-        is_alive = True
-        latency = int((time.time() - start_time) * 1000)
-        seen_ips.add(resolved_ip) # Помечаем IP как рабочий
-    except:
+        endpoint, host, port = extract_host_port(base_part)
+        if not endpoint or not host or not port:
+            continue
+        # --- ЭТАП 1: ПРОВЕРКА ПОРТА + TLS + ЗАДЕРЖКА ---
+        resolved_ip = None
         is_alive = False
-
-    # --- ЭТАП 2 И 3: ТОЛЬКО ЕСЛИ ЖИВОЙ ---
-    if is_alive:
-        if "security=none" in base_part.lower():
-            print(f"❌ НЕТ ШИФРОВАНИЯ: {host}")
-            continue
-
-        country = get_country_code(host)
-        if country not in ALLOWED_COUNTRIES:
-            continue
-
-        working_for_base.append(base_part)
-        ip_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
-        sub_link = link.replace(endpoint, f"@{ip_str}:{port}", 1)
-        # Добавил latency в название, чтобы было видно пинг
-        final_link = rebuild_link_name(sub_link, f"wifi {counter} [{latency}ms]")
-        working_for_sub.append(final_link)
+        latency = 9999
         
-        print(f"✅ ОК ({country}): {host} -> wifi {counter}")
-        counter += 1
-
-                    # --- ФУНКЦИЯ: РЕЙТИНГ ВЫСЛУГИ ---
-        rank = ranking_db.get(base_part, 0) + 1
-        ranking_db[base_part] = rank
-        
-        # Если выжил 12 проверок (сутки стабильности) — переносим в vetted.txt
-        if rank >= 12 and base_part not in vetted_list:
-            with open('test1/vetted.txt', 'a', encoding='utf-8') as vf:
-                vf.write(base_part + "\n")
-            vetted_list.append(base_part) # Добавляем в память
-            print(f"🎖️ ПОВЫШЕН ДО VETTED (рейтинг {rank}): {host}")
-
-    else:
-        if base_part in ranking_db:
-            del ranking_db[base_part]
-        # --- ФУНКЦИЯ 3: АВТООЧИСТКА МУСОРА (1 день) ---
-        fail_time = history.get(base_part, now)
-        
-        if now - fail_time > 86400: # 1 день (86400 сек)
-            print(f"🗑️ УДАЛЕН И ЗАБЛОКИРОВАН (1 день оффлайн): {host}")
+        try:
+            resolved_ip = socket.gethostbyname(host) if not is_ipv6(host) else host
             
-            # --- ДОБАВЛЯЕМ В BLACKLIST АВТОМАТИЧЕСКИ ---
-            with open('test1/blacklist.txt', 'a') as bl:
-                bl.write(base_part + "\n")
-            # -------------------------------------------
+            # --- ФУНКЦИЯ 2: УДАЛЕНИЕ ДУБЛИКАТОВ ПО IP ---
+            if resolved_ip in seen_ips:
+                continue # Скипаем, если этот IP уже был проверен
             
-            continue # Ссылка больше не попадет в 1.txt и в проверку
-
-        # ЛОГИКА GRACE PERIOD (твоя старая)
-        if now - fail_time < GRACE_PERIOD:
+            start_time = time.time()
+            use_tls = "security=tls" in base_part.lower() or "security=reality" in base_part.lower()
+            
+            with socket.create_connection((resolved_ip, int(port)), timeout=4.0) as sock:
+                if use_tls:
+                    context = ssl.create_default_context()
+                    with context.wrap_socket(sock, server_hostname=host) as ssock:
+                        pass
+                else:
+                    sock.sendall(b'\x16\x03\x01\x00\x00')
+            
+            is_alive = True
+            latency = int((time.time() - start_time) * 1000)
+            seen_ips.add(resolved_ip) # Помечаем IP как рабочий
+        except:
+            is_alive = False
+    
+        # --- ЭТАП 2 И 3: ТОЛЬКО ЕСЛИ ЖИВОЙ ---
+        if is_alive:
+            if "security=none" in base_part.lower():
+                print(f"❌ НЕТ ШИФРОВАНИЯ: {host}")
+                continue
+    
             country = get_country_code(host)
-            if country in ALLOWED_COUNTRIES:
-                working_for_base.append(base_part)
-                new_history[base_part] = fail_time
-                working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
-                print(f"⏳ DOWN ({country}): {host}")
-                counter += 1
+            if country not in ALLOWED_COUNTRIES:
+                continue
+    
+            working_for_base.append(base_part)
+            ip_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
+            sub_link = link.replace(endpoint, f"@{ip_str}:{port}", 1)
+            # Добавил latency в название, чтобы было видно пинг
+            final_link = rebuild_link_name(sub_link, f"wifi {counter} [{latency}ms]")
+            working_for_sub.append(final_link)
+            
+            print(f"✅ ОК ({country}): {host} -> wifi {counter}")
+            counter += 1
+    
+                        # --- ФУНКЦИЯ: РЕЙТИНГ ВЫСЛУГИ ---
+            rank = ranking_db.get(base_part, 0) + 1
+            ranking_db[base_part] = rank
+            
+            # Если выжил 12 проверок (сутки стабильности) — переносим в vetted.txt
+            if rank >= 12 and base_part not in vetted_list:
+                with open('test1/vetted.txt', 'a', encoding='utf-8') as vf:
+                    vf.write(base_part + "\n")
+                vetted_list.append(base_part) # Добавляем в память
+                print(f"🎖️ ПОВЫШЕН ДО VETTED (рейтинг {rank}): {host}")
+    
         else:
-            print(f"🗑️ Удален (тайм-аут): {host}")
-# --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ДОБАВИТЬ ПЕРЕД СОХРАНЕНИЕМ) ---
-# 1. Берем всё, что прошло проверку (working_for_sub)
-# 2. Первые 200 — в подписку, остальное — в отложенные
-final_to_sub = working_for_sub[:200]
-deferred_links = working_for_sub[200:]
-
-# Сохраняем отложенные (те, что не влезли)
-with open('test1/deferred.txt', "w", encoding="utf-8") as f:
-    f.write("\n".join(deferred_links))
-# -----------------------------------------------------------
-
-# 3. Сохранение (ТВОЙ БЛОК БЕЗ ИЗМЕНЕНИЙ НАДПИСЕЙ)
-os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
-with open(INPUT_FILE, "w", encoding="utf-8") as f: 
-    f.write("\n".join(working_for_base))
+            if base_part in ranking_db:
+                del ranking_db[base_part]
+            # --- ФУНКЦИЯ 3: АВТООЧИСТКА МУСОРА (1 день) ---
+            fail_time = history.get(base_part, now)
+            
+            if now - fail_time > 86400: # 1 день (86400 сек)
+                print(f"🗑️ УДАЛЕН И ЗАБЛОКИРОВАН (1 день оффлайн): {host}")
+                
+                # --- ДОБАВЛЯЕМ В BLACKLIST АВТОМАТИЧЕСКИ ---
+                with open('test1/blacklist.txt', 'a') as bl:
+                    bl.write(base_part + "\n")
+                # -------------------------------------------
+                
+                continue # Ссылка больше не попадет в 1.txt и в проверку
+    
+            # ЛОГИКА GRACE PERIOD (твоя старая)
+            if now - fail_time < GRACE_PERIOD:
+                country = get_country_code(host)
+                if country in ALLOWED_COUNTRIES:
+                    working_for_base.append(base_part)
+                    new_history[base_part] = fail_time
+                    working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
+                    print(f"⏳ DOWN ({country}): {host}")
+                    counter += 1
+            else:
+                print(f"🗑️ Удален (тайм-аут): {host}")
+    # --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ДОБАВИТЬ ПЕРЕД СОХРАНЕНИЕМ) ---
+    # 1. Берем всё, что прошло проверку (working_for_sub)
+    # 2. Первые 200 — в подписку, остальное — в отложенные
+    final_to_sub = working_for_sub[:200]
+    deferred_links = working_for_sub[200:]
+    
+    # Сохраняем отложенные (те, что не влезли)
+    with open('test1/deferred.txt', "w", encoding="utf-8") as f:
+        f.write("\n".join(deferred_links))
+    # -----------------------------------------------------------
+    
+    # 3. Сохранение (ТВОЙ БЛОК БЕЗ ИЗМЕНЕНИЙ НАДПИСЕЙ)
+    os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
+    with open(INPUT_FILE, "w", encoding="utf-8") as f: 
+        f.write("\n".join(working_for_base))
     
     with open(STATUS_FILE, "w") as f: 
         json.dump(new_history, f)

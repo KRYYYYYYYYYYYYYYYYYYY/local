@@ -15,7 +15,7 @@ def extract_host_port(link):
 
 def is_pinned(base_part):
     if not os.path.exists(PINNED_FILE): return False
-    with open(PINNED_FILE, 'r') as f:
+    with open(PINNED_FILE, 'r', encoding='utf-8') as f:
         return base_part in f.read()
 
 def add_to_blacklist(base_part):
@@ -28,14 +28,19 @@ def add_to_blacklist(base_part):
             f.write(base_part + "\n")
 
 def remove_from_all(base_part):
-    for path in [WIFI_FILE, DEFERRED_FILE, INPUT_FILE]:
+    # УБРАЛИ INPUT_FILE (1.txt), чтобы сервер остался в базе для перепроверки
+    for path in [WIFI_FILE, DEFERRED_FILE]: 
         if os.path.exists(path):
             with open(path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
+            
+            # Оставляем только те строки, где НЕТ этого сервера
             new_lines = [l for l in lines if base_part not in l]
+            
             if len(lines) != len(new_lines):
                 with open(path, 'w', encoding='utf-8') as f:
                     f.writelines(new_lines)
+                print(f"🗑️ Временно удален из {path} (не прошел мониторинг)")
 
 def deep_kill_check(link):
     base_part = link.split("#")[0].strip()

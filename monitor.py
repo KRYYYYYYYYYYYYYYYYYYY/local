@@ -44,9 +44,14 @@ def remove_from_all(base_part):
 
 def deep_kill_check(link):
     base_part = link.split("#")[0].strip()
-    if is_pinned(base_part): return True, 200 # ИСПРАВЛЕНО: добавил второе число
+    
+    # --- ДОБАВЛЕН ВЫВОД ДЛЯ ЗАКРЕПОВ ---
+    if is_pinned(base_part): 
+        print(f"🛡️ ЗАКРЕП ПРОПУЩЕН (ИММУНИТЕТ): {base_part[:30]}...") 
+        return True, 200 
     
     host, port = extract_host_port(base_part)
+
     if not host: return False, 404
 
     for _ in range(3): 

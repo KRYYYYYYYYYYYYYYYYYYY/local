@@ -1,0 +1,19 @@
+name: Server Monitor (Executioner)
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Каждые 15 минут
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Monitor
+        run: python monitor.py
+      - name: Save Clean Lists
+        run: |
+          git config --global user.name "Monitor-Bot"
+          git add .
+          git commit -m "Monitor: Cleaned dead servers" || exit 0
+          git push

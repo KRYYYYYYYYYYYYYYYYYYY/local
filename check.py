@@ -211,19 +211,15 @@ def main():
     external_servers = fetch_external_servers()
     all_lines = pinned_list + current_base + deferred_base + external_servers
     unique_links = list(dict.fromkeys(line.strip() for line in all_lines if "vless://" in line))
-
+    
     working_for_base = []
     working_for_sub = []
     new_history = {}
     now = time.time()
     counter = 1
-
-    print(f"🔄 Проверка {len(unique_links)} строк")
+    seen_ips = set()  # <--- перед циклом
     
-    seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
-    # ----------------- ВСТАВИТЬ ПЕРЕД ЦИКЛОМ -----------------
-    all_lines = pinned_list + current_base + deferred_base + external_servers
-    unique_links = list(dict.fromkeys(line.strip() for line in all_lines if "vless://" in line))
+    print(f"🔄 Проверка {len(unique_links)} строк")
     # ----------------------------------------------------------
     for link in unique_links:
         clean_link = link.replace("- [x] ", "").replace("- [ ] ", "").strip()

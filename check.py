@@ -132,7 +132,7 @@ def main():
     if os.path.exists('test1/pinned.txt'):
         with open('test1/pinned.txt', 'r', encoding='utf-8') as f:
             # Отрезаем хвост после # ТОЛЬКО в этой переменной (в файле всё останется!)
-            pinned_list = [line.split('#')[0].strip() for line in f if line.strip()]
+            pinned_list = [line.strip() for line in f if line.strip()]
 
     # 2. Загружаем Отложенные (Deferred)
     deferred_base = []
@@ -228,22 +228,22 @@ def main():
     
     seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
     for link in unique_links:
-        base_part = link.split("#", 1)[0].strip()
+        clean_link = link.replace("- [x] ", "").replace("- [ ] ", "").strip()
+        base_part = clean_link.split("#", 1)[0].strip()
         
         # --- ИММУНИТЕТ ДЛЯ ЗАКРЕПЛЕННЫХ ---
         if base_part in pinned_list:
             working_for_base.append(base_part)
             
-            # ВМЕСТО rebuild_link_name берем ВЕСЬ link (с твоим флагом!)
-            # Просто чистим от мусора в начале, если он есть
-            original_with_flag = link.strip().lstrip("- [ ]").lstrip("[x] ").strip()
+            # берем ссылку полностью (с флагом)
+            original_with_flag = clean_link
             
-            final_link = f"💎 FIXED {original_with_flag}"
+            final_link = original_with_flag
             working_for_sub.append(final_link)
             
             print(f"✅ ЗАКРЕП СОХРАНЕН С ФЛАГОМ: {base_part[:30]}...")
             counter += 1
-            continue 
+            continue
         # ---------------------------------------------------------
 
         # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---

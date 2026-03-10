@@ -215,8 +215,8 @@ def main():
         except: history = {}
 
     external_servers = fetch_external_servers()
-    all_lines = current_base + external_servers
-    unique_links = list(dict.fromkeys(line.strip() for line in all_lines if line.strip().startswith("vless://")))
+    all_lines = pinned_list + current_base + deferred_base + external_servers
+    unique_links = list(dict.fromkeys(line.strip() for line in all_lines if "vless://" in line))
 
     working_for_base = []
     working_for_sub = []

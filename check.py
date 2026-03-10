@@ -110,6 +110,21 @@ def main():
         with open('test1/blacklist.txt', 'r') as f:
             blacklist = {line.strip() for line in f if line.strip()}
 
+        # Загружаем "рейтинг выслуги"
+    ranking_file = 'test1/ranking.json'
+    ranking_db = {}
+    if os.path.exists(ranking_file):
+        try:
+            with open(ranking_file, "r") as f: ranking_db = json.load(f)
+        except: ranking_db = {}
+
+    # Загружаем текущих проверенных (чтобы не дублировать)
+    vetted_list = []
+    if os.path.exists('test1/vetted.txt'):
+        with open('test1/vetted.txt', 'r') as f:
+            vetted_list = [line.strip() for line in f if line.strip()]
+
+
     # --- ДОБАВЛЯЕМ ЗАГРУЗКУ СПЕЦФАЙЛОВ ТУТ ---
     
     # 1. Загружаем Закрепленные (Pinned)
@@ -286,7 +301,20 @@ def main():
             print(f"✅ ОК ({country}): {host} -> wifi {counter}")
             counter += 1
 
+                        # --- ФУНКЦИЯ: РЕЙТИНГ ВЫСЛУГИ ---
+            rank = ranking_db.get(base_part, 0) + 1
+            ranking_db[base_part] = rank
+            
+            # Если выжил 12 проверок (сутки стабильности) — переносим в vetted.txt
+            if rank >= 12 and base_part not in vetted_list:
+                with open('test1/vetted.txt', 'a', encoding='utf-8') as vf:
+                    vf.write(base_part + "\n")
+                vetted_list.append(base_part) # Добавляем в память
+                print(f"🎖️ ПОВЫШЕН ДО VETTED (рейтинг {rank}): {host}")
+
         else:
+            if base_part in ranking_db:
+                del ranking_db[base_part]
             # --- ФУНКЦИЯ 3: АВТООЧИСТКА МУСОРА (1 день) ---
             fail_time = history.get(base_part, now)
             
@@ -369,7 +397,7 @@ def main():
             if out_pin and out_pin != "[]":
                 num_pin = str(json.loads(out_pin)[0]['number'])
                 body_pin = f"### 💎 Кандидаты в закреп\n🕒 Обновлено: `{update_time}`\n\n"
-                for i, link in enumerate(working_for_base, 1):
+                for i, link in enumerate(vetted_list, 1):
                     if link not in pinned_list:
                         body_pin += f"- [ ] {link} (wifi {i})\n\n---\n\n"
                 with open("pin_body.txt", "w", encoding="utf-8") as f: 
@@ -389,6 +417,8 @@ def main():
                     f.write(body_unp)
                 subprocess.run(['gh', 'issue', 'edit', num_unp, '--repo', repo, '--body-file', 'unpin_body.txt'], 
                                env={**os.environ, "GH_TOKEN": token})
+            with open('test1/ranking.json', "w") as f:
+            json.dump(ranking_db, f)
 
         except Exception as e:
             print(f"⚠️ Не удалось обновить Issue: {e}")

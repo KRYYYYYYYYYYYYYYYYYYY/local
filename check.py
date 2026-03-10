@@ -266,9 +266,9 @@ def main():
 
         if found_pinned_full:
             
-            seen_parts.add(base_part)
-            
             working_for_base.append(base_part)
+
+            seen_parts.add(base_part)
             
             # Извлекаем текущее имя (там может быть флаг, если он был вpinned.txt)
             current_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Без имени"

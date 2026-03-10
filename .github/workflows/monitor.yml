@@ -33,6 +33,16 @@ jobs:
         run: |
           git config --global user.name "Monitor-Bot"
           git config --global user.email "bot@github.com"
+          
+          # Добавляем изменения
           git add .
-          git commit -m "Monitor: Cleaned dead servers and updated Blacklist" || exit 0
+          
+          # Коммитим, только если есть что коммитить
+          git commit -m "Monitor: Cleaned dead servers and updated Blacklist" || echo "No changes to commit"
+          
+          # КЛЮЧЕВОЙ МОМЕНТ: Забираем изменения чекера, если они появились за время работы монитора
+          # Используем rebase, чтобы наши правки легли поверх правок чекера
+          git pull --rebase -X theirs origin main
+          
+          # Теперь пушим без конфликтов
           git push origin main

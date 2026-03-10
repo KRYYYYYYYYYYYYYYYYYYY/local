@@ -81,6 +81,8 @@ def main_monitor():
     # --- ЗАГРУЗКА РЕЙТИНГА ---
     ranking_db = {}
     RANK_FILE = 'test1/ranking.json'
+    VETTED_FILE = 'test1/vetted.txt'
+    
     if os.path.exists(RANK_FILE):
         try:
             with open(RANK_FILE, 'r', encoding='utf-8') as f:
@@ -108,8 +110,22 @@ def main_monitor():
             
             if is_ok:
                 valid_others.append(link)
+                
                 # 🔥 ПРОГРЕВ: +1 балл за стабильную минуту
-                ranking_db[base] = ranking_db.get(base, 0) + 1
+                rank = ranking_db.get(base, 0) + 1
+                ranking_db[base] = rank
+                
+                # --- ЛОГИКА ПОВЫШЕНИЯ ---
+                if rank >= 12:
+                    vetted_content = ""
+                    if os.path.exists(VETTED_FILE):
+                        with open(VETTED_FILE, 'r', encoding='utf-8') as vf:
+                            vetted_content = vf.read()
+                    
+                    if base not in vetted_content:
+                        with open(VETTED_FILE, 'a', encoding='utf-8') as vf:
+                            vf.write(link + "\n")
+                        print(f"🎖️ ПОВЫШЕН ДО VETTED (баллы: {rank}): {base[:30]}...")
             else:
                 remove_from_all(base)
                 # 🧊 ОБНУЛЕНИЕ: Упал — рейтинг сгорает

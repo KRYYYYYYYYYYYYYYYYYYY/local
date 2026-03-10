@@ -373,7 +373,7 @@ def main():
             print(f"✅ ОК ({country}): {host} -> {resolved_ip} (wifi {counter})")
             counter += 1
 
-            # --- РЕЙТИНГ ВЫСЛУГИ ---
+            # --- РЕЙТИНГ ВЫСЛУГИ ---------------------------------------------------------------------
             rank = ranking_db.get(base_part, 0) + 1
             ranking_db[base_part] = rank
 
@@ -403,6 +403,8 @@ def main():
         else:
             if base_part in ranking_db:
                 del ranking_db[base_part]
+            if base_part in vetted_list:
+                vetted_list.remove(base_part) # Опционально: убираем из элиты, если сдох
             
             fail_time = history.get(base_part, now)
             

@@ -413,22 +413,36 @@ def main():
                     counter += 1
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")
-    # --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ДОБАВИТЬ ПЕРЕД СОХРАНЕНИЕМ) ---
-# 1 Формируем финальный список отложенных:
-    #Те, до кого не дошла очередь (new_deferred) + Те, кто прошел проверку, но не влез в топ-200 (working_for_sub[200:])
-    deferred_final = new_deferred + working_for_sub[200:]
+# --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ИСПРАВЛЕНО) ---
     
-    # 2. Берем первые 200 для подписки
-    final_to_sub = working_for_sub[:200]
+    # 1. Разделяем то, что мы напроверяли, на закрепы и обычные
+    pinned_in_sub = [l for l in working_for_sub if "💎 [PINNED]" in l]
+    others_in_sub = [l for l in working_for_sub if "💎 [PINNED]" not in l]
+
+    # 2. Применяем лимиты
+    # Берем максимум 50 закрепов (если их меньше, возьмутся все имеющиеся)
+    final_pinned = pinned_in_sub[:50]
     
-    # 3. Сохраняем отложенные (на завтра)
+    # Считаем, сколько осталось мест до 200
+    remaining_slots = 200 - len(final_pinned)
+    
+    # Забиваем оставшиеся места обычными серверами
+    final_to_sub = final_pinned + others_in_sub[:remaining_slots]
+    
+    # 3. Формируем список отложенных (на завтра)
+    # Сюда идет: те, кто не влез в 200 + те, до кого вообще не дошла очередь (new_deferred)
+    leftover_others = others_in_sub[remaining_slots:]
+    deferred_final = new_deferred + leftover_others
+
+    # 4. Сохраняем отложенные
     with open('test1/deferred.txt', "w", encoding="utf-8") as f:
         f.write("\n".join(deferred_final))
 
     # Для отладки в консоли
     print(f"🏁 Итог за запуск:")
-    print(f"✅ В подписке (wifi.txt): {len(final_to_sub)}")
-    print(f"📦 В отложенных (deferred.txt): {len(deferred_final)} (из них {len(new_deferred)} не проверялись)")
+    print(f"💎 Закрепленных в подписке: {len(final_pinned)} (из лимита 50)")
+    print(f"✅ Всего в wifi.txt: {len(final_to_sub)} (из лимита 200)")
+    print(f"📦 В отложенных (deferred.txt): {len(deferred_final)}")
     
     # 3. Сохранение (ТВОЙ БЛОК БЕЗ ИЗМЕНЕНИЙ НАДПИСЕЙ)
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

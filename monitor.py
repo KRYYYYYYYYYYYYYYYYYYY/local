@@ -77,36 +77,50 @@ def deep_kill_check(link):
     
 def main_monitor():
     start_run = time.time()
+    # Работаем 10 минут (лимит GitHub Actions), потом перезапуск
     while time.time() - start_run < 600:
         print(f"🕵️ Обход в {time.strftime('%H:%M:%S')}")
         
-        all_to_check = []
-        for f in [WIFI_FILE, DEFERRED_FILE]:
-            if os.path.exists(f):
-                with open(f, 'r', encoding='utf-8') as file:
-                    all_to_check.extend([l.strip() for l in file if 'vless://' in l])
+        if not os.path.exists(WIFI_FILE):
+            time.sleep(60)
+            continue
+
+        with open(WIFI_FILE, 'r', encoding='utf-8') as f:
+            lines = [l.strip() for l in f if 'vless://' in l]
+
+        # Разделяем на закрепы и обычные
+        pinned_in_wifi = [l for l in lines if is_pinned(l.split("#")[0].strip())]
+        others_in_wifi = [l for l in lines if not is_pinned(l.split("#")[0].strip())]
+
+        # ОГРАНИЧЕНИЕ: Берем только первые 50 закрепов, если их больше
+        pinned_in_wifi = pinned_in_wifi[:50]
         
-        for link in set(all_to_check):
+        # Проверяем только "Обычные" (others), закрепы внутри deep_kill_check и так имеют иммунитет
+        valid_others = []
+        for link in others_in_wifi:
             is_ok, status_code = deep_kill_check(link)
-            if not is_ok:
+            if is_ok:
+                valid_others.append(link)
+            else:
                 base = link.split("#")[0].strip()
-                
-                # 1. УДАЛЯЕМ ВЕЗДЕ (из wifi.txt, deferred.txt, 1.txt)
-                remove_from_all(base)
-                
-                # 2. В БАН ТОЛЬКО ЕСЛИ НЕДОСТУПЕН (Н/Д)
+                remove_from_all(base) # Удаляем из wifi и deferred
                 if status_code == 404:
-                    print(f"💀 КИЛЛЕР (БАН): {base[:30]} - СДОХ (Н/Д)")
                     add_to_blacklist(base)
-                
-                # 3. ЕСЛИ ТОРМОЗ (>1000мс) - ПРОСТО УДАЛИЛИ И ВСЁ
+                    print(f"💀 БАН (Н/Д): {base[:30]}")
                 elif status_code == 1001:
-                    print(f"🐢 ТОРМОЗ: {base[:30]} - Удален из списков (>1000мс), НЕ забанен")
-                
-                else:
-                    print(f"⚠️ ВЫБРОС: {base[:30]} - Нестабилен, удален из списков")
+                    print(f"🐢 ТОРМОЗ (>1000ms): {base[:30]}")
+
+        # ФОРМИРУЕМ ИТОГОВЫЙ СПИСОК (до 200 позиций суммарно)
+        # Сначала наши 50 (или меньше) закрепов, потом остальные, сколько влезет до 200
+        final_list = pinned_in_wifi + valid_others
+        final_list = final_list[:200] 
+
+        # Перезаписываем wifi.txt с сохранением хедера
+        with open(WIFI_FILE, 'w', encoding='utf-8') as f:
+            f.write("# profile-title: 🏴WIFI🏴\n\n" + "\n".join(final_list))
         
-        time.sleep(60) # Пауза между кругами ада # Пауза между кругами ада
+        print(f"📊 Мониторинг окончен: {len(pinned_in_wifi)} закрепов, {len(final_list) - len(pinned_in_wifi)} обычных.")
+        time.sleep(60)
 
 if __name__ == "__main__":
     main_monitor()

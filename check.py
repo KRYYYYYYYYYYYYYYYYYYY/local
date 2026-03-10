@@ -376,6 +376,8 @@ def main():
             # --- РЕЙТИНГ ВЫСЛУГИ ---
             rank = ranking_db.get(base_part, 0) + 1
             ranking_db[base_part] = rank
+
+            print(f"📈 Рейтинг {host}: {rank}/12")
             
             if rank >= 12 and base_part not in vetted_list:
                 with open('test1/vetted.txt', 'a', encoding='utf-8') as vf:

@@ -131,11 +131,13 @@ def main():
     # --- ДОБАВЛЯЕМ ЗАГРУЗКУ СПЕЦФАЙЛОВ ТУТ ---
     
     # 1. Загружаем Закрепленные (Pinned)
-    pinned_list = []
+pinned_list = []
     if os.path.exists('test1/pinned.txt'):
         with open('test1/pinned.txt', 'r', encoding='utf-8') as f:
-            # Отрезаем хвост после # ТОЛЬКО в этой переменной (в файле всё останется!)
-            pinned_list = [line.strip() for line in f if line.strip()]
+            # Читаем всё целиком, убираем пустые строки
+            pinned_list = [line.strip() for line in f if "vless://" in line]
+    
+    print(f"📦 Загружено закрепов из файла: {len(pinned_list)}")
 
     # 2. Загружаем Отложенные (Deferred)
     deferred_base = []
@@ -227,29 +229,32 @@ def main():
     now = time.time()
     counter = 1
     seen_ips = set()  # <--- перед циклом
-    
-    print(f"🔄 Проверка {len(unique_links)} строк")
     # ----------------------------------------------------------
 # --- ЦИКЛ ПРОВЕРКИ ---
+    print(f"📡 Начинаю проверку. Всего закрепов в памяти: {len(pinned_list)}")
+    
     for link in unique_links:
-        clean_link = link.replace("- [x] ", "").replace("- [ ] ", "").strip()
-        # Извлекаем чистую базу для сравнения (всё до #)
+        clean_link = link.strip()
+        # Извлекаем "базу" (то, что до знака #)
         base_part = clean_link.split("#", 1)[0].strip()
         
-        # Проверяем, есть ли эта база в списке закрепов
-        # Мы ищем base_part в pinned_list, где тоже могут быть полные ссылки
-        is_pinned = any(base_part in p for p in pinned_list)
+        # Ищем совпадение в списке закрепов
+        # Мы ищем base_part внутри каждой строки из pinned_list
+        found_pinned_full = None
+        for p in pinned_list:
+            if base_part in p:
+                found_pinned_full = p
+                break
 
-        if is_pinned:
-            # Находим оригинальную строку из pinned.txt, чтобы сохранить флаги и имя
-            original_pinned = next((p for p in pinned_list if base_part in p), clean_link)
-            
+        if found_pinned_full:
             working_for_base.append(base_part)
-            working_for_sub.append(original_pinned) # Сохраняем как есть!
+            working_for_sub.append(found_pinned_full) 
             
-            print(f"✅ ЗАКРЕП СОХРАНЕН (БЕЗ ИЗМЕНЕНИЙ): {original_pinned[:50]}...")
-            # counter не увеличиваем для закрепов, чтобы не сбивать нумерацию обычных wifi
-            continue
+            # ВЫВОД В КОНСОЛЬ: теперь ты будешь видеть это!
+            name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Без имени"
+            print(f"💎 [PINNED] OK: {name}")
+            
+            continue # Важно: уходим на следующий круг, не заходя в проверки порта и пинга
         # ---------------------------------------------------------
     
         # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---

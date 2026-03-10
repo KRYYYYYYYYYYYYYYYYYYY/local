@@ -1,4 +1,9 @@
 name: Auto Update VPN
+
+concurrency:
+  group: vpn-manager-lock
+  cancel-in-progress: false
+
 on:
   schedule:
     - cron: '0 */2 * * *'  # Запуск каждые 2 часа (00:00, 02:00 и т.д.)

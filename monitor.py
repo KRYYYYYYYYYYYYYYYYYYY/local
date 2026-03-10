@@ -39,29 +39,31 @@ def remove_from_all(base_part):
 
 def deep_kill_check(link):
     base_part = link.split("#")[0].strip()
-    if is_pinned(base_part): return True # ИММУНИТЕТ
+    if is_pinned(base_part): return True, 0 # ИММУНИТЕТ
     
     host, port = extract_host_port(base_part)
-    if not host: return False
+    if not host: return False, 404
 
-    for _ in range(3): # 3 удара для точности
+    for _ in range(3): 
         try:
             start = time.time()
             with socket.create_connection((host, port), timeout=3.5) as s:
-                # Если TLS/Reality - имитируем хендшейк
                 if "security=tls" in link or "security=reality" in link:
-                    ssl.create_default_context().wrap_socket(s, server_hostname=host)
+                    context = ssl.create_default_context()
+                    context.check_hostname = False
+                    context.verify_mode = ssl.CERT_NONE
+                    context.wrap_socket(s, server_hostname=host)
                 else:
                     s.sendall(b'\x16\x03\x01\x00\x00')
             lat = (time.time() - start) * 1000
-            if lat > 1000: return False # Слишком медленно
+            if lat > 1000: return False, 1001 # Тормоз
             time.sleep(0.5)
-        except: return False # Сдох
-    return True
-
+        except: return False, 404 # Сдох
+    return True, 200
+    
 def main_monitor():
     start_run = time.time()
-    while time.time() - start_run < 600: # 10 минут работы
+    while time.time() - start_run < 600:
         print(f"🕵️ Обход в {time.strftime('%H:%M:%S')}")
         
         all_to_check = []
@@ -71,11 +73,19 @@ def main_monitor():
                     all_to_check.extend([l.strip() for l in file if 'vless://' in l])
         
         for link in set(all_to_check):
-            if not deep_kill_check(link):
-                base = link.split("#")[0]
-                print(f"💀 КИЛЛЕР: Удаляю {base[:30]}")
+            is_ok, status_code = deep_kill_check(link)
+            if not is_ok:
+                base = link.split("#")[0].strip()
+                # 3. ВЫКИДЫВАЕМ ИЗ СПИСКОВ В ЛЮБОМ СЛУЧАЕ
                 remove_from_all(base)
-                add_to_blacklist(base)
+                
+                # 4. В БАН ТОЛЬКО ЕСЛИ СДОХ ИЛИ > 1000мс
+                if status_code == 404 or status_code == 1001:
+                    print(f"💀 КИЛЛЕР (БАН): {base[:30]} - Сдох или >1000мс")
+                    add_to_blacklist(base)
+                else:
+                    # Если какая-то другая ошибка (джиттер и т.д.) - просто выкидываем
+                    print(f"⚠️ ВЫБРОС (VETTED): {base[:30]} - Не прошел проверку, но жив")
         
         time.sleep(60) # Пауза между кругами ада
 

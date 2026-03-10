@@ -99,10 +99,13 @@ def main():
     token = os.getenv("GH_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
 
+    blacklist = set()
     pinned_list = []
     deferred_base = []
     current_base = []
     external_servers = []
+    ranking_db = {}
+    vetted_list = []
     
     blacklist = set()
     if os.path.exists('test1/blacklist.txt'):

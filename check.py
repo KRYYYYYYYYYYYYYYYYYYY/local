@@ -267,16 +267,20 @@ def main():
         if found_pinned_full:
             working_for_base.append(base_part)
             
-            # Извлекаем текущее имя и добавляем метку в конец
+            # Извлекаем текущее имя (там может быть флаг, если он был вpinned.txt)
             current_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Без имени"
-            new_pinned_name = f"{current_name} 💎 [PINNED]"
             
-            # Сохраняем в подписку с новым красивым именем
+            # Собираем: Номер + Старое имя (с твоим флагом) + Алмаз
+            new_pinned_name = f"{counter}. {current_name} 💎 [PINNED]"
+            
+            # rebuild_link_name заменяет только часть после #, флаги внутри параметров не пострадают
             working_for_sub.append(rebuild_link_name(found_pinned_full, new_pinned_name))
             
-            print(f"💎 [PINNED] OK: {current_name}")
-            continue # Уходим на следующий круг
-
+            print(f"💎 [PINNED] OK: {new_pinned_name}")
+            
+            counter += 1 
+            continue
+            
             # Фильтруем мусор
         if base_part in blacklist:
             continue

@@ -265,22 +265,20 @@ def main():
                 break
 
         if found_pinned_full:
-            
             working_for_base.append(base_part)
-
             seen_parts.add(base_part)
             
-            # Извлекаем текущее имя (там может быть флаг, если он был вpinned.txt)
-            # 1. Берем сырое имя из ссылки
+            # 1. Извлекаем сырое имя из фрагмента ссылки (#...)
             raw_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Без имени"
             
-            # 2. ОЧИСТКА: Убираем старые "Цифра. " и "💎 [PINNED]", чтобы не дублировались
+            # 2. ОЧИСТКА: Удаляем старые "1. ", "2. " и "💎 [PINNED]"
+            # re.sub найдет цифру в начале или твой тег и сотрет их
             clean_name = re.sub(r'^\d+\.\s+|💎\s*\[PINNED\]', '', raw_name).strip()
             
-            # 3. Собираем чистое новое имя
+            # 3. Собираем чистое имя с актуальным номером
             new_pinned_name = f"{counter}. {clean_name} 💎 [PINNED]"
             
-            # rebuild_link_name заменяет только часть после #, флаги внутри параметров не пострадают
+            # Добавляем в список для подписки
             working_for_sub.append(rebuild_link_name(found_pinned_full, new_pinned_name))
             
             print(f"💎 [PINNED] OK: {new_pinned_name}")

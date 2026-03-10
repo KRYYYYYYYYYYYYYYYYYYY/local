@@ -248,16 +248,19 @@ def main():
     MAX_TO_CHECK = 300  # <--- ДОБАВЬ ЭТО (лимит, чтобы скрипт не шел до конца очереди вечно)
     seen_ips = set()
     # ----------------------------------------------------------
-# --- ЦИКЛ ПРОВЕРКИ ---
-    print(f"📡 Начинаю проверку. Всего закрепов в памяти: {len(pinned_list)}")
+# --- ЦИКЛ ПРОВЕРКИ (ИЩЕМ 200 РАБОЧИХ) ---
+    print(f"📡 Начинаю проверку. Цель: 200 серверов. Всего в очереди: {len(unique_links)}")
     
-    for link in unique_links:
+    idx = 0
+    # Работаем, пока не набрали 200 в подписку ИЛИ пока не кончились ссылки в unique_links
+    while len(working_for_sub) < 200 and idx < len(unique_links):
+        link = unique_links[idx]
+        idx += 1 # Сдвигаем указатель
+        
         clean_link = link.strip()
-        # Извлекаем "базу" (то, что до знака #)
         base_part = clean_link.split("#", 1)[0].strip()
         
-        # Ищем совпадение в списке закрепов
-        # Мы ищем base_part внутри каждой строки из pinned_list
+        # --- БЛОК ЗАКРЕПОВ (PINNED) ---
         found_pinned_full = None
         for p in pinned_list:
             if base_part in p:
@@ -267,44 +270,17 @@ def main():
         if found_pinned_full:
             working_for_base.append(base_part)
             seen_parts.add(base_part)
-            
-            # 1. Извлекаем сырое имя из фрагмента ссылки (#...)
-            raw_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Без имени"
-            
-            # 2. ОЧИСТКА: Удаляем старые "1. ", "2. " и "💎 [PINNED]"
-            # re.sub найдет цифру в начале или твой тег и сотрет их
-            clean_name = re.sub(r'^\d+\.\s+|💎\s*\[PINNED\]', '', raw_name).strip()
-            
-            # 3. Собираем чистое имя с актуальным номером
-            new_pinned_name = f"{counter}. {clean_name} 💎 [PINNED]"
-            
-            # Добавляем в список для подписки
-            working_for_sub.append(rebuild_link_name(found_pinned_full, new_pinned_name))
-            
-            print(f"💎 [PINNED] OK: {new_pinned_name}")
-            
+            raw_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Server"
+            clean_name = re.sub(r'💎\s*\[PINNED\]\s*\d+', '', raw_name).strip()
+            new_name = f"{clean_name} 💎 [PINNED] {counter}"
+            working_for_sub.append(rebuild_link_name(found_pinned_full, new_name))
+            print(f"💎 [PINNED] OK: {new_name}")
             counter += 1 
             continue
             
-            # Фильтруем мусор
+        # --- ФИЛЬТРЫ ---
         if base_part in blacklist:
             continue
-
-        # Проверяем, не достигли ли мы лимита 300 проверок
-        if checked_today >= MAX_TO_CHECK:
-            new_deferred.append(link) # Записываем в список "на завтра"
-            continue # Пропускаем саму проверку и идем к следующей ссылке
-            
-        checked_today += 1 # Если прошли фильтры, увеличиваем счетчик и идем пинговать
-        
-        # --- КОНЕЦ НОВОГО КУСКА ---
-    
-# --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
-        if base_part in blacklist:
-            print(f"🚫 ЗАБЛОКИРОВАН ГАЛОЧКОЙ: {base_part[:40]}...")
-            continue
-        
-        # --- ВАЛИДАЦИЯ UUID ---
         if not re.search(r'[a-f0-9\-]{36}@', base_part):
             continue 
     
@@ -315,13 +291,8 @@ def main():
         # --- ЭТАП 1: ХАРД-РЕЗОЛВИНГ + ПРОВЕРКА СВЯЗИ ---
         resolved_ip = None
         is_alive = False
-        latency = 9999
-        
         try:
-            # Превращаем буквы в IP (Хард-резолвинг)
             resolved_ip = socket.gethostbyname(host) if not is_ipv6(host) else host
-            
-            # Удаление дубликатов по реальному IP
             if resolved_ip in seen_ips:
                 continue 
             
@@ -339,7 +310,6 @@ def main():
                     sock.sendall(b'\x16\x03\x01\x00\x00')
             
             is_alive = True
-            latency = int((time.time() - start_time) * 1000)
             seen_ips.add(resolved_ip) 
         except:
             is_alive = False
@@ -354,49 +324,36 @@ def main():
             if country not in ALLOWED_COUNTRIES:
                 continue
     
-            # Сохраняем оригинал в 1.txt
             working_for_base.append(base_part)
-            
-            # Подставляем IP в ссылку для подписки (wifi.txt)
             ip_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
             sub_link = base_part.replace(endpoint, f"@{ip_str}:{port}", 1)
             
-            # Генерируем SNI, если его нет (нужно для работы по IP)
             if "sni=" not in sub_link.lower() and not is_ipv6(host):
                 sep = "&" if "?" in sub_link else "?"
                 sub_link += f"{sep}sni={host}"
             
-            # Называем ссылку
             final_link = rebuild_link_name(sub_link, f"wifi {counter}")
             working_for_sub.append(final_link)
             
-            print(f"✅ ОК ({country}): {host} -> {resolved_ip} (wifi {counter})")
+            print(f"✅ ОК {len(working_for_sub)}/200 ({country}): {host} -> {resolved_ip} (wifi {counter})")
             counter += 1
 
-            # --- РЕЙТИНГ ВЫСЛУГИ ---------------------------------------------------------------------
+            # --- РЕЙТИНГ ВЫСЛУГИ ---
             rank = ranking_db.get(base_part, 0) + 1
             ranking_db[base_part] = rank
-
-            # Вывод прогресса в консоль
             print(f"📈 Рейтинг {host}: {rank}/12")
             
-            # Логика повышения
             if rank >= 12:
-                # 1. Читаем файл целиком, чтобы проверить наличие по base_part
                 vetted_content = ""
                 if os.path.exists('test1/vetted.txt'):
                     with open('test1/vetted.txt', 'r', encoding='utf-8') as vf:
                         vetted_content = vf.read()
                 
-                # 2. Если адреса (base_part) еще нет в файле — записываем
                 if base_part not in vetted_content:
                     with open('test1/vetted.txt', 'a', encoding='utf-8') as vf:
-                        vf.write(link + "\n") # Записываем ПОЛНУЮ ссылку с флагом/именем
-                    
-                    # Обновляем vetted_list в памяти, чтобы не читать файл снова в этом же запуске
+                        vf.write(link + "\n")
                     if base_part not in vetted_list:
                         vetted_list.append(base_part)
-                        
                     print(f"🎖️ ПОВЫШЕН ДО VETTED (рейтинг {rank}): {host}")
     
         # --- ЭТАП 3: ЕСЛИ СЕРВЕР НЕ ОТВЕЧАЕТ ---
@@ -404,61 +361,62 @@ def main():
             if base_part in ranking_db:
                 del ranking_db[base_part]
             if base_part in vetted_list:
-                vetted_list.remove(base_part) # Опционально: убираем из элиты, если сдох
+                vetted_list.remove(base_part)
             
             fail_time = history.get(base_part, now)
             
-            # Автоочистка если лежит больше суток
             if now - fail_time > 86400: 
                 print(f"🗑️ УДАЛЕН И ЗАБЛОКИРОВАН (1 день оффлайн): {host}")
                 with open('test1/blacklist.txt', 'a') as bl:
                     bl.write(base_part + "\n")
                 continue 
     
-            # Grace Period (временный DOWN) — сохраняем логику, меняем только имя
             if now - fail_time < GRACE_PERIOD:
                 country = get_country_code(host)
                 if country in ALLOWED_COUNTRIES:
                     working_for_base.append(base_part)
                     new_history[base_part] = fail_time
-                    
-                    # Ставим ⏳ в начало, убираем (DOWN) из конца
                     working_for_sub.append(rebuild_link_name(link, f"⏳ wifi {counter}"))
-                    
                     print(f"⏳ DOWN ({country}): {host} (оставлен с меткой ⏳)")
                     counter += 1
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")
+
+    # --- ВСЕ, ЧТО НЕ УСПЕЛИ ПРОВЕРИТЬ (если набрали 200 раньше конца списка) ---
+    new_deferred = unique_links[idx:] 
+# --- КОНЕЦ ЦИКЛА ПРОВЕРКИ ---
 # --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ИСПРАВЛЕНО) ---
     
-    # 1. Разделяем то, что мы напроверяли, на закрепы и обычные
+    # 1. Разделяем на закрепы и обычные
     pinned_in_sub = [l for l in working_for_sub if "💎 [PINNED]" in l]
     others_in_sub = [l for l in working_for_sub if "💎 [PINNED]" not in l]
-
+    
     # 2. Применяем лимиты
-    # Берем максимум 50 закрепов (если их меньше, возьмутся все имеющиеся)
+    # Берем закрепы (до 50)
     final_pinned = pinned_in_sub[:50]
     
-    # Считаем, сколько осталось мест до 200
+    # Считаем слоты для обычных (до 200 суммарно)
     remaining_slots = 200 - len(final_pinned)
+    final_others = others_in_sub[:remaining_slots]
     
-    # Забиваем оставшиеся места обычными серверами
-    final_to_sub = final_pinned + others_in_sub[:remaining_slots]
+    # Итоговый список для wifi.txt
+    final_to_sub = final_pinned + final_others
     
-    # 3. Формируем список отложенных (на завтра)
-    # Сюда идет: те, кто не влез в 200 + те, до кого вообще не дошла очередь (new_deferred)
+    # 3. Формируем deferred.txt (остатки)
+    # Сюда идет то, что не влезло из-за лимитов + то, что вообще не проверялось
     leftover_others = others_in_sub[remaining_slots:]
     deferred_final = new_deferred + leftover_others
-
-    # 4. Сохраняем отложенные
+    
+    # 4. Сохраняем
     with open('test1/deferred.txt', "w", encoding="utf-8") as f:
         f.write("\n".join(deferred_final))
-
-    # Для отладки в консоли
-    print(f"🏁 Итог за запуск:")
+    
+    with open('kr/mob/wifi.txt', "w", encoding="utf-8") as f:
+        f.write("# profile-title: 🏴WIFI🏴\n\n" + "\n".join(final_to_sub))
+    
+    print(f"🏁 План выполнен: {len(final_to_sub)} в подписке. Остаток в базе: {len(deferred_final)}")
     print(f"💎 Закрепленных в подписке: {len(final_pinned)} (из лимита 50)")
     print(f"✅ Всего в wifi.txt: {len(final_to_sub)} (из лимита 200)")
-    print(f"📦 В отложенных (deferred.txt): {len(deferred_final)}")
     
     # 3. Сохранение (ТВОЙ БЛОК БЕЗ ИЗМЕНЕНИЙ НАДПИСЕЙ)
     os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)

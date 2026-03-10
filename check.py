@@ -226,7 +226,7 @@ def main():
     print(f"🔄 Проверка {len(unique_links)} строк")
     
     seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
-     for link in unique_links:
+    for link in unique_links:
         base_part = link.split("#", 1)[0].strip()
         
         # --- ДОБАВИТЬ: ИММУНИТЕТ ДЛЯ ЗАКРЕПЛЕННЫХ (БЕЗ ПРОВЕРОК) ---

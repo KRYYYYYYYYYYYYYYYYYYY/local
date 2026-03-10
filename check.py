@@ -221,6 +221,10 @@ def main():
     print(f"🔄 Проверка {len(unique_links)} строк")
     
 seen_ips = set() # <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ПЕРЕД FOR
+# ----------------- ВСТАВИТЬ ПЕРЕД ЦИКЛОМ -----------------
+all_lines = pinned_list + current_base + deferred_base + external_servers
+unique_links = list(dict.fromkeys(line.strip() for line in all_lines if "vless://" in line))
+# ----------------------------------------------------------
 for link in unique_links:
     clean_link = link.replace("- [x] ", "").replace("- [ ] ", "").strip()
     base_part = clean_link.split("#", 1)[0].strip()

@@ -227,7 +227,7 @@ def main():
 
 # --- ИЗМЕНЕНИЕ ТУТ: МЕНЯЕМ ПОРЯДОК ОЧЕРЕДИ ---
     # Сначала отложенные с прошлого раза, потом новые, потом старые из базы
-    all_lines = deferred_base + external_servers + current_base
+    all_lines = pinned_list + deferred_base + external_servers + current_base
     
     # Убираем дубликаты, сохраняя этот новый приоритетный порядок
     unique_links = []
@@ -271,10 +271,14 @@ def main():
             seen_parts.add(base_part)
             
             # Извлекаем текущее имя (там может быть флаг, если он был вpinned.txt)
-            current_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Без имени"
+            # 1. Берем сырое имя из ссылки
+            raw_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Без имени"
             
-            # Собираем: Номер + Старое имя (с твоим флагом) + Алмаз
-            new_pinned_name = f"{counter}. {current_name} 💎 [PINNED]"
+            # 2. ОЧИСТКА: Убираем старые "Цифра. " и "💎 [PINNED]", чтобы не дублировались
+            clean_name = re.sub(r'^\d+\.\s+|💎\s*\[PINNED\]', '', raw_name).strip()
+            
+            # 3. Собираем чистое новое имя
+            new_pinned_name = f"{counter}. {clean_name} 💎 [PINNED]"
             
             # rebuild_link_name заменяет только часть после #, флаги внутри параметров не пострадают
             working_for_sub.append(rebuild_link_name(found_pinned_full, new_pinned_name))

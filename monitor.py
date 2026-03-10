@@ -77,7 +77,7 @@ def main_monitor():
                 with open(f, 'r', encoding='utf-8') as file:
                     all_to_check.extend([l.strip() for l in file if 'vless://' in l])
         
-         for link in set(all_to_check):
+        for link in set(all_to_check):
             is_ok, status_code = deep_kill_check(link)
             if not is_ok:
                 base = link.split("#")[0].strip()

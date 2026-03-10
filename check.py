@@ -98,6 +98,11 @@ def main():
     import subprocess
     token = os.getenv("GH_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
+
+    pinned_list = []
+    deferred_base = []
+    current_base = []
+    external_servers = []
     
     blacklist = set()
     if os.path.exists('test1/blacklist.txt'):

@@ -270,10 +270,19 @@ def main():
         if found_pinned_full:
             working_for_base.append(base_part)
             seen_parts.add(base_part)
-            raw_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Server"
-            clean_name = re.sub(r'💎\s*\[PINNED\]\s*\d+', '', raw_name).strip()
-            new_name = f"{clean_name} 💎 [PINNED] {counter}"
-            working_for_sub.append(rebuild_link_name(found_pinned_full, new_name))
+            
+            # 1. Достаем чистое название из pinned.txt (то, что после #)
+            # Если там "Эстония", то original_name станет "Эстония"
+            original_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Server"
+            
+            # 2. Просто лепим хвост к оригинальному названию
+            # Результат: "Эстония 💎 [PINNED] 1"
+            new_name = f"{original_name} 💎 [PINNED] {counter}"
+            
+            # 3. Собираем ссылку заново: адрес + # + новое имя
+            final_pinned_link = f"{base_part}#{urllib.parse.quote(new_name)}"
+            working_for_sub.append(final_pinned_link)
+            
             print(f"💎 [PINNED] OK: {new_name}")
             counter += 1 
             continue

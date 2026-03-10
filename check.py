@@ -254,14 +254,16 @@ def main():
 
         if found_pinned_full:
             working_for_base.append(base_part)
-            working_for_sub.append(found_pinned_full) 
             
-            # ВЫВОД В КОНСОЛЬ: теперь ты будешь видеть это!
-            name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Без имени"
-            print(f"💎 [PINNED] OK: {name}")
+            # Извлекаем текущее имя и добавляем метку в конец
+            current_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Без имени"
+            new_pinned_name = f"{current_name} 💎 [PINNED]"
             
-            continue # Важно: уходим на следующий круг, не заходя в проверки порта и пинга
-        # ---------------------------------------------------------
+            # Сохраняем в подписку с новым красивым именем
+            working_for_sub.append(rebuild_link_name(found_pinned_full, new_pinned_name))
+            
+            print(f"💎 [PINNED] OK: {current_name}")
+            continue # Уходим на следующий круг
     
 # --- ПРОВЕРКА ЧЕРНОГО СПИСКА ---
         if base_part in blacklist:
@@ -331,7 +333,7 @@ def main():
                 sub_link += f"{sep}sni={host}"
             
             # Называем ссылку
-            final_link = rebuild_link_name(sub_link, f"wifi {counter} [{latency}ms]")
+            final_link = rebuild_link_name(sub_link, f"wifi {counter}")
             working_for_sub.append(final_link)
             
             print(f"✅ ОК ({country}): {host} -> {resolved_ip} (wifi {counter})")
@@ -361,14 +363,17 @@ def main():
                     bl.write(base_part + "\n")
                 continue 
     
-            # Grace Period (временный DOWN)
+            # Grace Period (временный DOWN) — сохраняем логику, меняем только имя
             if now - fail_time < GRACE_PERIOD:
                 country = get_country_code(host)
                 if country in ALLOWED_COUNTRIES:
                     working_for_base.append(base_part)
                     new_history[base_part] = fail_time
-                    working_for_sub.append(rebuild_link_name(link, f"wifi {counter} (DOWN)"))
-                    print(f"⏳ DOWN ({country}): {host}")
+                    
+                    # Ставим ⏳ в начало, убираем (DOWN) из конца
+                    working_for_sub.append(rebuild_link_name(link, f"⏳ wifi {counter}"))
+                    
+                    print(f"⏳ DOWN ({country}): {host} (оставлен с меткой ⏳)")
                     counter += 1
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")

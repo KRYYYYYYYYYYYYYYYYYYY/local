@@ -1,4 +1,9 @@
 name: Server Monitor (Executioner)
+
+concurrency:
+  group: vpn-manager-lock
+  cancel-in-progress: false
+  
 on:
   schedule:
     - cron: '*/15 * * * *' # Запуск каждые 15 минут

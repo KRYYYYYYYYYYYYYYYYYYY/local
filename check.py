@@ -416,7 +416,7 @@ def main():
     all_others = [l for l in working_for_sub if "💎 [PINNED]" not in l]
     
     final_to_sub = []
-    seen_in_final = set() # То самое "сито" для адресов
+    seen_in_final = set()# То самое "сито" для адресов
     
     # 2. Сначала берем закрепы (Приоритет №1)
     # Лимит 50 штук
@@ -426,7 +426,8 @@ def main():
         if base not in seen_in_final:
             final_to_sub.append(l)
             seen_in_final.add(base)
-    
+            
+    final_pinned = [l for l in final_to_sub if "💎 [PINNED]" in l]
     # 3. Добираем обычные сервера, пока не станет 200 (Приоритет №2)
     # Но только те, которых еще НЕТ в закрепах
     for l in all_others:
@@ -447,11 +448,8 @@ def main():
     
     with open('kr/mob/wifi.txt', "w", encoding="utf-8") as f:
         f.write(HEADER + "\n".join(final_to_sub))
-    
+        
     print(f"🏁 План выполнен: {len(final_to_sub)} в подписке. Остаток в базе: {len(deferred_final)}")
-    
-    final_pinned = [l for l in final_to_sub if "💎 [PINNED]" in l]
-    
     print(f"💎 Закрепленных в подписке: {len(final_pinned)} (из лимита 50)")
     print(f"✅ Всего в wifi.txt: {len(final_to_sub)} (из лимита 200)")
     

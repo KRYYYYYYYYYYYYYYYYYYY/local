@@ -263,6 +263,8 @@ def main():
 # --- ЦИКЛ ПРОВЕРКИ (ИЩЕМ 200 РАБОЧИХ) ---
     print(f"📡 Начинаю проверку. Цель: 200 серверов. Всего в очереди: {len(unique_links)}")
     
+    seen_parts = set()
+    
     idx = 0
     # Работаем, пока не набрали 200 в подписку ИЛИ пока не кончились ссылки в unique_links
     while len(working_for_sub) < 200 and idx < len(unique_links):

@@ -267,22 +267,24 @@ def main():
         if found_pinned_full:
             seen_parts.add(base_part)
             
-            # --- ШАГ 1: СОХРАНЯЕМ ИМЯ ИЗ PINNED.TXT (БЕРЕЖНО) ---
-            # Забираем всё, что после решетки в pinned.txt
-            raw_pinned_name = found_pinned_full.split("#")[-1].strip() if "#" in found_pinned_full else "Server"
+            # 1. Достаем старое имя из закрепа
+            raw_pinned_name = found_pinned_full.split("#")[-1].strip() if "#" in found_pinned_full else ""
             original_label = urllib.parse.unquote(raw_pinned_name)
+            
+            # 2. ВЫТАЩИМ ТОЛЬКО ФЛАГ (эмодзи)
+            # Эта регулярка ищет любые символы, которые не буквы и не цифры в начале строки
+            emoji_match = re.match(r'^([^\w\s\d]+)', original_label)
+            flag = emoji_match.group(1).strip() if emoji_match else ""
 
-            # --- ШАГ 2: РЕЖЕМ ССЫЛКУ (УБИВАЕМ ХВОСТЫ) ---
-            # Теперь чистим base_part, чтобы там не осталось старого названия
+            # 3. ЧИСТИМ АДРЕС (режем всё старое после #)
             clean_base = base_part.split("#")[0].strip()
             
-            # --- ШАГ 3: СОБИРАЕМ ЗАНОВО ---
-            # К голой ссылке приклеиваем сохраненное имя + новую группировку
-            new_name = f" 💎{} [PINNED] {counter}"
+            # 4. СОБИРАЕМ: [ФЛАГ] + [ТВОЙ ХВОСТ]
+            new_name = f"{flag} 💎 [PINNED] {counter}".strip()
             final_linkk = f"{clean_base}#{urllib.parse.quote(new_name)}"
             
             working_for_sub.append(final_linkk)
-            print(f"💎 [PINNED] OK: {new_name}")
+            print(f"💎 [PINNED] {counter} с флагом '{flag}' готов")
             
             counter += 1 
             continue

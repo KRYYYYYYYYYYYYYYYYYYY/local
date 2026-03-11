@@ -433,13 +433,33 @@ def main():
     leftover_from_others = [l for l in all_others if l.split("#")[0].strip() not in seen_in_final]
     deferred_final = new_deferred + leftover_from_others
     
-    # 5. Сохраняем результат
+# 5. Сохраняем результат
+    
+    # Сначала сохраняем deferred.txt (очередь на потом)
     with open('test1/deferred.txt', "w", encoding="utf-8") as f:
         f.write("\n".join(deferred_final))
     
-    with open('kr/mob/wifi.txt', "w", encoding="utf-8") as f:
-        f.write(HEADER + "\n".join(final_to_sub))
+    # ФОРМИРУЕМ ПРАВИЛЬНЫЙ ТЕКСТ ДЛЯ ПОДПИСКИ
+    # .strip() убирает случайные пробелы в начале/конце хедера
+    # \n\n гарантирует, что между командами и ссылками будет пустая строка (важно для iPhone)
+    final_content = HEADER.strip() + "\n\n" + "\n".join(final_to_sub)
+
+    # ЗАПИСЫВАЕМ В ОСНОВНОЙ ФАЙЛ (kr/mob/wifi.txt)
+    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        f.write(final_content)
         
+    # Сохраняем рабочую базу ссылок для следующего запуска чекера
+    os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
+    with open(INPUT_FILE, "w", encoding="utf-8") as f: 
+        f.write("\n".join(working_for_base))
+    
+    # Сохраняем историю и рейтинги
+    with open(STATUS_FILE, "w") as f: 
+        json.dump(new_history, f)
+    with open('test1/ranking.json', "w") as f:
+        json.dump(ranking_db, f)
+
     print(f"🏁 План выполнен: {len(final_to_sub)} в подписке. Остаток в базе: {len(deferred_final)}")
     # Базовые части закрепов
     pinned_bases = {p.split("#")[0].strip() for p in pinned_list}

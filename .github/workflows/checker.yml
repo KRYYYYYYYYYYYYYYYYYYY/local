@@ -36,16 +36,18 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           
-          # Добавляем файлы
-          git add test1/ranking.json test1/vetted.txt kr/mob/wifi.txt test1/deferred.txt test1/1.txt
+          # 1. Добавляем ВСЕ изменения
+          git add .
           
-          # Коммитим. Если изменений нет — идем дальше.
+          # 2. Коммитим (если есть что)
           git commit -m "📊 Sync: Ranking and Vetted updated [skip ci]" || echo "No changes to commit"
           
-          # Забираем изменения из облака. 
-          # Стратегия -X theirs говорит: "если файл в облаке изменился, 
-          # попробуй накатить мои изменения сверху".
+          # 3. Если остались какие-то «неучтенные» файлы, прячем их
+          git stash
+          
+          # 4. Обновляем ветку
           git pull --rebase -X theirs origin main
           
-          # Пушим результат
+          # 5. Возвращаем спрятанное (если оно было) и пушим
+          git stash pop || echo "Nothing to pop"
           git push origin main

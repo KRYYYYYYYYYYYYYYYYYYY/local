@@ -93,7 +93,7 @@ def fetch_external_servers() -> list:
     for url in urls:
         if not url.strip(): continue
         try:
-            print(f"📥 Загрузка из {url}...")
+            print(f"📥 Загрузка из {url}")
             with urllib.request.urlopen(url, timeout=8) as response:
                 configs = response.read().decode("utf-8").splitlines()
                 all_configs.extend(configs)
@@ -271,22 +271,27 @@ def main():
             working_for_base.append(base_part)
             seen_parts.add(base_part)
             
-            # 1. Берем ТОЛЬКО название из pinned.txt (то, что после #)
-            # original_name станет "🇪🇪+Эстония"
-            original_name = found_pinned_full.split("#")[-1].strip() if "#" in found_pinned_full else "Server"
+            # 1. Разбираем строку из pinned.txt на адрес и то, что после #
+            # base_link — это vless://..., original_name — это "🇪🇪+Эстония"
+            base_link, _, original_name = found_pinned_full.partition("#")
             
-            # 2. ОЧИЩАЕМ base_part от старых хвостов, если они там есть
-            # Мы берем только то, что ДО решетки. Теперь там только vless://... без имен
-            clean_base = base_part.split("#")[0]
+            # 2. Если имени вдруг нет (пусто после #), ставим заглушку
+            if not original_name:
+                original_name = "Server"
+            else:
+                original_name = urllib.parse.unquote(original_name).strip()
+
+            # 3. Собираем имя: старое (Эстония) + твой новый хвост
+            # Итог: "🇪🇪+Эстония 💎 [PINNED] 1"
+            final_name = f"{original_name} 💎 [PINNED] {counter}"
             
-            # 3. Собираем имя
-            new_name = f"{original_name} 💎 [PINNED] {counter}"
-            
-            # 4. Склеиваем ЧИСТЫЙ адрес и НОВОЕ имя
-            final_link = f"{clean_base}#{urllib.parse.quote(new_name)}"
+            # 4. Склеиваем с ЧИСТЫМ адресом (берем только часть до решетки)
+            # Чтобы в base_part не притащилось старое название
+            clean_address = base_part.split("#")[0]
+            final_link = f"{clean_address}#{urllib.parse.quote(final_name)}"
             
             working_for_sub.append(final_link)
-            print(f"💎 [PINNED] OK: {new_name}")
+            print(f"💎 [PINNED] OK: {final_name}")
             
             counter += 1 
             continue

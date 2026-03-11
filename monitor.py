@@ -134,22 +134,16 @@ def main_monitor():
             
             if is_ok:
                 valid_others.append(link)
+
+                rank = ranking_db.get(base, {}).get("rank", 0) + 1
+                # --- ЛОГИКА НАКОПЛЕНИЯ (БЕЗ АВТО-ПОВЫШЕНИЯ) ---
+                # Просто даем +1 балл за то, что сервер выжил в эту минуту
                 
-                # 🔥 ПРОГРЕВ: +1 балл за стабильную минуту
-                rank = ranking_db.get(base, 0) + 1
-                ranking_db[base] = rank
+                ranking_db[base] = {"rank": rank, "link": link}
                 
-                # --- ЛОГИКА ПОВЫШЕНИЯ ---
-                if rank >= 12:
-                    vetted_content = ""
-                    if os.path.exists(VETTED_FILE):
-                        with open(VETTED_FILE, 'r', encoding='utf-8') as vf:
-                            vetted_content = vf.read()
-                    
-                    if base not in vetted_content:
-                        with open(VETTED_FILE, 'a', encoding='utf-8') as vf:
-                            vf.write(link + "\n")
-                        print(f"🎖️ ПОВЫШЕН ДО VETTED (баллы: {rank}): {base[:30]}...")
+                print(f"📈 {base[:20]}... живет. Баллы: {rank}")
+                # ВСЁ! Больше здесь никакого кода с VETTED_FILE быть не должно.
+                # Монитор больше не имеет права сам назначать "элиту".
             else:
                 remove_from_all(base)
                 # 🧊 ОБНУЛЕНИЕ: Упал — рейтинг сгорает

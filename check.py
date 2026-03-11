@@ -28,21 +28,25 @@ ALLOWED_COUNTRIES = {"US", "DE", "NL", "GB", "FR", "FI", "SG", "JP", "PL", "TR"}
 
 def rebuild_link_name(link: str, new_name: str) -> str:
     base, _, fragment = link.partition("#")
-    
-    # Если это уже закреп (есть слово FIXED), возвращаем как есть
-    if fragment and "FIXED" in urllib.parse.unquote(fragment):
-        return link
+
+    # Если это уже закреп — не трогаем
+    if fragment:
+        frag = urllib.parse.unquote(fragment).upper()
+        if "PINNED" in frag:
+            return link
 
     if not fragment:
         return f"{base}#{urllib.parse.quote(new_name)}"
 
     fragment_dec = urllib.parse.unquote(fragment)
-    
-    # Пытаемся сохранить флаг/эмодзи, если он есть
+
+    # Пытаемся сохранить флаг/эмодзи
     match = re.match(r"^([^\w\s\d]|[^\x00-\x7F])+", fragment_dec)
     if match:
         prefix = match.group(0).strip()
         return f"{base}#{urllib.parse.quote(prefix + ' ' + new_name)}"
+
+    return f"{base}#{urllib.parse.quote(new_name)}"
     
     return f"{base}#{urllib.parse.quote(new_name)}"
 

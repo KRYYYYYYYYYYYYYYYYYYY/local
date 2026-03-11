@@ -266,27 +266,27 @@ def main():
 
         if found_pinned_full:
             seen_parts.add(base_part)
-            
-            # 1. Достаем старое имя из закрепа
-            raw_pinned_name = found_pinned_full.split("#")[-1].strip() if "#" in found_pinned_full else ""
+        
+            # 1. Достаём только флаг из старого имени
+            raw_pinned_name = found_pinned_full.split("#")[-1].strip()
             original_label = urllib.parse.unquote(raw_pinned_name)
-            
-            # 2. ВЫТАЩИМ ТОЛЬКО ФЛАГ (эмодзи)
-            # Эта регулярка ищет любые символы, которые не буквы и не цифры в начале строки
+        
             emoji_match = re.match(r'^([^\w\s\d]+)', original_label)
             flag = emoji_match.group(1).strip() if emoji_match else ""
-
-            # 3. ЧИСТИМ АДРЕС (режем всё старое после #)
+        
+            # 2. Полностью перезаписываем имя
+            new_name = f"{flag} 💎 [PINNED] {counter}"
+        
+            # 3. Чистим базу
             clean_base = base_part.split("#")[0].strip()
-            
-            # 4. СОБИРАЕМ: [ФЛАГ] + [ТВОЙ ХВОСТ]
-            new_name = f"{flag} 💎 [PINNED] {counter}".strip()
+        
+            # 4. Собираем финальную ссылку
             final_linkk = f"{clean_base}#{urllib.parse.quote(new_name)}"
-            
+        
             working_for_sub.append(final_linkk)
             print(f"💎 [PINNED] {counter} с флагом '{flag}' готов")
-            
-            counter += 1 
+        
+            counter += 1
             continue
             
         # --- ФИЛЬТРЫ ---

@@ -449,6 +449,9 @@ def main():
         f.write(HEADER + "\n".join(final_to_sub))
     
     print(f"🏁 План выполнен: {len(final_to_sub)} в подписке. Остаток в базе: {len(deferred_final)}")
+    
+    final_pinned = [l for l in final_to_sub if "💎 [PINNED]" in l]
+    
     print(f"💎 Закрепленных в подписке: {len(final_pinned)} (из лимита 50)")
     print(f"✅ Всего в wifi.txt: {len(final_to_sub)} (из лимита 200)")
     

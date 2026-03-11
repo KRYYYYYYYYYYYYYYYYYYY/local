@@ -14,12 +14,6 @@ OUTPUT_FILE = 'kr/mob/wifi.txt'
 STATUS_FILE = 'test1/status.json'
 
 EXTERNAL_SOURCE_URL = [
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS%2BAll_RUS.txt",
-    "https://raw.githubusercontent.com/KiryaScript/white-lists/refs/heads/main/githubmirror/26.txt",
-    "https://raw.githubusercontent.com/KiryaScript/white-lists/refs/heads/main/githubmirror/27.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt"
 ]
 
 GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
@@ -271,28 +265,20 @@ def main():
             working_for_base.append(base_part)
             seen_parts.add(base_part)
             
-            # 1. Разбираем строку из pinned.txt на адрес и то, что после #
-            # base_link — это vless://..., original_name — это "🇪🇪+Эстония"
-            base_link, _, original_name = found_pinned_full.partition("#")
+            # Достаем родное имя из pinned.txt (Эстония, Финляндия и т.д.)
+            original_name = found_pinned_full.split("#")[-1].strip() if "#" in found_pinned_full else "Server"
             
-            # 2. Если имени вдруг нет (пусто после #), ставим заглушку
-            if not original_name:
-                original_name = "Server"
-            else:
-                original_name = urllib.parse.unquote(original_name).strip()
-
-            # 3. Собираем имя: старое (Эстония) + твой новый хвост
-            # Итог: "🇪🇪+Эстония 💎 [PINNED] 1"
-            final_name = f"{original_name} 💎 [PINNED] {counter}"
+            # Отрезаем всё лишнее от адреса
+            clean_base = base_part.split("#")[0]
             
-            # 4. Склеиваем с ЧИСТЫМ адресом (берем только часть до решетки)
-            # Чтобы в base_part не притащилось старое название
-            clean_address = base_part.split("#")[0]
-            final_link = f"{clean_address}#{urllib.parse.quote(final_name)}"
+            # Формируем КРАСИВОЕ имя для закрепа
+            # Результат: "Эстония 💎 [PINNED] 1"
+            new_name = f"{original_name} 💎 [PINNED] {counter}"
             
+            final_link = f"{clean_base}#{urllib.parse.quote(new_name)}"
             working_for_sub.append(final_link)
-            print(f"💎 [PINNED] OK: {final_name}")
             
+            print(f"💎 [PINNED] OK: {new_name}")
             counter += 1 
             continue
             

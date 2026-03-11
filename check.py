@@ -148,7 +148,7 @@ def main():
         base = p.split("#")[0].strip()
         clean_pinned[base] = p  # последний вариант перезапишет предыдущий
 
-pinned_list = list(clean_pinned.values())
+    pinned_list = list(clean_pinned.values())
 
     # 2. Загружаем Отложенные (Deferred)
     deferred_base = []

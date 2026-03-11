@@ -254,6 +254,9 @@ def main():
         clean_link = link.strip()
         base_part = clean_link.split("#", 1)[0].strip()
         
+        if base_part in seen_parts and not any(base_part in p for p in pinned_list):
+            continue
+        
         # --- БЛОК ЗАКРЕПОВ (PINNED) ---
         found_pinned_full = None
         for p in pinned_list:
@@ -392,37 +395,47 @@ def main():
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")
 
-    # --- ВСЕ, ЧТО НЕ УСПЕЛИ ПРОВЕРИТЬ (если набрали 200 раньше конца списка) ---
-    new_deferred = unique_links[idx:] 
-# --- КОНЕЦ ЦИКЛА ПРОВЕРКИ ---
-# --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ИСПРАВЛЕНО) ---
+        # --- ВСЕ, ЧТО НЕ УСПЕЛИ ПРОВЕРИТЬ (если набрали 200 раньше конца списка) ---
+        new_deferred = unique_links[idx:] 
+    # --- КОНЕЦ ЦИКЛА ПРОВЕРКИ ---
+    # --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ИСПРАВЛЕНО) ---
+        
+        1. Разделяем то, что нашли, на две кучи
+    all_pinned = [l for l in working_for_sub if "💎 [PINNED]" in l]
+    all_others = [l for l in working_for_sub if "💎 [PINNED]" not in l]
     
-    # 1. Разделяем на закрепы и обычные
-    pinned_in_sub = [l for l in working_for_sub if "💎 [PINNED]" in l]
-    others_in_sub = [l for l in working_for_sub if "💎 [PINNED]" not in l]
+    final_to_sub = []
+    seen_in_final = set() # То самое "сито" для адресов
     
-    # 2. Применяем лимиты
-    # Берем закрепы (до 50)
-    final_pinned = pinned_in_sub[:50]
+    # 2. Сначала берем закрепы (Приоритет №1)
+    # Лимит 50 штук
+    for l in all_pinned:
+        if len(final_to_sub) >= 50: break
+        base = l.split("#")[0].strip()
+        if base not in seen_in_final:
+            final_to_sub.append(l)
+            seen_in_final.add(base)
     
-    # Считаем слоты для обычных (до 200 суммарно)
-    remaining_slots = 200 - len(final_pinned)
-    final_others = others_in_sub[:remaining_slots]
+    # 3. Добираем обычные сервера, пока не станет 200 (Приоритет №2)
+    # Но только те, которых еще НЕТ в закрепах
+    for l in all_others:
+        if len(final_to_sub) >= 200: break
+        base = l.split("#")[0].strip()
+        if base not in seen_in_final: # ВОТ ОНА — ЗАЩИТА ОТ ДУБЛЯ
+            final_to_sub.append(l)
+            seen_in_final.add(base)
     
-    # Итоговый список для wifi.txt
-    final_to_sub = final_pinned + final_others
+    # 4. Формируем deferred.txt (остатки)
+    # Сюда идет то, что не влезло + то, что вообще не проверялось
+    leftover_from_others = [l for l in all_others if l.split("#")[0].strip() not in seen_in_final]
+    deferred_final = new_deferred + leftover_from_others
     
-    # 3. Формируем deferred.txt (остатки)
-    # Сюда идет то, что не влезло из-за лимитов + то, что вообще не проверялось
-    leftover_others = others_in_sub[remaining_slots:]
-    deferred_final = new_deferred + leftover_others
-    
-    # 4. Сохраняем
+    # 5. Сохраняем результат
     with open('test1/deferred.txt', "w", encoding="utf-8") as f:
         f.write("\n".join(deferred_final))
     
     with open('kr/mob/wifi.txt', "w", encoding="utf-8") as f:
-        f.write("# profile-title: 🏴WIFI🏴\n\n" + "\n".join(final_to_sub))
+        f.write(HEADER + "\n".join(final_to_sub))
     
     print(f"🏁 План выполнен: {len(final_to_sub)} в подписке. Остаток в базе: {len(deferred_final)}")
     print(f"💎 Закрепленных в подписке: {len(final_pinned)} (из лимита 50)")

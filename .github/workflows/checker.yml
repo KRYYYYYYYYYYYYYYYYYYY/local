@@ -1,0 +1,40 @@
+name: 🛡️ Proxy Inquisitor & Monitor
+
+on:
+  workflow_dispatch:        # Запуск вручную
+  schedule:
+    - cron: '0 * * * *'  # Запуск раз в час (в начале каждого часа)
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # Даем права на запись в репозиторий
+
+    steps:
+      - name: 📂 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: ⚙️ Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Если нужны библиотеки типа requests, добавь их сюда
+
+      - name: 🕵️ Run Monitor
+        run: python monitor.py # Твой основной скрипт (тот, что 600 сек бегает)
+
+      - name: ⛓️ Run Torturer
+        run: python torture_bot.py # Новый скрипт "Инквизитор"
+
+      - name: 💾 Save Results
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add test1/ranking.json test1/vetted.txt kr/mob/wifi.txt test1/deferred.txt test1/1.txt
+          git commit -m "📊 Sync: Ranking and Vetted updated [skip ci]" || echo "No changes to commit"
+          git push

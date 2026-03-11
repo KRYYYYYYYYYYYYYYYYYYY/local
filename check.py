@@ -271,19 +271,23 @@ def main():
             working_for_base.append(base_part)
             seen_parts.add(base_part)
             
-            # 1. Достаем чистое название из pinned.txt (то, что после #)
-            # Если там "Эстония", то original_name станет "Эстония"
-            original_name = urllib.parse.unquote(found_pinned_full.split("#")[-1]) if "#" in found_pinned_full else "Server"
+            # 1. Берем ТОЛЬКО название из pinned.txt (то, что после #)
+            # original_name станет "🇪🇪+Эстония"
+            original_name = found_pinned_full.split("#")[-1].strip() if "#" in found_pinned_full else "Server"
             
-            # 2. Просто лепим хвост к оригинальному названию
-            # Результат: "Эстония 💎 [PINNED] 1"
+            # 2. ОЧИЩАЕМ base_part от старых хвостов, если они там есть
+            # Мы берем только то, что ДО решетки. Теперь там только vless://... без имен
+            clean_base = base_part.split("#")[0]
+            
+            # 3. Собираем имя
             new_name = f"{original_name} 💎 [PINNED] {counter}"
             
-            # 3. Собираем ссылку заново: адрес + # + новое имя
-            final_pinned_link = f"{base_part}#{urllib.parse.quote(new_name)}"
-            working_for_sub.append(final_pinned_link)
+            # 4. Склеиваем ЧИСТЫЙ адрес и НОВОЕ имя
+            final_link = f"{clean_base}#{urllib.parse.quote(new_name)}"
             
+            working_for_sub.append(final_link)
             print(f"💎 [PINNED] OK: {new_name}")
+            
             counter += 1 
             continue
             

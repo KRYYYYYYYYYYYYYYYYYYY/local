@@ -436,7 +436,7 @@ def main():
             seen_in_final.add(base)
     
     # 4. Формируем deferred.txt (остатки)
-    # Сюда идет то, что не влезло + то, что вообще не проверялось
+    # Сюда идет то, что не влезло + то, что вообще не проверялось 
     leftover_from_others = [l for l in all_others if l.split("#")[0].strip() not in seen_in_final]
     deferred_final = new_deferred + leftover_from_others
     

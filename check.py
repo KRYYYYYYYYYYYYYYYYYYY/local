@@ -25,8 +25,11 @@ EXTERNAL_SOURCE_URL = [
 GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
 
 HEADER = """# profile-title: 🏴WIFI🏴
+# remark: 🏴WIFI🏴
 # announce: Подписка для использования на wifi.
 # profile-update-interval: 2
+# subscription-userinfo: upload=0; download=0; expire=0
+# shadowrocket-userinfo: upload=0; download=0; expire=0
 
 """
 

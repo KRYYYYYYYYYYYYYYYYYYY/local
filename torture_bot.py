@@ -46,9 +46,14 @@ def torture_check(link):
     sni = re.search(r"sni=([^&?#]+)", link)
     server_hostname = sni.group(1) if sni else host
 
-    for i in range(10):
+    # Увеличиваем до 20 попыток. 
+    # При паузе в 60 сек один сервер будет проверяться ~20 минут.
+    total_attempts = 20 
+    
+    for i in range(total_attempts):
         try:
-            with socket.create_connection((host, port), timeout=5) as s:
+            # Увеличиваем таймаут до 7 сек, чтобы не резать за секундный лаг
+            with socket.create_connection((host, port), timeout=7) as s:
                 if is_tls:
                     ctx = build_tls_context()
                     with ctx.wrap_socket(s, server_hostname=server_hostname):
@@ -56,10 +61,16 @@ def torture_check(link):
                 else:
                     s.sendall(b'\x05\x01\x00')
 
-            time.sleep(1)
+            # Выводим прогресс, чтобы логи GitHub не выглядели мертвыми
+            if (i + 1) % 5 == 0:
+                print(f"   ⛓️  Прогресс пытки: {i + 1}/{total_attempts} пройден")
+
+            # ПАУЗА — ГЛАВНЫЙ ИНСТРУМЕНТ. 
+            # 60 секунд между попытками заставит бота мучать сервер 20 минут.
+            time.sleep(60) 
 
         except Exception as e:
-            print(f"[Ошибка TLS/CONNECT] {e}")
+            print(f"❌ [ПРОВАЛ НА {i+1} ПОПЫТКЕ] Ошибка: {e}")
             return False
 
     return True

@@ -426,8 +426,6 @@ def main():
         if base not in seen_in_final:
             final_to_sub.append(l)
             seen_in_final.add(base)
-            
-    final_pinned = [l for l in final_to_sub if "💎 [PINNED]" in l]
     # 3. Добираем обычные сервера, пока не станет 200 (Приоритет №2)
     # Но только те, которых еще НЕТ в закрепах
     for l in all_others:
@@ -450,7 +448,16 @@ def main():
         f.write(HEADER + "\n".join(final_to_sub))
         
     print(f"🏁 План выполнен: {len(final_to_sub)} в подписке. Остаток в базе: {len(deferred_final)}")
-    print(f"💎 Закрепленных в подписке: {len(final_pinned)} (из лимита 50)")
+    # Базовые части закрепов
+    pinned_bases = {p.split("#")[0].strip() for p in pinned_list}
+    
+    # Сколько закрепов реально попало в подписку
+    count_pinned = sum(
+        1 for l in final_to_sub
+        if l.split("#")[0].strip() in pinned_bases
+    )
+    
+    print(f"💎 Закрепленных в подписке: {count_pinned} (из лимита 50)")
     print(f"✅ Всего в wifi.txt: {len(final_to_sub)} (из лимита 200)")
     
     # 3. Сохранение (ТВОЙ БЛОК БЕЗ ИЗМЕНЕНИЙ НАДПИСЕЙ)

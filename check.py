@@ -265,7 +265,6 @@ def main():
                 break
 
         if found_pinned_full:
-            working_for_base.append(base_part)
             seen_parts.add(base_part)
             
             # --- ШАГ 1: СОХРАНЯЕМ ИМЯ ИЗ PINNED.TXT (БЕРЕЖНО) ---
@@ -279,10 +278,10 @@ def main():
             
             # --- ШАГ 3: СОБИРАЕМ ЗАНОВО ---
             # К голой ссылке приклеиваем сохраненное имя + новую группировку
-            new_name = f" 💎 [PINNED] {counter}"
-            final_link = f"{clean_base}#{urllib.parse.quote(new_name)}"
+            new_name = f" 💎{} [PINNED] {counter}"
+            final_linkk = f"{clean_base}#{urllib.parse.quote(new_name)}"
             
-            working_for_sub.append(final_link)
+            working_for_sub.append(final_linkk)
             print(f"💎 [PINNED] OK: {new_name}")
             
             counter += 1 
@@ -397,7 +396,7 @@ def main():
     # --- КОНЕЦ ЦИКЛА ПРОВЕРКИ ---
     # --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ИСПРАВЛЕНО) ---
         
-        1. Разделяем то, что нашли, на две кучи
+     #   1. Разделяем то, что нашли, на две кучи
     all_pinned = [l for l in working_for_sub if "💎 [PINNED]" in l]
     all_others = [l for l in working_for_sub if "💎 [PINNED]" not in l]
     

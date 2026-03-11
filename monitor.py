@@ -47,33 +47,57 @@ def remove_from_all(base_part):
 def deep_kill_check(link):
     base_part = link.split("#")[0].strip()
     
-    # --- УЛУЧШЕННЫЙ ИММУНИТЕТ ---
+    # --- ИММУНИТЕТ ДЛЯ ЗАКРЕПОВ ---
     if is_pinned(base_part): 
-        # Если это закреп, мы возвращаем True, как будто он прошел все проверки идеально
         print(f"🛡️ [MONITOR] ЗАКРЕП ИГНОРИРУЕТСЯ: {base_part[:30]}...") 
         return True, 200 
     
-    # Дальше идет обычная проверка для всех остальных...
     host, port = extract_host_port(base_part)
+    if not host or not port: return False, 404
 
-    if not host: return False, 404
-
-    for _ in range(3): 
+    # Пытаемся 3 раза, прежде чем вынести приговор
+    for attempt in range(3): 
         try:
             start = time.time()
-            with socket.create_connection((host, port), timeout=3.5) as s:
-                if "security=tls" in link or "security=reality" in link:
+            # Увеличиваем таймаут на коннект до 4.5с, чтобы не резать "далекие" сервера
+            with socket.create_connection((host, int(port)), timeout=4.5) as s:
+                
+                if "security=tls" in link.lower() or "security=reality" in link.lower():
+                    # Пытаемся вытащить реальный SNI из ссылки
+                    sni_match = re.search(r'sni=([^&?#]+)', link)
+                    server_hostname = sni_match.group(1) if sni_match else host
+                    
                     context = ssl.create_default_context()
                     context.check_hostname = False
                     context.verify_mode = ssl.CERT_NONE
-                    context.wrap_socket(s, server_hostname=host)
+                    
+                    # Полноценная проверка TLS-рукопожатия
+                    with context.wrap_socket(s, server_hostname=server_hostname) as ssock:
+                        pass
                 else:
-                    s.sendall(b'\x16\x03\x01\x00\x00')
+                    # Для обычных соединений шлем проверочный байт
+                    s.sendall(b'\x05\x01\x00') 
+            
             lat = (time.time() - start) * 1000
-            if lat > 1000: return False, 1001 # Тормоз
-            time.sleep(0.5)
-        except: return False, 404 # Сдох
-    return True, 200
+            
+            # --- ПРОВЕРКА НА ТОРМОЗА ---
+            # 1500мс — золотая середина. И не лагает, и не режет лишнего.
+            if lat > 1500: 
+                return False, 1001 
+            
+            # Если дошли сюда — сервер живой и быстрый
+            return True, 200
+            
+        except (socket.timeout, ConnectionRefusedError, ssl.SSLError):
+            # Если это была не последняя попытка — ждем чуть-чуть и пробуем снова
+            if attempt < 2:
+                time.sleep(0.5)
+                continue
+            return False, 404
+        except Exception as e:
+            return False, 404
+            
+    return False, 404
     
 def main_monitor():
     start_run = time.time()

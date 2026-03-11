@@ -110,8 +110,17 @@ def main_torturer():
     # Отбираем кандидатов
     candidates = []
     for base, data in ranking_db.items():
-        if data.get("rank", 0) >= THRESHOLD and base not in vetted_set:
-            candidates.append((base, data["link"]))
+        # 1. Определяем ранг
+        if isinstance(data, dict):
+            rank = data.get("rank", 0)
+            link = data.get("link", base) # Берем ссылку из словаря или саму базу
+        else:
+            rank = data  # Если там просто число
+            link = base  # Если данных нет, сама ссылка и есть ключ (base)
+
+        # 2. Проверяем порог
+        if rank >= THRESHOLD and base not in vetted_set:
+            candidates.append((base, link))
 
     if not candidates:
         print(f"⌛ Пока нет кандидатов с баллом >= {THRESHOLD}...")

@@ -59,7 +59,18 @@ def torture_check(link):
                     with ctx.wrap_socket(s, server_hostname=server_hostname):
                         pass
                 else:
+                    # Посылаем байтики начала SOCKS5
                     s.sendall(b'\x05\x01\x00')
+                    # Даем серверу 2 секунды на ответ
+                    s.settimeout(2)
+                    try:
+                        resp = s.recv(2)
+                        if not resp:
+                            raise Exception("Пустой ответ (шифрование/прокси не подтверждены)")
+                    except socket.timeout:
+                        # Некоторые прокси молчат, пока не придет полный запрос.
+                        # Это нормально, но если хочешь жесткости — можно бросать ошибку здесь.
+                        pass
 
             # Выводим прогресс, чтобы логи GitHub не выглядели мертвыми
             if (i + 1) % 5 == 0:

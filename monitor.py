@@ -135,20 +135,26 @@ def main_monitor():
             if is_ok:
                 valid_others.append(link)
 
-                rank = ranking_db.get(base, {}).get("rank", 0) + 1
-                # --- ЛОГИКА НАКОПЛЕНИЯ (БЕЗ АВТО-ПОВЫШЕНИЯ) ---
-                # Просто даем +1 балл за то, что сервер выжил в эту минуту
+                # --- БЕЗОПАСНОЕ ПОЛУЧЕНИЕ РАНГА ---
+                old_data = ranking_db.get(base, 0)
+                if isinstance(old_data, dict):
+                    old_rank = old_data.get("rank", 0)
+                else:
+                    old_rank = old_data # Если там было просто число
                 
-                ranking_db[base] = {"rank": rank, "link": link}
+                new_rank = old_rank + 1
                 
-                print(f"📈 {base[:20]}... живет. Баллы: {rank}")
-                # ВСЁ! Больше здесь никакого кода с VETTED_FILE быть не должно.
-                # Монитор больше не имеет права сам назначать "элиту".
+                # --- СОХРАНЕНИЕ В ПРАВИЛЬНОМ ФОРМАТЕ ---
+                ranking_db[base] = {"rank": new_rank, "link": link}
+                
+                print(f"📈 {base[:20]}... живет. Баллы: {new_rank}")
+                
             else:
-                remove_from_all(base)
-                # 🧊 ОБНУЛЕНИЕ: Упал — рейтинг сгорает
+                # Если сервер упал — удаляем его из рейтинга совсем
                 if base in ranking_db:
                     del ranking_db[base]
+                remove_from_all(base)
+                print(f"🧊 {base[:20]}... упал. Рейтинг обнулен.")
                 
                 if status_code == 404:
                     add_to_blacklist(base)

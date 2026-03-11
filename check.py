@@ -195,7 +195,8 @@ def main():
                 if to_pin:
                     with open('test1/pinned.txt', 'a', encoding='utf-8') as pf:
                         for s in to_pin:
-                            if s.strip() not in pinned_list:
+                            base = s.split("#")[0].strip()
+                            if all(base != p.split("#")[0].strip() for p in pinned_list):
                                 pf.write(s.strip() + "\n")
                                 pinned_list.append(s.strip())
 
@@ -262,11 +263,12 @@ def main():
             continue
         
         # --- БЛОК ЗАКРЕПОВ (PINNED) ---
-        found_pinned_full = None
+        clean_pinned = {}
         for p in pinned_list:
-            if base_part in p:
-                found_pinned_full = p
-                break
+            base = p.split("#")[0].strip()
+            clean_pinned[base] = p  # последний вариант перезапишет предыдущий
+        
+        pinned_list = list(clean_pinned.values())
 
         if found_pinned_full:
             seen_parts.add(base_part)

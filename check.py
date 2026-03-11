@@ -361,24 +361,6 @@ def main():
             
             print(f"✅ ОК {len(working_for_sub)}/200 ({country}): {host} -> {resolved_ip} (wifi {counter})")
             counter += 1
-
-            # --- РЕЙТИНГ ВЫСЛУГИ ---
-            rank = ranking_db.get(base_part, 0) + 1
-            ranking_db[base_part] = rank
-            print(f"📈 Рейтинг {host}: {rank}/12")
-            
-            if rank >= 12:
-                vetted_content = ""
-                if os.path.exists('test1/vetted.txt'):
-                    with open('test1/vetted.txt', 'r', encoding='utf-8') as vf:
-                        vetted_content = vf.read()
-                
-                if base_part not in vetted_content:
-                    with open('test1/vetted.txt', 'a', encoding='utf-8') as vf:
-                        vf.write(link + "\n")
-                    if base_part not in vetted_list:
-                        vetted_list.append(base_part)
-                    print(f"🎖️ ПОВЫШЕН ДО VETTED (рейтинг {rank}): {host}")
     
         # --- ЭТАП 3: ЕСЛИ СЕРВЕР НЕ ОТВЕЧАЕТ ---
         else:

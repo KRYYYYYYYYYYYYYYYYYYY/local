@@ -272,9 +272,6 @@ def main():
             # Забираем всё, что после решетки в pinned.txt
             raw_pinned_name = found_pinned_full.split("#")[-1].strip() if "#" in found_pinned_full else "Server"
             original_label = urllib.parse.unquote(raw_pinned_name)
-            
-            # Чистим сохраненное имя от старых цифр/мусора, чтобы оставить только "🇪🇪 Эстония"
-            clean_label = re.sub(r'💎|\[PINNED\]|\d+|\.', '', original_label).strip()
 
             # --- ШАГ 2: РЕЖЕМ ССЫЛКУ (УБИВАЕМ ХВОСТЫ) ---
             # Теперь чистим base_part, чтобы там не осталось старого названия
@@ -282,7 +279,7 @@ def main():
             
             # --- ШАГ 3: СОБИРАЕМ ЗАНОВО ---
             # К голой ссылке приклеиваем сохраненное имя + новую группировку
-            new_name = f"{clean_label} 💎 [PINNED] {counter}"
+            new_name = f" 💎 [PINNED] {counter}"
             final_link = f"{clean_base}#{urllib.parse.quote(new_name)}"
             
             working_for_sub.append(final_link)

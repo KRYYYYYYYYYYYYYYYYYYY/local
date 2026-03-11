@@ -143,6 +143,13 @@ def main():
     
     print(f"📦 Загружено закрепов из файла: {len(pinned_list)}")
 
+    clean_pinned = {}
+    for p in pinned_list:
+        base = p.split("#")[0].strip()
+        clean_pinned[base] = p  # последний вариант перезапишет предыдущий
+
+pinned_list = list(clean_pinned.values())
+
     # 2. Загружаем Отложенные (Deferred)
     deferred_base = []
     if os.path.exists('test1/deferred.txt'):
@@ -263,12 +270,12 @@ def main():
             continue
         
         # --- БЛОК ЗАКРЕПОВ (PINNED) ---
-        clean_pinned = {}
+        # --- БЛОК ЗАКРЕПОВ (PINNED) ---
+        found_pinned_full = None
         for p in pinned_list:
-            base = p.split("#")[0].strip()
-            clean_pinned[base] = p  # последний вариант перезапишет предыдущий
-        
-        pinned_list = list(clean_pinned.values())
+            if base_part == p.split("#")[0].strip():
+                found_pinned_full = p
+                break
 
         if found_pinned_full:
             seen_parts.add(base_part)

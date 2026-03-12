@@ -99,24 +99,83 @@ def load_vetted():
         # Берем только базу (до решетки), чтобы сравнивать уникальность
         return {line.split('#')[0].strip() for line in f if 'vless://' in line}
 
+def process_pin_commands(token, repo, vetted_list):
+    """Смотрит галочки и переносит из vetted в pinned"""
+    if not token or not repo: return vetted_list
+    try:
+        # Читаем Issue с галочками
+        cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1']
+        pin_read = subprocess.check_output(cmd, env={**os.environ, "GH_TOKEN": token}).decode()
+        
+        if pin_read and pin_read != "[]":
+            issue_pin = json.loads(pin_read)[0]
+            # Твоя регулярка (берет до решетки)
+            to_pin = re.findall(r'- \[x\] (vless://[^\s#\s]+)', issue_pin['body'])
+            
+            if to_pin:
+                added_bases = set()
+                # Читаем, что уже есть в закрепах, чтобы не дублировать
+                current_p = []
+                if os.path.exists(PINNED_FILE):
+                    with open(PINNED_FILE, 'r', encoding='utf-8') as f:
+                        current_p = [l.strip() for l in f]
+
+                # Записываем новые закрепы
+                with open(PINNED_FILE, 'a', encoding='utf-8') as pf:
+                    for s in to_pin:
+                        base = s.strip()
+                        if all(base != p.split("#")[0].strip() for p in current_p):
+                            pf.write(base + "\n")
+                            added_bases.add(base)
+                            print(f"📌 Перенесено в pinned: {base}")
+
+                # Если были переносы — чистим vetted_list
+                if added_bases:
+                    new_vetted = [v for v in vetted_list if v.split("#")[0].strip() not in added_bases]
+                    # Перезаписываем файл vetted.txt
+                    with open(VETTED_FILE, 'w', encoding='utf-8') as vf:
+                        vf.write("\n".join(new_vetted) + ("\n" if new_vetted else ""))
+                    return new_vetted
+    except Exception as e:
+        print(f"⚠️ Ошибка PIN: {e}")
+    return vetted_list
+
 def main_torturer():
+    # --- ШАГ 0: ПОДГОТОВКА (ТОКЕН И РЕПО) ---
+    token = os.getenv("GH_TOKEN")
+    repo = os.getenv("GH_REPO")
+
     if not os.path.exists(RANK_FILE):
         print("📭 Рейтинг пуст, пытать некого.")
         return
 
     ranking_db = load_ranking()
-    vetted_set = load_vetted() 
+    
+    # --- ШАГ 1: ОБРАБОТКА ГАЛОЧЕК (ПЕРЕНОС В PINNED) ---
+    # Сначала загружаем текущий vetted как список строк
+    if os.path.exists(VETTED_FILE):
+        with open(VETTED_FILE, 'r', encoding='utf-8') as f:
+            vetted_list = [l.strip() for l in f if 'vless://' in l]
+    else:
+        vetted_list = []
 
+    # Вызываем перенос (функцию process_pin_commands нужно вставить выше)
+    vetted_list = process_pin_commands(token, repo, vetted_list)
+    
+    # Теперь превращаем обновленный список в set для твоей обычной логики
+    vetted_set = {v.split('#')[0].strip() for v in vetted_list}
+
+    # --- ТВОЯ ОРИГИНАЛЬНАЯ ЛОГИКА (БЕЗ ИЗМЕНЕНИЙ) ---
     # Отбираем кандидатов
     candidates = []
     for base, data in ranking_db.items():
         # 1. Определяем ранг
         if isinstance(data, dict):
             rank = data.get("rank", 0)
-            link = data.get("link", base) # Берем ссылку из словаря или саму базу
+            link = data.get("link", base) 
         else:
-            rank = data  # Если там просто число
-            link = base  # Если данных нет, сама ссылка и есть ключ (base)
+            rank = data  
+            link = base  
 
         # 2. Проверяем порог
         if rank >= THRESHOLD and base not in vetted_set:
@@ -124,26 +183,26 @@ def main_torturer():
 
     if not candidates:
         print(f"⌛ Пока нет кандидатов с баллом >= {THRESHOLD}...")
-        return
+        # Не делаем return сразу, так как нужно сохранить ranking_db, если были переносы
+    else:
+        print(f"🔥 Инквизиция начинается! На проверке {len(candidates)} кандидатов.")
 
-    print(f"🔥 Инквизиция начинается! На проверке {len(candidates)} кандидатов.")
-
-    for base, full_link in candidates:
-        print(f"⛓️ Пытаем {base[:30]}...")
-        
-        if torture_check(full_link):
-            with open(VETTED_FILE, 'a', encoding='utf-8') as f:
-                f.write(full_link + "\n")
+        for base, full_link in candidates:
+            print(f"⛓️ Пытаем {base[:30]}...")
             
-            # ВАЖНО: После успеха сбрасываем балл, чтобы не пытать его завтра снова
-            # Или вообще удаляем из рейтинга, т.к. он теперь в элите
-            ranking_db[base]['rank'] = 0 
-            print(f"🎖️ СЕРВЕР ПРОШЕЛ ПЫТКИ: Повышен до VETTED!")
-        else:
-            ranking_db[base]['rank'] = max(0, ranking_db[base]['rank'] - 30)
-            print(f"❌ СЛОМАЛСЯ НА ПЫТКАХ. Штраф -30 баллов.")
+            if torture_check(full_link):
+                with open(VETTED_FILE, 'a', encoding='utf-8') as f:
+                    f.write(full_link + "\n")
+                
+                if isinstance(ranking_db.get(base), dict):
+                    ranking_db[base]['rank'] = 0 
+                print(f"🎖️ СЕРВЕР ПРОШЕЛ ПЫТКИ: Повышен до VETTED!")
+            else:
+                if isinstance(ranking_db.get(base), dict):
+                    ranking_db[base]['rank'] = max(0, ranking_db[base]['rank'] - 30)
+                print(f"❌ СЛОМАЛСЯ НА ПЫТКАХ. Штраф -30 баллов.")
 
-    # Сохраняем итоги инквизиции
+    # Сохраняем итоги (включая сброшенные баллы или результаты пыток)
     with open(RANK_FILE, 'w', encoding='utf-8') as f:
         json.dump(ranking_db, f, ensure_ascii=False, indent=4)
 

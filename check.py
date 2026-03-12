@@ -181,12 +181,9 @@ def main():
     all_lines = current_base + deferred_base + external_servers
 
     # 2. Проверяем галочки в GitHub Issue (если есть токен)
-    Вот исправленный блок. Основная проблема была в отступах: блоки PIN и UNPIN находились внутри секции except, поэтому они срабатывали только при ошибке в первой части кода. Теперь каждый блок независим и удаление из vetted.txt будет работать.
-
-Python
-    if token and repo:
+    if token and repo: # Добавь проверку и на токен, и на репо
         try:
-            # --- ПАНЕЛЬ 1: ЧЕРНЫЙ СПИСОК (control) ---
+            # Ищем Issue с меткой 'control'
             cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'body,number', '--limit', '1']
             issue_data = subprocess.check_output(
                 cmd, 
@@ -196,60 +193,42 @@ Python
             
             if issue_data and issue_data != "[]":
                 issue = json.loads(issue_data)[0]
+                # Находим все ссылки, помеченные [x]
                 checked = re.findall(r'- \[x\] (vless://[^\s]+)', issue['body'])
                 for s in checked:
-                    clean_s = s.split('#')[0] 
+                    clean_s = s.split('#')[0] # Берем только саму ссылку
                     blacklist.add(clean_s)
                 
+                # Сохраняем обновленный черный список в файл
                 with open('test1/blacklist.txt', 'w') as f:
                     f.write("\n".join(list(blacklist)))
         except Exception as e:
-            print(f"⚠️ Ошибка чтения галочек (blacklist): {e}")
+            print(f"⚠️ Ошибка чтения галочек: {e}")
 
-        try:
-            # --- ПАНЕЛЬ 2: КАНДИДАТЫ В ЗАКРЕП (PIN) ---
             pin_read = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env={**os.environ, "GH_TOKEN": token}).decode()
             if pin_read and pin_read != "[]":
                 issue_pin = json.loads(pin_read)[0]
                 to_pin = re.findall(r'- \[x\] (vless://[^\s#\s]+)', issue_pin['body'])
                 if to_pin:
-                    added_to_pin_bases = set() 
                     with open('test1/pinned.txt', 'a', encoding='utf-8') as pf:
                         for s in to_pin:
-                            s_clean = s.strip()
-                            base = s_clean.split("#")[0].strip()
+                            base = s.split("#")[0].strip()
                             if all(base != p.split("#")[0].strip() for p in pinned_list):
-                                pf.write(s_clean + "\n")
-                                pinned_list.append(s_clean)
-                                added_to_pin_bases.add(base)
-                                print(f"📌 Добавлено в pinned.txt: {base}")
-                    
-                    if added_to_pin_bases:
-                        original_len = len(vetted_list)
-                        vetted_list = [v for v in vetted_list if v.split("#")[0].strip() not in added_to_pin_bases]
-                        
-                        if len(vetted_list) < original_len:
-                            with open('test1/vetted.txt', 'w', encoding='utf-8') as vf:
-                                vf.write("\n".join(vetted_list) + "\n")
-                            print(f"🧹 Удалено из vetted.txt: {original_len - len(vetted_list)} шт.")
-        except Exception as e:
-            print(f"⚠️ Ошибка чтения команд (pin): {e}")
+                                pf.write(s.strip() + "\n")
+                                pinned_list.append(s.strip())
 
-        try:
-            # --- ПАНЕЛЬ 3: РАЗЗАКРЕПЛЕНИЕ (unpin_control) ---
+            # ЧИТАЕМ ГАЛОЧКИ ДЛЯ РАЗЗАКРЕПЛЕНИЯ (unpin_control)
             unpin_read = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'body', '--limit', '1'], env={**os.environ, "GH_TOKEN": token}).decode()
             if unpin_read and unpin_read != "[]":
                 issue_unp = json.loads(unpin_read)[0]
                 to_unpin = re.findall(r'- \[x\] (vless://[^\s#\s]+)', issue_unp['body'])
                 if to_unpin:
-                    # Используем базу для корректного сравнения при удалении
-                    unpin_bases = {s.split("#")[0].strip() for s in to_unpin}
-                    pinned_list = [s for s in pinned_list if s.split("#")[0].strip() not in unpin_bases]
+                    pinned_list = [s for s in pinned_list if s not in to_unpin]
                     with open('test1/pinned.txt', 'w', encoding='utf-8') as pf:
                         pf.write("\n".join(pinned_list) + "\n")
-                    print(f"🔓 Удалено из закрепов")
         except Exception as e:
-            print(f"⚠️ Ошибка чтения команд (unpin): {e}")
+            print(f"⚠️ Ошибка чтения команд: {e}")
+
     # 1. Загрузка базы и истории
     current_base = []
     if os.path.exists(INPUT_FILE):

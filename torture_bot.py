@@ -177,6 +177,16 @@ def main_torturer():
             rank = data  
             link = base  
 
+        # 2. ДОБАВЛЕННАЯ ПРОВЕРКА: 
+        # Проверяем порог И что сервера НЕТ в VETTED (vetted_set уже содержит актуальные данные)
+        if rank >= THRESHOLD and base not in vetted_set:
+            candidates.append((base, link))
+        elif base in vetted_set:
+            # Опционально: если он уже в элите, можем обнулить ему балл в рейтинге, 
+            # чтобы он не висел в кандидатах при каждом запуске
+            if isinstance(data, dict) and data.get("rank", 0) > 0:
+                ranking_db[base]['rank'] = 0
+
         # 2. Проверяем порог
         if rank >= THRESHOLD and base not in vetted_set:
             candidates.append((base, link))

@@ -150,7 +150,7 @@ def main_torturer():
         print("📭 Рейтинг пуст, пытать некого.")
         return
 
-ranking_db = load_ranking()
+    ranking_db = load_ranking()
     
     # --- 1. ЗАГРУЗКА ВСЕХ СПИСКОВ-ИСКЛЮЧЕНИЙ ---
     # Читаем Vetted + обрабатываем перенос в Pinned

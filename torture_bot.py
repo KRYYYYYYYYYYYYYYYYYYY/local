@@ -140,7 +140,7 @@ def main_torturer():
     print(f"🔥 Начинаем пытки! Отобрано кандидатов: {len(candidates)}")
 
     # --- МНОГОПОТОЧНОСТЬ ---
-    MAX_THREADS = 15
+    MAX_THREADS = 20
     dead_to_remove = [] # Список для автоудаления
 
     with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:

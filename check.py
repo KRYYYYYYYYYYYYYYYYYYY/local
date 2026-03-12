@@ -484,8 +484,8 @@ def main():
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        # ЗАМЕНИ ТУТ working_for_sub на final_to_sub
-        f.write(HEADER + "\n".join(final_to_sub))
+    # Записываем чистый заголовок + перенос + список ссылок
+    f.write(HEADER.strip() + "\n" + "\n".join(final_to_sub))
 
     print(f"🏁 Готово! Подписка обновлена.")
     # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---

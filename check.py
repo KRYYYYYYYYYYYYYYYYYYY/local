@@ -323,8 +323,8 @@ def main():
                 print(f"🗑️ Удален (тайм-аут): {host}")
 
         # --- ВСЕ, ЧТО НЕ УСПЕЛИ ПРОВЕРИТЬ (если набрали 200 раньше конца списка) ---
-        new_deferred = unique_links[idx:] 
-   all_pinned = [l for l in working_for_sub if "💎 [PINNED]" in l]
+    new_deferred = unique_links[idx:] 
+    all_pinned = [l for l in working_for_sub if "💎 [PINNED]" in l]
     all_others = [l for l in working_for_sub if "💎 [PINNED]" not in l]
     
     final_to_sub = []

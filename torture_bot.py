@@ -109,7 +109,9 @@ def main_torturer():
     for base, data in ranking_db.items():
         rank = data.get("rank", 0) if isinstance(data, dict) else data
         link = data.get("link", base) if isinstance(data, dict) else base
-        if rank >= THRESHOLD and base not in vetted_set and base not in pinned_set:
+        
+        # Берем либо сильных (на повышение), либо совсем слабых (на удаление)
+        if (rank >= THRESHOLD or rank <= 0) and base not in vetted_set and base not in pinned_set:
             candidates.append((base, link))
 
     if not candidates: return

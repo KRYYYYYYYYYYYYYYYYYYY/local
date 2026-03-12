@@ -1,4 +1,5 @@
 import socket, time, os, ssl, re, json, subprocess
+import psutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
@@ -83,6 +84,16 @@ def process_pin_commands(token, repo, vetted_list):
     return vetted_list
 
 def main_torturer():
+    # Проверка: не запущен ли уже другой такой же скрипт?
+    current_pid = os.getpid()
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        # Ищем процессы python, которые запускают именно этот файл
+        if proc.info['pid'] != current_pid:
+            cmdline = proc.info.get('cmdline')
+            if cmdline and 'torture_bot.py' in ' '.join(cmdline):
+                print(f"🛑 Обнаружен запущенный близнец (PID {proc.info['pid']}). Самоликвидация.")
+                return
+                
     token = os.getenv("GH_TOKEN")
     repo = os.getenv("GH_REPO")
 

@@ -97,16 +97,22 @@ def main_torturer():
     token = os.getenv("GH_TOKEN")
     repo = os.getenv("GH_REPO")
 
-    if not os.path.exists(RANK_FILE): return
+    if not os.path.exists(RANK_FILE):
+        print(f"📭 Файл {RANK_FILE} не найден. Некого пытать.")
+        return
+        
     try:
         with open(RANK_FILE, 'r', encoding='utf-8') as f:
             ranking_db = json.load(f)
-    except: ranking_db = {}
+    except: 
+        ranking_db = {}
+        print("❌ Ошибка чтения JSON.")
 
     if os.path.exists(VETTED_FILE):
         with open(VETTED_FILE, 'r', encoding='utf-8') as f:
             vetted_list = [l.strip() for l in f if 'vless://' in l]
-    else: vetted_list = []
+    else: 
+        vetted_list = []
 
     vetted_list = process_pin_commands(token, repo, vetted_list)
     vetted_set = {v.split('#')[0].strip() for v in vetted_list}
@@ -115,6 +121,8 @@ def main_torturer():
     if os.path.exists(PINNED_FILE):
         with open(PINNED_FILE, 'r', encoding='utf-8') as f:
             pinned_set = {l.split('#')[0].strip() for l in f if 'vless://' in l}
+
+    print(f"📊 Всего в базе: {len(ranking_db)} | В исключениях (Vetted/Pinned): {len(vetted_set | pinned_set)}")
 
     candidates = []
     for base, data in ranking_db.items():
@@ -125,7 +133,11 @@ def main_torturer():
         if (rank >= THRESHOLD or rank <= 0) and base not in vetted_set and base not in pinned_set:
             candidates.append((base, link))
 
-    if not candidates: return
+    if not candidates:
+        print(f"⌛ Кандидатов нет. (THRESHOLD: {THRESHOLD}). Ждем, пока кто-то наберет баллы.")
+        return
+
+    print(f"🔥 Начинаем пытки! Отобрано кандидатов: {len(candidates)}")
 
     # --- МНОГОПОТОЧНОСТЬ ---
     MAX_THREADS = 15
@@ -139,6 +151,7 @@ def main_torturer():
             try:
                 success = future.result()
                 if success:
+                    print(f"🎖️ {base[:20]}... ПРОШЕЛ.")
                     with file_lock:
                         with open(VETTED_FILE, 'a', encoding='utf-8') as f:
                             f.write(full_link + "\n")
@@ -151,10 +164,11 @@ def main_torturer():
                         # Если он УЖЕ был 0 и снова провалился — в список на удаление
                         if old_rank <= 0:
                             dead_to_remove.append(base)
-                            print(f"🧹 {base[:20]} окончательно удален (стабильный 0).")
+                            print(f"🧹 {base[:20]}... удален (стабильный 0).")
                         else:
                             # Иначе просто штрафуем
                             ranking_db[base]['rank'] = max(0, old_rank - 30)
+                            print(f"❌ {base[:20]}... провал (штраф -30).")
             except: pass
 
     # Удаляем "мертвецов" из базы
@@ -164,6 +178,7 @@ def main_torturer():
 
     with open(RANK_FILE, 'w', encoding='utf-8') as f:
         json.dump(ranking_db, f, ensure_ascii=False, indent=4)
+    print("💾 Все изменения сохранены.")
 
 if __name__ == "__main__":
     main_torturer()

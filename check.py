@@ -491,6 +491,21 @@ def main():
     # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---
     if token and repo:  # Теперь repo точно определена
         try:
+            # 1. СНАЧАЛА ЧИТАЕМ ГАЛОЧКИ (Прием команд от тебя)
+            # Читаем панель Кандидатов, чтобы перенести отмеченные в Vetted
+            pin_read = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env={**os.environ, "GH_TOKEN": token}).decode()
+            if pin_read and pin_read != "[]":
+                issue_pin_data = json.loads(pin_read)[0]
+                # Ищем [x] vless://...
+                to_vetted = re.findall(r'- \[x\] (vless://[^\s#\s]+)', issue_pin_data['body'])
+                if to_vetted:
+                    for s in to_vetted:
+                        if s not in vetted_list:
+                            vetted_list.append(s.strip())
+                    # Сразу сохраняем файл, чтобы другие боты видели
+                    with open('test1/vetted.txt', 'w', encoding='utf-8') as f:
+                        f.write("\n".join(vetted_list))
+                    print(f"📥 Добавлено в vetted_list: {len(to_vetted)} шт.")
             # Получаем текущее время
             update_time = time.strftime("%d.%m.%Y %H:%M:%S")
             

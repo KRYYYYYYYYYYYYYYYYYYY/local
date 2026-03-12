@@ -31,9 +31,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install psutil
 
-      - name: 🕵️ Run Monitor
-        run: python monitor.py
-
       - name: ⛓️ Run Torturer
         # ДОБАВЛЯЕМ ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ
         env:

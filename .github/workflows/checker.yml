@@ -13,6 +13,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 360  # Даем инквизитору 6 часов (максимум для GitHub)
     permissions:
       contents: write
       issues: read # Даем право читать Issue для системы PIN

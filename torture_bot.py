@@ -1,5 +1,6 @@
-import socket, time, os, ssl, re, json
-import subprocess  # Нужно для работы с GitHub CLI
+import socket, time, os, ssl, re, json, subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 # Настройки путей
 PINNED_FILE = 'test1/pinned.txt'
@@ -7,9 +8,10 @@ RANK_FILE = 'test1/ranking.json'
 VETTED_FILE = 'test1/vetted.txt'
 THRESHOLD = 50 
 
-HOST_PORT_RE = re.compile(
-    r'@(?P<host>[A-Za-z0-9.-]+):(?P<port>\d+)'
-)
+# Блокировка для безопасной записи в файлы из разных потоков
+file_lock = threading.Lock()
+
+HOST_PORT_RE = re.compile(r'@(?P<host>[A-Za-z0-9.-]+):(?P<port>\d+)')
 
 def extract_host_port(link: str) -> tuple[str | None, int | None]:
     m = HOST_PORT_RE.search(link)
@@ -28,10 +30,8 @@ def build_tls_context():
     return ctx
 
 def torture_check(link):
-    # Твои настройки на 20 минут (20 попыток по 60 сек)
     host, port = extract_host_port(link)
     if not host or not port: return False
-
     is_tls = "security=tls" in link.lower() or "security=reality" in link.lower()
     sni = re.search(r"sni=([^&?#]+)", link)
     server_hostname = sni.group(1) if sni else host
@@ -48,35 +48,29 @@ def torture_check(link):
                     s.sendall(b'\x05\x01\x00')
                     s.settimeout(2)
                     s.recv(2)
-
-            if (i + 1) % 5 == 0:
-                print(f"   ⛓️  Прогресс пытки: {i + 1}/{total_attempts} пройден")
-            time.sleep(60) 
+            
+            # Успешная попытка — ждем минуту до следующей (кроме последней)
+            if i < total_attempts - 1:
+                time.sleep(60) 
         except Exception as e:
-            print(f"❌ [ПРОВАЛ НА {i+1} ПОПЫТКЕ] Ошибка: {e}")
+            # Любой сбой на любом этапе — сразу вылет
             return False
     return True
 
-# --- НОВАЯ ЛОГИКА ГАЛОЧЕК ---
 def process_pin_commands(token, repo, vetted_list):
     if not token or not repo: return vetted_list
     try:
-        # Читаем Issue с меткой pin_control
         cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1']
         pin_read = subprocess.check_output(cmd, env={**os.environ, "GH_TOKEN": token}).decode()
-        
         if pin_read and pin_read != "[]":
             issue_data = json.loads(pin_read)[0]
-            # Ищем отмеченные чекбоксы: - [x] vless://...
             to_pin = re.findall(r'- \[x\] (vless://[^\s#\s]+)', issue_data['body'])
-            
             if to_pin:
                 added_bases = set()
                 current_p = []
                 if os.path.exists(PINNED_FILE):
                     with open(PINNED_FILE, 'r', encoding='utf-8') as f:
                         current_p = [l.strip().split('#')[0] for l in f]
-
                 with open(PINNED_FILE, 'a', encoding='utf-8') as pf:
                     for link in to_pin:
                         base = link.strip()
@@ -84,9 +78,7 @@ def process_pin_commands(token, repo, vetted_list):
                             pf.write(base + "\n")
                             added_bases.add(base)
                             print(f"📌 Закреплено: {base[:30]}...")
-
                 if added_bases:
-                    # Убираем из списка VETTED те, что стали PINNED
                     new_vetted = [v for v in vetted_list if v.split('#')[0].strip() not in added_bases]
                     with open(VETTED_FILE, 'w', encoding='utf-8') as vf:
                         vf.write("\n".join(new_vetted) + ("\n" if new_vetted else ""))
@@ -97,11 +89,10 @@ def process_pin_commands(token, repo, vetted_list):
 
 def main_torturer():
     token = os.getenv("GH_TOKEN")
-    repo = os.getenv("GH_REPO")
+    repo = os.getenv("GITHUB_REPOSITORY") # Поправил на стандартную переменную
 
     if not os.path.exists(RANK_FILE): return
 
-    # Загружаем всё как раньше
     try:
         with open(RANK_FILE, 'r', encoding='utf-8') as f:
             ranking_db = json.load(f)
@@ -112,22 +103,18 @@ def main_torturer():
             vetted_list = [l.strip() for l in f if 'vless://' in l]
     else: vetted_list = []
 
-    # --- ПРИМЕНЯЕМ ГАЛОЧКИ ---
     vetted_list = process_pin_commands(token, repo, vetted_list)
     vetted_set = {v.split('#')[0].strip() for v in vetted_list}
     
-    # Загружаем закрепленные, чтобы не пытать их повторно
     pinned_set = set()
     if os.path.exists(PINNED_FILE):
         with open(PINNED_FILE, 'r', encoding='utf-8') as f:
             pinned_set = {l.split('#')[0].strip() for l in f if 'vless://' in l}
 
-    # Отбор кандидатов (учитываем pinned_set)
     candidates = []
     for base, data in ranking_db.items():
         rank = data.get("rank", 0) if isinstance(data, dict) else data
         link = data.get("link", base) if isinstance(data, dict) else base
-
         if rank >= THRESHOLD and base not in vetted_set and base not in pinned_set:
             candidates.append((base, link))
 
@@ -135,20 +122,33 @@ def main_torturer():
         print(f"⌛ Кандидатов нет.")
         return
 
-    print(f"🔥 Инквизиция начинается! На проверке {len(candidates)} серверов.")
+    # Увеличиваем число потоков (max_workers). 10-20 — оптимально для GitHub
+    MAX_THREADS = 15
+    print(f"🔥 Инквизиция в {MAX_THREADS} потоков! Проверка {len(candidates)} серверов.")
 
-    for base, full_link in candidates:
-        print(f"⛓️ Пытаем {base[:30]}...")
-        if torture_check(full_link):
-            with open(VETTED_FILE, 'a', encoding='utf-8') as f:
-                f.write(full_link + "\n")
-            if isinstance(ranking_db.get(base), dict):
-                ranking_db[base]['rank'] = 0 
-            print(f"🎖️ ПРОШЕЛ ПЫТКИ!")
-        else:
-            if isinstance(ranking_db.get(base), dict):
-                ranking_db[base]['rank'] = max(0, ranking_db[base]['rank'] - 30)
+    with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
+        # Запускаем пытки параллельно
+        future_to_server = {executor.submit(torture_check, link): (base, link) for base, link in candidates}
 
+        for future in as_completed(future_to_server):
+            base, full_link = future_to_server[future]
+            try:
+                success = future.result()
+                if success:
+                    print(f"🎖️ {base[:30]} ПРОШЕЛ ПЫТКИ!")
+                    with file_lock: # Записываем по одному, чтобы не сломать файл
+                        with open(VETTED_FILE, 'a', encoding='utf-8') as f:
+                            f.write(full_link + "\n")
+                    if isinstance(ranking_db.get(base), dict):
+                        ranking_db[base]['rank'] = 0 
+                else:
+                    print(f"💀 {base[:30]} ПРОВАЛИЛСЯ.")
+                    if isinstance(ranking_db.get(base), dict):
+                        ranking_db[base]['rank'] = max(0, ranking_db[base]['rank'] - 30)
+            except Exception as e:
+                print(f"⚠️ Ошибка при проверке {base[:20]}: {e}")
+
+    # Сохраняем финальный рейтинг один раз в конце
     with open(RANK_FILE, 'w', encoding='utf-8') as f:
         json.dump(ranking_db, f, ensure_ascii=False, indent=4)
 

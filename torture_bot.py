@@ -8,6 +8,7 @@ RANK_FILE = 'test1/ranking.json'
 VETTED_FILE = 'test1/vetted.txt'
 THRESHOLD = 50 
 
+# Блокировка для безопасной записи в файлы из разных потоков
 file_lock = threading.Lock()
 
 HOST_PORT_RE = re.compile(r'@(?P<host>[A-Za-z0-9.-]+):(?P<port>\d+)')
@@ -78,16 +79,14 @@ def process_pin_commands(token, repo, vetted_list):
                     with open(VETTED_FILE, 'w', encoding='utf-8') as vf:
                         vf.write("\n".join(new_vetted) + ("\n" if new_vetted else ""))
                     return new_vetted
-    except Exception as e:
-        print(f"⚠️ Ошибка системы PIN: {e}")
+    except: pass
     return vetted_list
 
 def main_torturer():
     token = os.getenv("GH_TOKEN")
-    repo = os.getenv("GITHUB_REPOSITORY")
+    repo = os.getenv("GH_REPO")
 
     if not os.path.exists(RANK_FILE): return
-
     try:
         with open(RANK_FILE, 'r', encoding='utf-8') as f:
             ranking_db = json.load(f)
@@ -113,14 +112,11 @@ def main_torturer():
         if rank >= THRESHOLD and base not in vetted_set and base not in pinned_set:
             candidates.append((base, link))
 
-    if not candidates:
-        print(f"⌛ Кандидатов нет.")
-        return
+    if not candidates: return
 
+    # --- МНОГОПОТОЧНОСТЬ ---
     MAX_THREADS = 15
-    print(f"🔥 Инквизиция в {MAX_THREADS} потоков! Проверка {len(candidates)} серверов.")
-
-    dead_to_remove = [] # Список на удаление
+    dead_to_remove = [] # Список для автоудаления
 
     with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
         future_to_server = {executor.submit(torture_check, link): (base, link) for base, link in candidates}
@@ -130,36 +126,25 @@ def main_torturer():
             try:
                 success = future.result()
                 if success:
-                    print(f"🎖️ {base[:30]} ПРОШЕЛ!")
                     with file_lock:
                         with open(VETTED_FILE, 'a', encoding='utf-8') as f:
                             f.write(full_link + "\n")
                     if isinstance(ranking_db.get(base), dict):
                         ranking_db[base]['rank'] = 0 
                 else:
-                    print(f"💀 {base[:30]} ПРОВАЛИЛСЯ.")
                     if isinstance(ranking_db.get(base), dict):
-                        new_rank = max(0, ranking_db[base]['rank'] - 30)
-                        ranking_db[base]['rank'] = new_rank
-                        # ЕСЛИ РАНГ СТАЛ 0 — СЕРВЕР ИДЕТ НА УДАЛЕНИЕ
-                        if new_rank == 0:
+                        old_rank = ranking_db[base].get('rank', 0)
+                        
+                        # Если он УЖЕ был 0 и снова провалился — в список на удаление
+                        if old_rank <= 0:
                             dead_to_remove.append(base)
-                            print(f"🧹 {base[:20]} полностью удален из базы (ранг 0).")
-                    
-                    # На всякий случай удаляем из vetted, если он там был (т.к. он сдох)
-                    with file_lock:
-                        if os.path.exists(VETTED_FILE):
-                            with open(VETTED_FILE, 'r', encoding='utf-8') as f:
-                                lines = f.readlines()
-                            with open(VETTED_FILE, 'w', encoding='utf-8') as f:
-                                for line in lines:
-                                    if base not in line:
-                                        f.write(line)
+                            print(f"🧹 {base[:20]} окончательно удален (стабильный 0).")
+                        else:
+                            # Иначе просто штрафуем
+                            ranking_db[base]['rank'] = max(0, old_rank - 30)
+            except: pass
 
-            except Exception as e:
-                print(f"⚠️ Ошибка: {e}")
-
-    # Финальная чистка базы данных
+    # Удаляем "мертвецов" из базы
     for dead_base in dead_to_remove:
         if dead_base in ranking_db:
             del ranking_db[dead_base]

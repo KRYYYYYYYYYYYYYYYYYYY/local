@@ -144,51 +144,50 @@ def main_torturer():
     # --- ШАГ 0: ПОДГОТОВКА (ТОКЕН И РЕПО) ---
     token = os.getenv("GH_TOKEN")
     repo = os.getenv("GH_REPO")
+    BLACKLIST_FILE = 'test1/blacklist.txt'
 
     if not os.path.exists(RANK_FILE):
         print("📭 Рейтинг пуст, пытать некого.")
         return
 
-    ranking_db = load_ranking()
+ranking_db = load_ranking()
     
-    # --- ШАГ 1: ОБРАБОТКА ГАЛОЧЕК (ПЕРЕНОС В PINNED) ---
-    # Сначала загружаем текущий vetted как список строк
+    # --- 1. ЗАГРУЗКА ВСЕХ СПИСКОВ-ИСКЛЮЧЕНИЙ ---
+    # Читаем Vetted + обрабатываем перенос в Pinned
     if os.path.exists(VETTED_FILE):
         with open(VETTED_FILE, 'r', encoding='utf-8') as f:
             vetted_list = [l.strip() for l in f if 'vless://' in l]
-    else:
-        vetted_list = []
+    else: vetted_list = []
 
-    # Вызываем перенос (функцию process_pin_commands нужно вставить выше)
     vetted_list = process_pin_commands(token, repo, vetted_list)
-    
-    # Теперь превращаем обновленный список в set для твоей обычной логики
     vetted_set = {v.split('#')[0].strip() for v in vetted_list}
 
-    # --- ТВОЯ ОРИГИНАЛЬНАЯ ЛОГИКА (БЕЗ ИЗМЕНЕНИЙ) ---
-    # Отбираем кандидатов
+    # Читаем Pinned (Закрепы)
+    pinned_set = set()
+    if os.path.exists(PINNED_FILE):
+        with open(PINNED_FILE, 'r', encoding='utf-8') as f:
+            pinned_set = {l.split('#')[0].strip() for l in f if 'vless://' in l}
+
+    # Читаем Blacklist (Бан-лист)
+    black_set = set()
+    if os.path.exists(BLACKLIST_FILE):
+        with open(BLACKLIST_FILE, 'r', encoding='utf-8') as f:
+            black_set = {l.split('#')[0].strip() for l in f if 'vless://' in l}
+
+    # --- 2. УМНЫЙ ОТБОР КАНДИДАТОВ ---
     candidates = []
     for base, data in ranking_db.items():
-        # 1. Определяем ранг
-        if isinstance(data, dict):
-            rank = data.get("rank", 0)
-            link = data.get("link", base) 
-        else:
-            rank = data  
-            link = base  
+        rank = data.get("rank", 0) if isinstance(data, dict) else data
+        link = data.get("link", base) if isinstance(data, dict) else base
 
-        # 2. ДОБАВЛЕННАЯ ПРОВЕРКА: 
-        # Проверяем порог И что сервера НЕТ в VETTED (vetted_set уже содержит актуальные данные)
-        if rank >= THRESHOLD and base not in vetted_set:
-            candidates.append((base, link))
-        elif base in vetted_set:
-            # Опционально: если он уже в элите, можем обнулить ему балл в рейтинге, 
-            # чтобы он не висел в кандидатах при каждом запуске
-            if isinstance(data, dict) and data.get("rank", 0) > 0:
-                ranking_db[base]['rank'] = 0
-
-        # 2. Проверяем порог
-        if rank >= THRESHOLD and base not in vetted_set:
+        if rank >= THRESHOLD:
+            # Если сервер уже где-то есть (Vetted, Pinned или Blacklist)
+            if base in vetted_set or base in pinned_set or base in black_set:
+                # Обнуляем ранг, чтобы больше не проверялся как кандидат
+                if isinstance(data, dict) and data.get("rank", 0) > 0:
+                    ranking_db[base]['rank'] = 0
+                continue
+            
             candidates.append((base, link))
 
     if not candidates:

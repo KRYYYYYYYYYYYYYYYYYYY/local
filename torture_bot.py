@@ -1,6 +1,7 @@
 import socket, time, os, ssl, re, json
 
 # Те же настройки путей
+PINNED_FILE = 'test1/pinned.txt'
 RANK_FILE = 'test1/ranking.json'
 VETTED_FILE = 'test1/vetted.txt'
 THRESHOLD = 50  # Сколько баллов в Мониторе должен набрать сервер для начала пыток

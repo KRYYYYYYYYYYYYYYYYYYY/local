@@ -28,6 +28,7 @@ HEADER = """
 # profile-title: 🏴WIFI🏴
 # remark: 🏴WIFI🏴
 # announce: Подписка для использования на wifi.
+# hide-settings: 1
 # profile-update-interval: 2
 # subscription-userinfo: upload=0; download=0; expire=0
 # shadowrocket-userinfo: upload=0; download=0; expire=0

@@ -128,7 +128,7 @@ def main():
     deferred_base = load_list('test1/deferred.txt')
     current_base = load_list(INPUT_FILE)
     # --- 1. ПЕРВИЧНАЯ ЗАГРУЗКА ВСЕХ ФАЙЛОВ ---
-try:
+    try:
         with open('test1/ranking.json', 'r') as f: ranking_db = json.load(f)
     except: ranking_db = {}
     
@@ -136,7 +136,7 @@ try:
         with open(STATUS_FILE, 'r') as f: history = json.load(f)
     except: history = {}
 
-if token and repo:
+    if token and repo:
         try:
             # Читаем: Кандидаты -> в Vetted (pin_control)
             pin_read = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env={**os.environ, "GH_TOKEN": token}).decode()

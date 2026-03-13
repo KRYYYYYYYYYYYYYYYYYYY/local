@@ -181,34 +181,31 @@ def main():
     all_lines = current_base + deferred_base + external_servers
 
     # 2. Проверяем галочки в GitHub Issue (если есть токен)
-    if token and repo: # Добавь проверку и на токен, и на репо
+    if token and repo:
         try:
-            # Ищем Issue с меткой 'control'
-            cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'body,number', '--limit', '1']
-            issue_data = subprocess.check_output(
-                cmd, 
-                env={**os.environ, "GH_TOKEN": token},
-                stderr=subprocess.DEVNULL
-            ).decode()
-            
-            if issue_data and issue_data != "[]":
-                issue = json.loads(issue_data)[0]
-                # Находим все ссылки, помеченные [x]
-                checked = re.findall(r'- \[x\] (vless://[^\s]+)', issue['body'])
-                for s in checked:
-                    clean_s = s.split('#')[0] # Берем только саму ссылку
-                    blacklist.add(clean_s)
-                
-                # Сохраняем обновленный черный список в файл
-                with open('test1/blacklist.txt', 'w') as f:
-                    f.write("\n".join(list(blacklist)))
-        except Exception as e:
-            print(f"⚠️ Ошибка чтения галочек: {e}")
+            gh_env = {**os.environ, "GH_TOKEN": token}
 
-            pin_read = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env={**os.environ, "GH_TOKEN": token}).decode()
-            if pin_read and pin_read != "[]":
-                issue_pin = json.loads(pin_read)[0]
-                to_pin = re.findall(r'- \[x\] (vless://[^\s#\s]+)', issue_pin['body'])
+            # --- 1. ПАНЕЛЬ CONTROL: ЧЕРНЫЙ СПИСОК ---
+            cmd_ctrl = ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'body', '--limit', '1']
+            ctrl_data = subprocess.check_output(cmd_ctrl, env=gh_env, stderr=subprocess.DEVNULL).decode()
+            if ctrl_data and ctrl_data != "[]":
+                issue = json.loads(ctrl_data)[0]
+                checked = re.findall(r'- \[x\] (vless://[^\s]+)', issue['body'])
+                if checked:
+                    for s in checked:
+                        blacklist.add(s.split('#')[0].strip())
+                    with open('test1/blacklist.txt', 'w', encoding='utf-8') as f:
+                        f.write("\n".join(list(blacklist)))
+                    print(f"🚫 Control: {len(checked)} в бан.")
+
+            # --- 2. ПАНЕЛЬ PIN_CONTROL: КАНДИДАТЫ (PIN + BAN) ---
+            pin_data = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env=gh_env).decode()
+            if pin_data and pin_data != "[]":
+                issue_pin = json.loads(pin_data)[0]
+                body = issue_pin['body']
+                
+                # Ищем закрепы через префикс PIN_
+                to_pin = re.findall(r'- \[x\] PIN_(vless://[^\s\n]+)', body)
                 if to_pin:
                     with open('test1/pinned.txt', 'a', encoding='utf-8') as pf:
                         for s in to_pin:
@@ -216,18 +213,34 @@ def main():
                             if all(base != p.split("#")[0].strip() for p in pinned_list):
                                 pf.write(s.strip() + "\n")
                                 pinned_list.append(s.strip())
+                    print(f"💎 Pin: {len(to_pin)} закреплено.")
 
-            # ЧИТАЕМ ГАЛОЧКИ ДЛЯ РАЗЗАКРЕПЛЕНИЯ (unpin_control)
-            unpin_read = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'body', '--limit', '1'], env={**os.environ, "GH_TOKEN": token}).decode()
-            if unpin_read and unpin_read != "[]":
-                issue_unp = json.loads(unpin_read)[0]
-                to_unpin = re.findall(r'- \[x\] (vless://[^\s#\s]+)', issue_unp['body'])
+                # Ищем баны через префикс BAN_
+                to_ban_pin = re.findall(r'- \[x\] BAN_(vless://[^\s\n]+)', body)
+                if to_ban_pin:
+                    with open('test1/blacklist.txt', 'a', encoding='utf-8') as bf:
+                        for s in to_ban_pin:
+                            base = s.split("#")[0].strip()
+                            if base not in blacklist:
+                                bf.write(base + "\n")
+                                blacklist.add(base)
+                    print(f"🚫 Pin-Panel: {len(to_ban_pin)} в бан.")
+
+            # --- 3. ПАНЕЛЬ UNPIN_CONTROL: УДАЛЕНИЕ ЗАКРЕПОВ ---
+            unpin_data = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'body', '--limit', '1'], env=gh_env).decode()
+            if unpin_data and unpin_data != "[]":
+                issue_unp = json.loads(unpin_data)[0]
+                # Тут ищем просто помеченные ссылки (без префиксов)
+                to_unpin = re.findall(r'- \[x\] (vless://[^\s]+)', issue_unp['body'])
                 if to_unpin:
-                    pinned_list = [s for s in pinned_list if s not in to_unpin]
+                    to_unpin_bases = [u.split("#")[0].strip() for u in to_unpin]
+                    pinned_list = [s for s in pinned_list if s.split("#")[0].strip() not in to_unpin_bases]
                     with open('test1/pinned.txt', 'w', encoding='utf-8') as pf:
-                        pf.write("\n".join(pinned_list) + "\n")
+                        pf.write("\n".join(pinned_list) + ("\n" if pinned_list else ""))
+                    print(f"🔓 Unpin: {len(to_unpin)} откреплено.")
+
         except Exception as e:
-            print(f"⚠️ Ошибка чтения команд: {e}")
+            print(f"⚠️ Ошибка чтения команд GitHub: {e}")
 
     # 1. Загрузка базы и истории
     current_base = []
@@ -515,19 +528,32 @@ def main():
                                env={**os.environ, "GH_TOKEN": token})
                 print(f"📝 Список галочек в Issue #{issue_number} обновлен.")
 
-            # --- ПАНЕЛЬ 2: КАНДИДАТЫ В ЗАКРЕП (PIN) ---
+            # --- ПАНЕЛЬ 2: КАНДИДАТЫ В ЗАКРЕП (PIN + BAN) ---
             pin_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'number', '--limit', '1']
             out_pin = subprocess.check_output(pin_cmd, env={**os.environ, "GH_TOKEN": token}).decode()
+            
             if out_pin and out_pin != "[]":
                 num_pin = str(json.loads(out_pin)[0]['number'])
-                body_pin = f"### 💎 Кандидаты в закреп\n🕒 Обновлено: `{update_time}`\n\n"
-                for i, link in enumerate(vetted_list, 1):
-                    if link not in pinned_list:
-                        body_pin += f"- [ ] {link} (wifi {i})\n\n---\n\n"
+                body_pin = f"### 💎 Кандидаты в закреп и бан\n🕒 Обновлено: `{update_time}`\n\n"
+                body_pin += "> **Инструкция:** `[x]` в PIN — закрепить, `[x]` в BAN — удалить навсегда.\n\n"
+                
+                # Используем working_for_base (те, что прошли проверку)
+                for i, link in enumerate(working_for_base, 1):
+                    # Берем чистую ссылку без имени для сравнения
+                    base_only = link.split("#")[0].strip()
+                    
+                    # Показываем только тех, кого нет в текущем pinned_list
+                    if all(base_only != p.split("#")[0].strip() for p in pinned_list):
+                        body_pin += f"📡 **Сервер {i}:** `{base_only}`\n"
+                        body_pin += f"- [ ] PIN_{base_only}\n"
+                        body_pin += f"- [ ] BAN_{base_only}\n\n---\n\n"
+                
                 with open("pin_body.txt", "w", encoding="utf-8") as f: 
                     f.write(body_pin)
+                
                 subprocess.run(['gh', 'issue', 'edit', num_pin, '--repo', repo, '--body-file', 'pin_body.txt'], 
                                env={**os.environ, "GH_TOKEN": token})
+                print(f"💎 Панель Pin/Ban #{num_pin} обновлена.")
 
             # --- ПАНЕЛЬ 3: УПРАВЛЕНИЕ ЗАКРЕПАМИ (UNPIN) ---
             unpin_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'number', '--limit', '1']

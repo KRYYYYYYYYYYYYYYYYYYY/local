@@ -114,7 +114,6 @@ def main():
     token = os.getenv("GH_TOKEN")
     repo = os.getenv("GITHUB_REPOSITORY")
 
-    blacklist = set()
     pinned_list = []
     deferred_base = []
     current_base = []
@@ -190,12 +189,13 @@ def main():
             ctrl_data = subprocess.check_output(cmd_ctrl, env=gh_env, stderr=subprocess.DEVNULL).decode()
             if ctrl_data and ctrl_data != "[]":
                 issue = json.loads(ctrl_data)[0]
-                checked = re.findall(r'- \[x\] (vless://[^\s]+)', issue['body'])
+                # Улучшенная регулярка: игнорирует текст после ссылки (например, "(wifi 1)")
+                checked = re.findall(r'- \[x\] (vless://[^\s)]+)', issue['body'])
                 if checked:
                     for s in checked:
                         blacklist.add(s.split('#')[0].strip())
                     with open('test1/blacklist.txt', 'w', encoding='utf-8') as f:
-                        f.write("\n".join(list(blacklist)))
+                        f.write("\n".join(sorted(list(blacklist)))) # Сортировка для порядка
                     print(f"🚫 Control: {len(checked)} в бан.")
 
             # --- 2. ПАНЕЛЬ PIN_CONTROL: КАНДИДАТЫ (PIN + BAN) ---
@@ -204,18 +204,19 @@ def main():
                 issue_pin = json.loads(pin_data)[0]
                 body = issue_pin['body']
                 
-                # Ищем закрепы через префикс PIN_
+                # Ищем PIN_vless...
                 to_pin = re.findall(r'- \[x\] PIN_(vless://[^\s\n]+)', body)
                 if to_pin:
                     with open('test1/pinned.txt', 'a', encoding='utf-8') as pf:
                         for s in to_pin:
-                            base = s.split("#")[0].strip()
+                            s_clean = s.strip()
+                            base = s_clean.split("#")[0].strip()
                             if all(base != p.split("#")[0].strip() for p in pinned_list):
-                                pf.write(s.strip() + "\n")
-                                pinned_list.append(s.strip())
+                                pf.write(s_clean + "\n")
+                                pinned_list.append(s_clean)
                     print(f"💎 Pin: {len(to_pin)} закреплено.")
 
-                # Ищем баны через префикс BAN_
+                # Ищем BAN_vless...
                 to_ban_pin = re.findall(r'- \[x\] BAN_(vless://[^\s\n]+)', body)
                 if to_ban_pin:
                     with open('test1/blacklist.txt', 'a', encoding='utf-8') as bf:
@@ -230,10 +231,11 @@ def main():
             unpin_data = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'body', '--limit', '1'], env=gh_env).decode()
             if unpin_data and unpin_data != "[]":
                 issue_unp = json.loads(unpin_data)[0]
-                # Тут ищем просто помеченные ссылки (без префиксов)
-                to_unpin = re.findall(r'- \[x\] (vless://[^\s]+)', issue_unp['body'])
+                # Убираем лишние символы в конце регулярки
+                to_unpin = re.findall(r'- \[x\] (vless://[^\s)]+)', issue_unp['body'])
                 if to_unpin:
                     to_unpin_bases = [u.split("#")[0].strip() for u in to_unpin]
+                    # Фильтруем список, оставляя только те, чьих баз нет в списке на удаление
                     pinned_list = [s for s in pinned_list if s.split("#")[0].strip() not in to_unpin_bases]
                     with open('test1/pinned.txt', 'w', encoding='utf-8') as pf:
                         pf.write("\n".join(pinned_list) + ("\n" if pinned_list else ""))

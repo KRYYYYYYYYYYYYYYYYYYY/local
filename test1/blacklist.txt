@@ -709,3 +709,9 @@ vless://25b1579d-4949-4942-b77a-00605bfeec04@185.112.59.4:8446?flow=xtls-rprx-vi
 vless://ed9bf6a3-f9ff-4f88-b72b-011709b493b7@185.112.59.4:9443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=api-maps.yandex.ru&pbk=59iHd67rGlyJBUpDq5NXC91EB0U4AXtSlOjAQsW2D14&spx=%2F
 vless://c7a7051e-b2f6-44c9-b51b-474848706f8c@cache-2.datapull.cc:8443?type=tcp&security=reality&flow=xtls-rprx-vision&sni=www.sap.com&pbk=Rhr3cs_cvFe2xoxuNSjkUBkwA3CxhEsJ6z4f4SJp3zw&fp=random&bx=%2F&sid=002ee0f1bfda2c01
 vless://41e8f68c-4635-07d0-a466-1b03ce16e09c@212.193.157.118:443?encryption=none&type=ws&security=tls&path=%2F%2F&host=lk-cdn.deploy-assure.ru&fp=chrome&sni=lk-cdn.deploy-assure.ru&alpn=h2%2Chttp%2F1.1
+vless://ad2879c1-7f77-4a4c-ba50-c24dd5ceffa4@81.19.141.190:51529/?type=tcp&encryption=none&sni=yandex.ru&fp=chrome&security=reality&pbk=9smFk5QZXifHGrtwDwhbROsLBh179bExNWABnvUCvSw&sid=b77a294515ecc200
+vless://4043cb09-ecb6-4001-b08a-da2c4d74f1d5@94.131.105.12:8080?encryption=none&type=tcp&security=reality&fp=chrome&sni=max.ru&pbk=w28tNIWZCfW4X9aQDLwXECK3pU59zihJ0GIMA13u5X8
+vless://b36fa3f7-daff-453a-85a1-429b1b981815@95.85.235.2:8181?encryption=none&fp=chrome&pbk=Z84J2IelR9ch3k8VtlVhhs5ycBUlXA7wHBWcBrjqnAw&security=reality&sid=7dbf7d3233971d5c&sni=max.ru&type=tcp
+vless://446879b9-710c-431b-94d0-f6b4c18a528a@91.196.32.225:7433?encryption=none&type=tcp&security=reality&fp=chrome&sni=max.ru&pbk=Z84J2IelR9ch3k8VtlVhhs5ycBUlXA7wHBWcBrjqnAw&sid=7dbf7d3233971d5c
+vless://a001c9c4-ece2-4dc1-9658-cbad90fcd2e0@103.35.189.204:8080?type=tcp&security=reality&fp=chrome&pbk=w28tNIWZCfW4X9aQDLwXECK3pU59zihJ0GIMA13u5X8&sid=&sni=max.ru&path=&host=
+vless://b36fa3f7-daff-453a-85a1-429b1b981815@2.56.126.12:8080?encryption=none&type=tcp&security=reality&fp=chrome&sni=max.ru&pbk=w28tNIWZCfW4X9aQDLwXECK3pU59zihJ0GIMA13u5X8

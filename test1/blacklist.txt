@@ -708,3 +708,4 @@ vless://f6eb5903-35ae-42d0-b60a-9e01e51e6d99@de-5.vpnd.io:43881?type=tcp&securit
 vless://25b1579d-4949-4942-b77a-00605bfeec04@185.112.59.4:8446?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=max.ru&pbk=Az7yi4Q-UKI-hsYKtO4wvn1iW4JVW5ivrIXO0ICYtE0&spx=/
 vless://ed9bf6a3-f9ff-4f88-b72b-011709b493b7@185.112.59.4:9443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=api-maps.yandex.ru&pbk=59iHd67rGlyJBUpDq5NXC91EB0U4AXtSlOjAQsW2D14&spx=%2F
 vless://c7a7051e-b2f6-44c9-b51b-474848706f8c@cache-2.datapull.cc:8443?type=tcp&security=reality&flow=xtls-rprx-vision&sni=www.sap.com&pbk=Rhr3cs_cvFe2xoxuNSjkUBkwA3CxhEsJ6z4f4SJp3zw&fp=random&bx=%2F&sid=002ee0f1bfda2c01
+vless://41e8f68c-4635-07d0-a466-1b03ce16e09c@212.193.157.118:443?encryption=none&type=ws&security=tls&path=%2F%2F&host=lk-cdn.deploy-assure.ru&fp=chrome&sni=lk-cdn.deploy-assure.ru&alpn=h2%2Chttp%2F1.1

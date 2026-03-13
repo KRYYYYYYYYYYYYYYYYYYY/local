@@ -732,3 +732,5 @@ vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@45.61.140.116:443?type=ws&security=
 vless://67458669-1eb1-4973-8101-5a2e37081a21@nl.vpnlink.pro:443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=DqITZlyw-lHDYyNDS7JBw6jUzIdYb-70ZONZqurmLzU&sid=972ceecb&sni=api.google.com&spx=/
 vless://d1209ffb-c159-48d5-b40d-542ce11fc768@144.31.2.99:10965?security=reality&encryption=none&pbk=lHxeD2nYtDb1V7JseV-sUTEuqH6_jie7U_iOARX7cT0&headerType=none&fp=qq&type=tcp&flow=xtls-rprx-vision&sni=deepl.com&sid=9f3a7c6d2e8b41af
 vless://cb2e5fc3-c1bb-4cfc-b18c-69e450fbd017@146.185.209.20:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=web.max.ru&pbk=FkmYFobwxLMLEktYXywmjthuEYCZggITsxwPNasTKUg&sid=7426b0c03ef009dc&spx=/
+vless://948fac3c-42bf-41a6-a5f9-704d36ff0d8d@204.12.225.226:443?&security=tls&fp=random&alpn=http/1.1&sni=snippet.fgfw.ccwu.cc&type=ws&headerType=none&host=snippet.fgfw.ccwu.cc&path=%2Fdanfeng
+vless://948fac3c-42bf-41a6-a5f9-704d36ff0d8d@92.118.9.243:2053?encryption=none&security=tls&sni=snippet.fgfw.indevs.in&fp=random&alpn=http/1.1&insecure=0&allowInsecure=0&type=ws&host=snippet.fgfw.indevs.in&path=/danfeng

@@ -1636,7 +1636,7 @@
         "link": "vless://948fac3c-42bf-41a6-a5f9-704d36ff0d8d@89.117.0.166:8085?&security=tls&fp=random&alpn=http/1.1&sni=danfeng.sylu.cc&type=ws&headerType=none&host=danfeng.sylu.cc&path=%2Fdanfeng#wifi%20153"
     },
     "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@198.105.123.103:8443?encryption=none&security=reality&sni=sun6-21.userapi.com&fp=chrome&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&sid=3ca620a7ed5f3196&spx=%2F&type=tcp": {
-        "rank": 56,
+        "rank": 0,
         "link": "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@198.105.123.103:8443?encryption=none&security=reality&sni=sun6-21.userapi.com&fp=chrome&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&sid=3ca620a7ed5f3196&spx=%2F&type=tcp#wifi%2054"
     },
     "vless://d1209ffb-c159-48d5-b40d-542ce11fc768@144.31.213.103:10121?security=reality&encryption=none&pbk=4DdA8dBVn5zB_UTbgBY45YqM0HU8zrjXYdzg3-wz5Rg&headerType=none&fp=qq&type=tcp&flow=xtls-rprx-vision&sni=apple.com&sid=9c2a7d4e5f18b6a3": {
@@ -1840,15 +1840,15 @@
         "link": "vless://d1209ffb-c159-48d5-b40d-542ce11fc768@144.31.213.102:10121?security=reality&encryption=none&pbk=4DdA8dBVn5zB_UTbgBY45YqM0HU8zrjXYdzg3-wz5Rg&headerType=none&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=apple.com&sid=9c2a7d4e5f18b6a3#wifi%2033"
     },
     "vless://446879b9-710c-431b-94d0-f6b4c18a528a@91.196.32.225:7433?encryption=none&fp=chrome&pbk=Z84J2IelR9ch3k8VtlVhhs5ycBUlXA7wHBWcBrjqnAw&security=reality&sid=7dbf7d3233971d5c&sni=max.ru&type=tcp": {
-        "rank": 56,
+        "rank": 0,
         "link": "vless://446879b9-710c-431b-94d0-f6b4c18a528a@91.196.32.225:7433?encryption=none&fp=chrome&pbk=Z84J2IelR9ch3k8VtlVhhs5ycBUlXA7wHBWcBrjqnAw&security=reality&sid=7dbf7d3233971d5c&sni=max.ru&type=tcp#wifi%2036"
     },
     "vless://658786e5-f302-48e2-b321-f4dc6da2a398@138.124.54.120:443?encryption=none&flow=xtls-rprx-vision&type=raw&headerType=none&security=reality&fp=chrome&pbk=EdEtwDL3a_V9midkIqik19C3xo7VvefseGkDM5jBWGM&sni=cdnv-img.perekrestok.ru&sid=ba34cbf836e99bf6": {
-        "rank": 56,
+        "rank": 0,
         "link": "vless://658786e5-f302-48e2-b321-f4dc6da2a398@138.124.54.120:443?encryption=none&flow=xtls-rprx-vision&type=raw&headerType=none&security=reality&fp=chrome&pbk=EdEtwDL3a_V9midkIqik19C3xo7VvefseGkDM5jBWGM&sni=cdnv-img.perekrestok.ru&sid=ba34cbf836e99bf6#wifi%2042"
     },
     "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@132.243.200.84:8443?type=tcp&security=reality&sni=sun6-21.userapi.com&fp=chrome&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&sid=3ca620a7ed5f3196": {
-        "rank": 56,
+        "rank": 0,
         "link": "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@132.243.200.84:8443?type=tcp&security=reality&sni=sun6-21.userapi.com&fp=chrome&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&sid=3ca620a7ed5f3196#wifi%2047"
     },
     "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@194.87.24.104:8443?type=tcp&security=reality&sni=sun6-21.userapi.com&fp=chrome&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&sid=3ca620a7ed5f3196": {
@@ -1872,7 +1872,7 @@
         "link": "vless://5b49218e-8a2a-497c-aff2-a93667cbc485@89.39.121.210:443?type=tcp&security=reality&flow=xtls-rprx-vision&sni=ozone.ru&pbk=pQYGdr-ee0TotzdikPWnqJgKbX8OYcPNkJpH9scxjB0&fp=randomized&bx=%2F&sid=d7e1abac#wifi%2080"
     },
     "vless://658786e5-f302-48e2-b321-f4dc6da2a398@95.181.160.23:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=cdnv-img.perekrestok.ru&pbk=EdEtwDL3a_V9midkIqik19C3xo7VvefseGkDM5jBWGM&sid=ba34cbf836e99bf6": {
-        "rank": 56,
+        "rank": 26,
         "link": "vless://658786e5-f302-48e2-b321-f4dc6da2a398@95.181.160.23:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=cdnv-img.perekrestok.ru&pbk=EdEtwDL3a_V9midkIqik19C3xo7VvefseGkDM5jBWGM&sid=ba34cbf836e99bf6#wifi%2071"
     },
     "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@198.105.123.103:8443?encryption=none&type=tcp&security=reality&fp=chrome&sni=sun6-21.userapi.com&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&sid=3ca620a7ed5f3196&spx=%2F": {

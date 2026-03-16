@@ -1192,7 +1192,7 @@
         "link": "vless://464854c0-d879-433b-8ae2-28bfe19ed08e@89.23.119.179:8443?mode=gun&security=reality&encryption=none&authority=google.com&pbk=12UHjWCU_BNIkRmxt-6QKAuVuSIFzoS2jkN1BIMzGjM&fp=chrome&type=grpc&serviceName=google.com&sni=google.com#wifi%20181"
     },
     "vless://d1209ffb-c159-48d5-b40d-542ce11fc768@144.31.103.38:10121?security=reality&encryption=none&pbk=4DdA8dBVn5zB_UTbgBY45YqM0HU8zrjXYdzg3-wz5Rg&headerType=none&fp=qq&type=tcp&flow=xtls-rprx-vision&sni=apple.com&sid=9c2a7d4e5f18b6a3": {
-        "rank": 51,
+        "rank": 0,
         "link": "vless://d1209ffb-c159-48d5-b40d-542ce11fc768@144.31.103.38:10121?security=reality&encryption=none&pbk=4DdA8dBVn5zB_UTbgBY45YqM0HU8zrjXYdzg3-wz5Rg&headerType=none&fp=qq&type=tcp&flow=xtls-rprx-vision&sni=apple.com&sid=9c2a7d4e5f18b6a3#wifi%2043"
     },
     "vless://464854c0-d879-433b-8ae2-28bfe19ed08e@89.124.76.225:443?security=reality&type=xhttp&mode=packet-up&extra={\"scMaxEachPostBytes\": 1000000, \"scMaxConcurrentPosts\": 100, \"scMinPostsIntervalMs\": 30, \"xPaddingBytes\": \"100-1000\", \"noGRPCHeader\": false}&sni=ftp.debian.org&fp=chrome&pbk=12UHjWCU_BNIkRmxt-6QKAuVuSIFzoS2jkN1BIMzGjM&spx=/&sid=cdce15b3e2179ce8": {
@@ -1656,7 +1656,7 @@
         "link": "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@132.243.200.50:8443?encryption=none&type=tcp&security=reality&fp=chrome&sni=sun6-21.userapi.com&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&sid=3ca620a7ed5f3196&spx=%2F#wifi%2050"
     },
     "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@185.88.143.66:8443?encryption=none&fp=chrome&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&security=reality&sid=3ca620a7ed5f3196&sni=sun6-21.userapi.com&type=tcp": {
-        "rank": 52,
+        "rank": 0,
         "link": "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@185.88.143.66:8443?encryption=none&fp=chrome&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&security=reality&sid=3ca620a7ed5f3196&sni=sun6-21.userapi.com&type=tcp#wifi%2055"
     },
     "vless://f1600497-20e4-0c07-64e0-3e28fa3d01e8@152.114.193.158:47009?security=reality&type=tcp&flow=xtls-rprx-vision&sni=sun6-21.userapi.com&fp=chrome&pbk=tr79fhd6jVvu8d-Rp9gCEO8XtMyNpusiu3rLmIiKEnU&sid=e21f2248d3f24140": {
@@ -1840,7 +1840,7 @@
         "link": "vless://d51f31b4-6e74-4a57-8ea0-a62830df3f45@150.241.94.215:443?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=us-cdn.api.plnt.su&fp=&pbk=1he5EyHxI595x0mNkFNxOebUOQZGVGIy_c92bn1qO2o&sid=ac31827454d7f693#wifi%2021"
     },
     "vless://997bc475-4621-4612-8337-cc55a0cb68ab@146.103.115.182:443?security=reality&type=xhttp&mode=packet-up&extra=%7B%22scMaxEachPostBytes%22%3A+1000000%2C+%22scMaxConcurrentPosts%22%3A+100%2C+%22scMinPostsIntervalMs%22%3A+30%2C+%22xPaddingBytes%22%3A+%22100-1000%22%2C+%22noGRPCHeader%22%3A+false%7D&sni=deb.debian.org&fp=firefox&pbk=12UHjWCU_BNIkRmxt-6QKAuVuSIFzoS2jkN1BIMzGjM&spx=%2F": {
-        "rank": 53,
+        "rank": 0,
         "link": "vless://997bc475-4621-4612-8337-cc55a0cb68ab@146.103.115.182:443?security=reality&type=xhttp&mode=packet-up&extra=%7B%22scMaxEachPostBytes%22%3A+1000000%2C+%22scMaxConcurrentPosts%22%3A+100%2C+%22scMinPostsIntervalMs%22%3A+30%2C+%22xPaddingBytes%22%3A+%22100-1000%22%2C+%22noGRPCHeader%22%3A+false%7D&sni=deb.debian.org&fp=firefox&pbk=12UHjWCU_BNIkRmxt-6QKAuVuSIFzoS2jkN1BIMzGjM&spx=%2F#wifi%20102"
     },
     "vless://16b5939f-cfc9-4e3f-b372-86498be16a0b@91.196.33.145:443?type=tcp&security=reality&flow=xtls-rprx-vision&sni=usa1.jugploer.icu&pbk=Hnf0rsS2jGwkYlpF4Yywc0jfEC4b96a-rREvrIz_4xM": {
@@ -1896,7 +1896,7 @@
         "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@43.162.120.155:443?path=Telegram%F0%9F%87%A8%F0%9F%87%B3%40WangCai2&security=tls&encryption=none&host=zgtwylnhh.cc.cd&fp=chrome&type=ws&sni=zgtwylnhh.cc.cd#wifi%2014"
     },
     "vless://0f7ee331-3a78-4341-acbb-39b9b7bd7f47@178.17.60.128:8083?type=tcp&security=reality&flow=xtls-rprx-vision&fp=&pbk=SziXMkSTuvedEFS4DE-WY0a4Hb87Y22VW0TgE9IPDjA&sid=425ba80cd1a821a8&sni=www.apple.com&path=&host=": {
-        "rank": 54,
+        "rank": 0,
         "link": "vless://0f7ee331-3a78-4341-acbb-39b9b7bd7f47@178.17.60.128:8083?type=tcp&security=reality&flow=xtls-rprx-vision&fp=&pbk=SziXMkSTuvedEFS4DE-WY0a4Hb87Y22VW0TgE9IPDjA&sid=425ba80cd1a821a8&sni=www.apple.com&path=&host=#wifi%20118"
     },
     "vless://997bc475-4621-4612-8337-cc55a0cb68ab@212.34.145.14:8443?security=reality&type=grpc&serviceName=google.com&authority=google.com&mode=gun&sni=google.com&fp=qq&pbk=12UHjWCU_BNIkRmxt-6QKAuVuSIFzoS2jkN1BIMzGjM&sid=cdce15b3e2179ce8": {
@@ -1976,16 +1976,16 @@
         "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@66.92.20.111:443?security=tls&sni=zgtwylnhh.cc.cd&type=ws&host=zgtwylnhh.cc.cd&path=Telegram@WangCai2#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2015"
     },
     "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?encryption=none&security=tls&sni=zgtwylnhh.cc.cd&insecure=0&allowInsecure=0&type=ws&host=zgtwylnhh.cc.cd&path=Telegram": {
-        "rank": 28,
-        "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?encryption=none&security=tls&sni=zgtwylnhh.cc.cd&insecure=0&allowInsecure=0&type=ws&host=zgtwylnhh.cc.cd&path=Telegram#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2016"
+        "rank": 7,
+        "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?encryption=none&security=tls&sni=zgtwylnhh.cc.cd&insecure=0&allowInsecure=0&type=ws&host=zgtwylnhh.cc.cd&path=Telegram#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2020"
     },
     "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?security=tls&sni=zgtwylnhh.cc.cd&type=ws&host=zgtwylnhh.cc.cd&path=Telegram@WangCai2": {
-        "rank": 28,
-        "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?security=tls&sni=zgtwylnhh.cc.cd&type=ws&host=zgtwylnhh.cc.cd&path=Telegram@WangCai2#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2017"
+        "rank": 7,
+        "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?security=tls&sni=zgtwylnhh.cc.cd&type=ws&host=zgtwylnhh.cc.cd&path=Telegram@WangCai2#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2021"
     },
     "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?type=ws&security=tls&encryption=none&sni=zgtwylnhh.cc.cd&path=Telegram%F0%9F%87%A8%F0%9F%87%B3%40WangCai2&host=zgtwylnhh.cc.cd": {
-        "rank": 28,
-        "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?type=ws&security=tls&encryption=none&sni=zgtwylnhh.cc.cd&path=Telegram%F0%9F%87%A8%F0%9F%87%B3%40WangCai2&host=zgtwylnhh.cc.cd#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2018"
+        "rank": 7,
+        "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?type=ws&security=tls&encryption=none&sni=zgtwylnhh.cc.cd&path=Telegram%F0%9F%87%A8%F0%9F%87%B3%40WangCai2&host=zgtwylnhh.cc.cd#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2023"
     },
     "vless://948fac3c-42bf-41a6-a5f9-704d36ff0d8d@31.58.50.114:2053?&security=tls&fp=random&alpn=http/1.1&sni=danfeng.sylu.cc&type=ws&headerType=none&host=danfeng.sylu.cc&path=%2Fdanfeng": {
         "rank": 28,
@@ -2119,21 +2119,9 @@
         "rank": 7,
         "link": "vless://ccd85f23-9105-37fd-96b9-9dcbc89ff3eb@167.253.66.132:443?encryption=none&type=tcp&headerType=none&fp=random&host=s110.okgfw.top&path=&flow=xtls-rprx-vision&security=tls&sni=u710948u7fbbs110.okgfw.top&serviceName=&mode=&alpn=#wifi%2019"
     },
-    "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?encryption=none&security=tls&sni=zgtwylnhh.cc.cd&insecure=0&allowInsecure=0&type=ws&host=zgtwylnhh.cc.cd&path=Telegram": {
-        "rank": 7,
-        "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?encryption=none&security=tls&sni=zgtwylnhh.cc.cd&insecure=0&allowInsecure=0&type=ws&host=zgtwylnhh.cc.cd&path=Telegram#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2020"
-    },
-    "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?security=tls&sni=zgtwylnhh.cc.cd&type=ws&host=zgtwylnhh.cc.cd&path=Telegram@WangCai2": {
-        "rank": 7,
-        "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?security=tls&sni=zgtwylnhh.cc.cd&type=ws&host=zgtwylnhh.cc.cd&path=Telegram@WangCai2#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2021"
-    },
     "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?Telegram=@GozargahAzad,@GozargahAzad,@GozargahAzad,@GozargahAzad,@GozargahAzad,@GozargahAzad,@GozargahAzad&path=Telegram🇨🇳@WangCai2&security=tls&encryption=none&insecure=1&host=zgtwylnhh.cc.cd&fp=chrome&type=ws&allowInsecure=1&sni=zgtwylnhh.cc.cd": {
         "rank": 7,
         "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?Telegram=@GozargahAzad,@GozargahAzad,@GozargahAzad,@GozargahAzad,@GozargahAzad,@GozargahAzad,@GozargahAzad&path=Telegram🇨🇳@WangCai2&security=tls&encryption=none&insecure=1&host=zgtwylnhh.cc.cd&fp=chrome&type=ws&allowInsecure=1&sni=zgtwylnhh.cc.cd#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2022"
-    },
-    "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?type=ws&security=tls&encryption=none&sni=zgtwylnhh.cc.cd&path=Telegram%F0%9F%87%A8%F0%9F%87%B3%40WangCai2&host=zgtwylnhh.cc.cd": {
-        "rank": 7,
-        "link": "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?type=ws&security=tls&encryption=none&sni=zgtwylnhh.cc.cd&path=Telegram%F0%9F%87%A8%F0%9F%87%B3%40WangCai2&host=zgtwylnhh.cc.cd#%F0%9F%8C%90%20%E2%8F%B3%20wifi%2023"
     },
     "vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?type=ws&security=tls&encryption=none&sni=zgtwylnhh.cc.cd&path=Telegram%F0%9F%87%A8%F0%9F%87%B3&host=zgtwylnhh.cc.cd": {
         "rank": 7,

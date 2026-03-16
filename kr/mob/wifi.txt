@@ -1,10 +1,5 @@
 # profile-title: 🏴WIFI🏴
-# remark: 🏴WIFI🏴
-# announce: Подписка для использования на wifi.
-# hide-settings: 1
-# profile-update-interval: 2
-# subscription-userinfo: upload=0; download=0; expire=0
-# shadowrocket-userinfo: upload=0; download=0; expire=0
+
 vless://cb1db21c-cadd-429c-8244-2f852b2025cb@mosteu.vmelectronics.ru:1443?security=reality&encryption=none&pbk=IY3FoZJxMLG_yyWJ7BkkL6cpfxypkx_XkogW0xbK-Es&headerType=none&fp=qq&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=google.com&sid=7ba6c86c7aa8684d#%F0%9F%87%AA%F0%9F%87%AA%2B%20%F0%9F%92%8E%20%5BPINNED%5D%201
 vless://cb1db21c-cadd-429c-8244-2f852b2025cb@mosteu.vmelectronics.ru:2443?security=reality&encryption=none&pbk=639zNnbJNoEyG_LScz4MlkpKluImfvkkFddsk8ecjks&headerType=none&fp=qq&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=google.com&sid=4d1548b1f5d4333d#%F0%9F%87%B3%F0%9F%87%B1%2B%20%F0%9F%92%8E%20%5BPINNED%5D%202
 vless://cb1db21c-cadd-429c-8244-2f852b2025cb@mosteu.vmelectronics.ru:3443?security=reality&encryption=none&pbk=wwGR_yrkQmb5atW8fWWR376idUXqTD8CnHhoFPTb7yQ&headerType=none&fp=qq&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=google.com&sid=d10195d5995c1790#%F0%9F%87%A9%F0%9F%87%AA%2B%20%F0%9F%92%8E%20%5BPINNED%5D%203
@@ -17,7 +12,6 @@ vless://cb1db21c-cadd-429c-8244-2f852b2025cb@us.vmelectronics.ru:5252?security=r
 vless://cb1db21c-cadd-429c-8244-2f852b2025cb@5.253.41.71:8443?security=reality&encryption=none&pbk=jWeCcoek3HYd4HshfnU3-e5l5H7IrCPEQr3F0v4U1z8&headerType=none&fp=qq&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=google.com&sid=ed1c31cc46aa1433#%F0%9F%87%AF%F0%9F%87%B5%2B%20%F0%9F%92%8E%20%5BPINNED%5D%2010
 vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@43.162.120.155:443?&security=tls&fp=chrome&sni=zgtwylnhh.cc.cd&type=ws&headerType=none&host=zgtwylnhh.cc.cd&path=Telegram%F0%9F%87%A8%F0%9F%87%B3%40WangCai2#%20%F0%9F%92%8E%20%5BPINNED%5D%2011
 vless://d1209ffb-c159-48d5-b40d-542ce11fc768@178.17.61.170:10121?security=reality&encryption=none&pbk=4DdA8dBVn5zB_UTbgBY45YqM0HU8zrjXYdzg3-wz5Rg&headerType=none&fp=qq&type=tcp&flow=xtls-rprx-vision&sni=apple.com&sid=9c2a7d4e5f18b6a3#wifi%2012
-vless://2563b829-866c-4c0f-8270-a91cffbfe852@de31.abvpn.ru:443?type=tcp&security=reality&fp=firefox&pbk=Wg_prcp8fAsUrveCKVqBsk_8mWuKurQb-0N3H1e35mk&sid=5c999707&sni=www.tradingview.com&spx=/#%F0%9F%87%A9%F0%9F%87%AA%20%E2%8F%B3%20wifi%2013
 vless://5a5d7457-e139-4c13-9cab-f06c42695430@77.239.114.90:8443?security=reality&type=tcp&flow=xtls-rprx-vision&sni=apple.com&pbk=i5a8i2AWUSMZ-rYA6hGBRCBBoe7W5ah33SCdF5JkMk4&sid=8bcfe256cf216fd8#wifi%2014
 vless://cc6cbaad-bf64-46f7-b628-4d3bddaf30c4@193.23.201.140:443?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=github.com&fp=&pbk=KvXGx5NqnYnUxveJ3DSzQ2Zx_FlB6i-narUvQR-igX8&sid=#wifi%2015
 vless://cc6cbaad-bf64-46f7-b628-4d3bddaf30c4@94.156.114.92:443?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=github.com&fp=&pbk=KvXGx5NqnYnUxveJ3DSzQ2Zx_FlB6i-narUvQR-igX8&sid=#wifi%2016
@@ -147,11 +141,9 @@ vless://47bc9730-3896-4b91-8ae1-5ed496ad1208@195.250.25.185:58888?security=reali
 vless://47bc9730-3896-4b91-8ae1-5ed496ad1208@147.93.7.103:58888?security=reality&encryption=none&pbk=bHBZDPBhtUUsRx9oJVJPIk_3V_0RjyYSbmWyIaLDQ2M&headerType=none&fp=edge&spx=%2F&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=ads.x5.ru&sid=372c05b48fe83e5b#wifi%20140
 vless://7018878c-7b26-4eec-8feb-3137f9b74394@94.156.237.99:443?security=reality&type=tcp&flow=xtls-rprx-vision&sni=de.katanavpn.ru&fp=chrome&pbk=gGnBn3VWyNgN7fhQ7WrxgWsfmdkrodPZ1_pf2BdQnlw&sid=82978722b1a42ddb#wifi%20141
 vless://9bef38a5-31a7-4e36-af48-01697fae00a2@87.120.216.5:443?type=tcp&security=reality&flow=xtls-rprx-vision&pbk=drl7nndYdfzZY1aQ0eUAWmNV0nsHig2uDnu9siy9biQ&sid=868419504747f6de&sni=de6.krasivogame.ru#wifi%20142
-vless://2cee7a70-d867-48ea-ba98-cda478ee7cd4@8.216.2.135:12853?security=reality&type=tcp&sni=yahoo.com&fp=chrome&sid=e19803d3&pbk=8ucW2JdAVcp7hSKe26JUayqE4Rw9cO0R7g_isaXGFWs#%E2%8F%B3%20wifi%20143
 vless://948fac3c-42bf-41a6-a5f9-704d36ff0d8d@194.58.40.104:56684?&security=tls&fp=chrome&alpn=http/1.1&sni=snippet.danfeng.gleeze.com&type=ws&headerType=none&host=snippet.danfeng.gleeze.com&path=/danfeng#%E2%8F%B3%20wifi%20144
 vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?type=ws&encryption=none&host=zgtwylnhh.cc.cd&path=Telegram%F0%9F%87%A8%F0%9F%87%B3%40WangCai2&headerType=none&quicSecurity=none&serviceName=&security=tls&fp=chrome&insecure=1&sni=zgtwylnhh.cc.cd#%E2%8F%B3%20wifi%20145
 vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@94.183.185.96:443?type=ws&security=tls&encryption=none&sni=zgtwylnhh.cc.cd&path=Telegram%F0%9F%87%A8%F0%9F%87%B3&host=zgtwylnhh.cc.cd#%E2%8F%B3%20wifi%20146
-vless://26524cce-d514-4014-a426-365fb266a14d@2.59.183.198:443?type=ws&security=tls&encryption=none&fp=chrome&sni=_acme-challenge.443888.xyz&path=/danfeng&host=_acme-challenge.443888.xyz#wifi%20147
 vless://948fac3c-42bf-41a6-a5f9-704d36ff0d8d@185.133.173.205:443?encryption=none&security=tls&sni=snippet.danfeng.kozow.com&insecure=0&allowInsecure=0&type=ws&host=snippet.danfeng.kozow.com&path=%2Fdanfeng%3Fed%3D2560#%E2%8F%B3%20wifi%20148
 vless://948fac3c-42bf-41a6-a5f9-704d36ff0d8d@212.111.89.16:443?&security=tls&fp=chrome&alpn=http/1.1&sni=snippet.chinam.eu.cc&type=ws&headerType=none&host=snippet.chinam.eu.cc&path=/danfeng#%E2%8F%B3%20wifi%20149
 vless://948fac3c-42bf-41a6-a5f9-704d36ff0d8d@212.111.89.16:443?&security=tls&fp=random&alpn=http/1.1&sni=snippet.chinam.eu.cc&type=ws&headerType=none&host=snippet.chinam.eu.cc&path=%2Fdanfeng#%E2%8F%B3%20wifi%20150

@@ -84,7 +84,7 @@
         "link": "vless://a0b067ac-162d-4237-956d-10b8b471d3f5@54.37.75.187:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=www.speedtest.net&pbk=DHsthrDRMCGcOyJd4xTce_4CCSAJZGwxCdfNrkB_Pgs&sid=479826bdfc3eb86e#wifi%20112"
     },
     "vless://53fff6cc-b4ec-43e8-ade5-e0c42972fc33@37.120.184.180:80?security=&type=ws&path=/news&host=vk.com&encryption=none&sni=37.120.184.180": {
-        "rank": 64,
+        "rank": 34,
         "link": "vless://53fff6cc-b4ec-43e8-ade5-e0c42972fc33@37.120.184.180:80?security=&type=ws&path=/news&host=vk.com&encryption=none&sni=37.120.184.180#wifi%2067"
     },
     "vless://d9e24a73-f04d-4439-a564-487ccd3cd097@77.110.124.137:443?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=usa.talon.su&fp=chrome&pbk=OcVe6UD5UfGlbNjQ-c_-TGE1YItXjK3_zEi54oBdADs&sid=3a79810bba9c12dc": {
@@ -2152,7 +2152,7 @@
         "link": "vless://45344840-b049-0064-a0f6-7b3df22715a2@185.16.38.215:753?security=reality&encryption=none&pbk=zYNnGVEkMFCUR_9NcYeaXfm9A_L-PP6iG2sIIST6S0M&headerType=none&fp=firefox&type=tcp&flow=xtls-rprx-vision&sni=www.nvidia.com&sid=1ed136481e0ede74#wifi%2013"
     },
     "vless://d1209ffb-c159-48d5-b40d-542ce11fc768@144.31.103.34:10121?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=4DdA8dBVn5zB_UTbgBY45YqM0HU8zrjXYdzg3-wz5Rg&security=reality&sid=9c2a7d4e5f18b6a3&sni=apple.com&type=tcp": {
-        "rank": 55,
+        "rank": 0,
         "link": "vless://d1209ffb-c159-48d5-b40d-542ce11fc768@144.31.103.34:10121?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=4DdA8dBVn5zB_UTbgBY45YqM0HU8zrjXYdzg3-wz5Rg&security=reality&sid=9c2a7d4e5f18b6a3&sni=apple.com&type=tcp#wifi%2061"
     },
     "vless://d1209ffb-c159-48d5-b40d-542ce11fc768@144.31.213.103:10121?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=4DdA8dBVn5zB_UTbgBY45YqM0HU8zrjXYdzg3-wz5Rg&security=reality&sid=9c2a7d4e5f18b6a3&sni=apple.com&type=tcp": {
@@ -2172,7 +2172,7 @@
         "link": "vless://39910e1a-461f-485d-a6f3-db0845955dbf@109.172.55.99:443?type=tcp&security=reality&flow=xtls-rprx-vision&fp=chrome&pbk=CL5aeP6smcd4ie9upZlYVEvuHDwLAt46BOIfHOjkMis&sid=cae7fcef&sni=fr-cdg-1.blook.network&spx=/#wifi%2089"
     },
     "vless://997bc475-4621-4612-8337-cc55a0cb68ab@89.124.76.225:443?encryption=none&security=reality&sni=cdn-fastly-v6.deb.debian.org&fp=qq&pbk=12UHjWCU_BNIkRmxt-6QKAuVuSIFzoS2jkN1BIMzGjM&spx=%2F&type=xhttp&path=%2F&mode=packet-up&extra=%7B%22scMaxEachPostBytes%22%3A%2B1000000%2C%2B%22scMaxConcurrentPosts%22%3A%2B100%2C%2B%22scMinPostsIntervalMs%22%3A%2B30%2C%2B%22xPaddingBytes%22%3A%2B%22100-1000%22%2C%2B%22noGRPCHeader%22%3A%2Bfalse%7D": {
-        "rank": 58,
+        "rank": 0,
         "link": "vless://997bc475-4621-4612-8337-cc55a0cb68ab@89.124.76.225:443?encryption=none&security=reality&sni=cdn-fastly-v6.deb.debian.org&fp=qq&pbk=12UHjWCU_BNIkRmxt-6QKAuVuSIFzoS2jkN1BIMzGjM&spx=%2F&type=xhttp&path=%2F&mode=packet-up&extra=%7B%22scMaxEachPostBytes%22%3A%2B1000000%2C%2B%22scMaxConcurrentPosts%22%3A%2B100%2C%2B%22scMinPostsIntervalMs%22%3A%2B30%2C%2B%22xPaddingBytes%22%3A%2B%22100-1000%22%2C%2B%22noGRPCHeader%22%3A%2Bfalse%7D#wifi%20109"
     },
     "vless://5894c908-6017-4132-a284-c6d529ccb5ca@212.68.49.17:443?type=grpc&security=reality&fp=chrome&pbk=LhsVnjJZaNTqGU0vQCHayqDG3YeB9ejZ8T6f_EKPzVg&sid=6bb2f9b5&sni=trrr-istrr-3.blook.network&serviceName=grpc&spx=/": {
@@ -2232,7 +2232,7 @@
         "link": "vless://f9667071-bdf8-46f2-bc25-76377fd7e34b@146.185.210.74:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=eh.vk.com&pbk=Hga-gFm5ITBm2iOQNToOi9IcOhmKQgrtj9pkNc0clAQ&sid=7aaf7ba9&spx=%2F#wifi%20139"
     },
     "vless://8bedb8c4-713f-45f5-bcf6-6b6f61ffb68c@82.26.91.138:443?type=tcp&security=reality&flow=xtls-rprx-vision&fp=&pbk=2W3Qj2lgtVU6AvV_4mBixCIAMhjNcvFEY0leTCbM7lo&sid=&sni=sun6-21.userapi.com&path=&host=": {
-        "rank": 58,
+        "rank": 28,
         "link": "vless://8bedb8c4-713f-45f5-bcf6-6b6f61ffb68c@82.26.91.138:443?type=tcp&security=reality&flow=xtls-rprx-vision&fp=&pbk=2W3Qj2lgtVU6AvV_4mBixCIAMhjNcvFEY0leTCbM7lo&sid=&sni=sun6-21.userapi.com&path=&host=#wifi%2062"
     },
     "vless://4ae17840-857c-4ae7-8e4a-d5f00a7af904@144.31.63.113:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ge-cdn.api.plnt.su&fp=chrome&security=reality&pbk=1he5EyHxI595x0mNkFNxOebUOQZGVGIy_c92bn1qO2o&sid=ac31827454d7f693&packetEncoding=xudp": {
@@ -2248,7 +2248,7 @@
         "link": "vless://7018878c-7b26-4eec-8feb-3137f9b74394@213.159.68.175:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=fi.katanavpn.ru&fp=firefox&pbk=gGnBn3VWyNgN7fhQ7WrxgWsfmdkrodPZ1_pf2BdQnlw&sid=82978722b1a42ddb&type=tcp&headerType=none#wifi%2020"
     },
     "vless://7018878c-7b26-4eec-8feb-3137f9b74394@77.221.157.228:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=de.katanavpn.ru&pbk=gGnBn3VWyNgN7fhQ7WrxgWsfmdkrodPZ1_pf2BdQnlw&sid=82978722b1a42ddb": {
-        "rank": 61,
+        "rank": 0,
         "link": "vless://7018878c-7b26-4eec-8feb-3137f9b74394@77.221.157.228:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=de.katanavpn.ru&pbk=gGnBn3VWyNgN7fhQ7WrxgWsfmdkrodPZ1_pf2BdQnlw&sid=82978722b1a42ddb#wifi%2081"
     },
     "vless://90c9c25c-df6c-4438-83d3-ef97166a9184@72.56.18.69:443?security=reality&type=tcp&headerType=none&flow=xtls-rprx-vision&sni=www.cloudflare.com&fp=chrome&pbk=A3PWLCRX9oeSyPvrmrwj2jUXcLo2uCwAISRBHtNE1Xw&spx=%2F&sid=6ba85179e30d4fc2": {
@@ -2384,7 +2384,7 @@
         "link": "vless://d65cc14c-f53f-4fe2-b262-97856601319c@87.229.97.231:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=ios&sni=yahoo.com&pbk=e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg&sid=c39cc7310a#wifi%20143"
     },
     "vless://f9f8adb0-9614-4abb-90d1-35f77bcf7e82@178.17.48.233:8443?type=tcp&security=reality&flow=xtls-rprx-vision&fp=&pbk=dESiyU_gELcaVL552vqOLJIAeGBnb6uGyNC-Jhtg5ic&sid=ad7dab462a323acb&sni=sun6-22.userapi.com&path=&host=": {
-        "rank": 54,
+        "rank": 0,
         "link": "vless://f9f8adb0-9614-4abb-90d1-35f77bcf7e82@178.17.48.233:8443?type=tcp&security=reality&flow=xtls-rprx-vision&fp=&pbk=dESiyU_gELcaVL552vqOLJIAeGBnb6uGyNC-Jhtg5ic&sid=ad7dab462a323acb&sni=sun6-22.userapi.com&path=&host=#wifi%2052"
     },
     "vless://f9f8adb0-9614-4abb-90d1-35f77bcf7e82@78.153.155.62:8443?type=tcp&security=reality&flow=xtls-rprx-vision&fp=&pbk=dESiyU_gELcaVL552vqOLJIAeGBnb6uGyNC-Jhtg5ic&sid=ad7dab462a323acb&sni=sun6-22.userapi.com&path=&host=": {

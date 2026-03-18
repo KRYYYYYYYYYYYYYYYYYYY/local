@@ -407,10 +407,10 @@ def main():
             if now - fail_time < GRACE_PERIOD:
                 country = get_country_code(host)
                 if country in ALLOWED_COUNTRIES:
-                    working_for_base.append(base_part)
+                    # working_for_base.append(base_part)
                     new_history[base_part] = fail_time
-                    working_for_sub.append(rebuild_link_name(link, f"⏳ wifi {counter}"))
-                    print(f"⏳ DOWN ({country}): {host} (оставлен с меткой ⏳)")
+                    # working_for_sub.append(rebuild_link_name(link, f"⏳ wifi {counter}"))
+                    print(f"⏳ DOWN ({country}): {host} (пошел нахуйц)")
                     counter += 1
             else:
                 print(f"🗑️ Удален (тайм-аут): {host}")

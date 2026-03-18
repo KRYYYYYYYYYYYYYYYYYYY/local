@@ -84,7 +84,7 @@
         "link": "vless://a0b067ac-162d-4237-956d-10b8b471d3f5@54.37.75.187:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=www.speedtest.net&pbk=DHsthrDRMCGcOyJd4xTce_4CCSAJZGwxCdfNrkB_Pgs&sid=479826bdfc3eb86e#wifi%20112"
     },
     "vless://53fff6cc-b4ec-43e8-ade5-e0c42972fc33@37.120.184.180:80?security=&type=ws&path=/news&host=vk.com&encryption=none&sni=37.120.184.180": {
-        "rank": 60,
+        "rank": 30,
         "link": "vless://53fff6cc-b4ec-43e8-ade5-e0c42972fc33@37.120.184.180:80?security=&type=ws&path=/news&host=vk.com&encryption=none&sni=37.120.184.180#wifi%2060"
     },
     "vless://d9e24a73-f04d-4439-a564-487ccd3cd097@77.110.124.137:443?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=usa.talon.su&fp=chrome&pbk=OcVe6UD5UfGlbNjQ-c_-TGE1YItXjK3_zEi54oBdADs&sid=3a79810bba9c12dc": {
@@ -2064,7 +2064,7 @@
         "link": "vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@194.87.24.39:8444?encryption=none&type=xhttp&security=reality&extra=null&fp=chrome&sni=google.com&pbk=upDCW94g-pSYQrmXvOrTVYlwBUrSKhYFF9QwrqObdVo&sid=3ca620a7ed5f3196#wifi%2094"
     },
     "vless://19cb2ba5-d074-42d6-8400-6d9183514f48@151.243.101.25:443?type=tcp&security=reality&flow=xtls-rprx-vision&fp=chrome&pbk=nPcUKydxoRI66O3tT9O4QCZpLjOBvkGsiXG7pDX1BBw&sid=6ba85179e30d4fc2&sni=www.google.com&host=www.google.com": {
-        "rank": 57,
+        "rank": 0,
         "link": "vless://19cb2ba5-d074-42d6-8400-6d9183514f48@151.243.101.25:443?type=tcp&security=reality&flow=xtls-rprx-vision&fp=chrome&pbk=nPcUKydxoRI66O3tT9O4QCZpLjOBvkGsiXG7pDX1BBw&sid=6ba85179e30d4fc2&sni=www.google.com&host=www.google.com#wifi%2024"
     },
     "vless://ccd85f23-9105-37fd-96b9-9dcbc89ff3eb@167.253.66.132:443?encryption=none&type=tcp&headerType=none&fp=random&host=s110.okgfw.top&path=&flow=xtls-rprx-vision&security=tls&sni=u710948ueb73s110.okgfw.top&serviceName=&mode=&alpn=": {
@@ -2340,7 +2340,7 @@
         "link": "vless://4ae17840-857c-4ae7-8e4a-d5f00a7af904@87.120.216.186:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ge-cdn.api.plnt.su&fp=chrome&security=reality&pbk=1he5EyHxI595x0mNkFNxOebUOQZGVGIy_c92bn1qO2o&sid=ac31827454d7f693&packetEncoding=xudp#wifi%2015"
     },
     "vless://096d2cea-e1d5-4b68-ada3-6349a272ecad@5.230.195.110:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=www.apple.com&fp=chrome&security=reality&pbk=V6FabatADtcX7aO9KMjGCadJC4LuQ_5nRViab-z-nFQ&sid=23&packetEncoding=xudp": {
-        "rank": 52,
+        "rank": 0,
         "link": "vless://096d2cea-e1d5-4b68-ada3-6349a272ecad@5.230.195.110:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=www.apple.com&fp=chrome&security=reality&pbk=V6FabatADtcX7aO9KMjGCadJC4LuQ_5nRViab-z-nFQ&sid=23&packetEncoding=xudp#wifi%2018"
     },
     "vless://997bc475-4621-4612-8337-cc55a0cb68ab@146.103.115.182:443?encryption=none&security=reality&sni=cdn-fastly-v6.deb.debian.org&fp=qq&pbk=12UHjWCU_BNIkRmxt-6QKAuVuSIFzoS2jkN1BIMzGjM&spx=%2F&type=xhttp&path=%2F&mode=packet-up&extra=%7B%22scMaxEachPostBytes%22%3A%2B1000000%2C%2B%22scMaxConcurrentPosts%22%3A%2B100%2C%2B%22scMinPostsIntervalMs%22%3A%2B30%2C%2B%22xPaddingBytes%22%3A%2B%22100-1000%22%2C%2B%22noGRPCHeader%22%3A%2Bfalse%7D": {

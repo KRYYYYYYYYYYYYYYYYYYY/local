@@ -1,10 +1,5 @@
 # profile-title: 🏴WIFI🏴
-# remark: 🏴WIFI🏴
-# announce: Подписка для использования на wifi.
-# hide-settings: 1
-# profile-update-interval: 2
-# subscription-userinfo: upload=0; download=0; expire=0
-# shadowrocket-userinfo: upload=0; download=0; expire=0
+
 vless://cb1db21c-cadd-429c-8244-2f852b2025cb@mosteu.vmelectronics.ru:1443?security=reality&encryption=none&pbk=IY3FoZJxMLG_yyWJ7BkkL6cpfxypkx_XkogW0xbK-Es&headerType=none&fp=qq&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=google.com&sid=7ba6c86c7aa8684d#%F0%9F%87%AA%F0%9F%87%AA%2B%20%F0%9F%92%8E%20%5BPINNED%5D%201
 vless://cb1db21c-cadd-429c-8244-2f852b2025cb@mosteu.vmelectronics.ru:2443?security=reality&encryption=none&pbk=639zNnbJNoEyG_LScz4MlkpKluImfvkkFddsk8ecjks&headerType=none&fp=qq&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=google.com&sid=4d1548b1f5d4333d#%F0%9F%87%B3%F0%9F%87%B1%2B%20%F0%9F%92%8E%20%5BPINNED%5D%202
 vless://cb1db21c-cadd-429c-8244-2f852b2025cb@mosteu.vmelectronics.ru:3443?security=reality&encryption=none&pbk=wwGR_yrkQmb5atW8fWWR376idUXqTD8CnHhoFPTb7yQ&headerType=none&fp=qq&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=google.com&sid=d10195d5995c1790#%F0%9F%87%A9%F0%9F%87%AA%2B%20%F0%9F%92%8E%20%5BPINNED%5D%203
@@ -33,7 +28,6 @@ vless://6cabb434-f480-478a-9586-a5667167eeb1@31.56.206.55:8443?type=tcp&security
 vless://ad66e1c4-a9e9-4c9a-8cbe-6ea260c0b763@45.148.101.162:443?type=xhttp&security=reality&encryption=none&fp=chrome&pbk=wID5u27KRxoiyXEKClM7M3o_lAb9hITHZQsqJ2-Jknc&sid=7a18cff76f11&sni=autotuojat.fi&path=/illusion-finland&host=&mode=auto&spx=/#wifi%2026
 vless://299d7042-bb13-442b-8985-c69d6ab83e6c@213.165.57.198:443?flow=xtls-rprx-vision&fp=qq&pbk=RJETAkoZ6lowmwc5f0HtPy00c3dfojqQuypriLExXRE&security=reality&sid=abbcd128&sni=sun9-36.userapi.com&type=tcp#wifi%2027
 vless://94b42a64-33fc-4b23-87c6-cf3f2c630429@185.191.119.42:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=nl-ams-4.blook.network&pbk=_Fp55m3LYD2R2hr-vDJzQ5WQbqKQ6lLiklB5ZRSXeDw&sid=8d93d0b7&spx=%2F#wifi%2028
-vless://a487adab-0644-4f80-9643-d3036b9f17c6@194.87.25.96:853?type=tcp&security=reality&flow=xtls-rprx-vision&fp=&pbk=EJKcPSl0dv7mtU26gg6tUmKPw_aDvO2AHraRgNn6B14&sid=425ba80cd1a821a8&sni=unfiltered.adguard-dns.com&path=&host=#wifi%2029
 vless://54553805-f4b8-4f24-b6ac-448ec84bba47@142.91.108.148:443?type=tcp&security=reality&flow=xtls-rprx-vision&fp=chrome&pbk=ZnZw3MotXG-T9mr-mJQrZRdYgENbXNuu3DT7JQnm6BM&sid=c181fa04b5ae281a&sni=jp.anonch.org&path=&host=#wifi%2030
 vless://a487adab-0644-4f80-9643-d3036b9f17c6@82.22.40.150:8083?type=tcp&security=reality&flow=xtls-rprx-vision&fp=&pbk=SziXMkSTuvedEFS4DE-WY0a4Hb87Y22VW0TgE9IPDjA&sid=425ba80cd1a821a8&sni=www.apple.com&path=&host=#wifi%2031
 vless://ad66e1c4-a9e9-4c9a-8cbe-6ea260c0b763@91.224.75.167:8443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=5qvcOTHr_izGbsRz-j2xC3BMMdugFMsl7MnANjzwZ0I&sid=b2a1c97a38&sni=www.apple.com&spx=/#wifi%2032
@@ -92,5 +86,4 @@ vless://dc1b85fd-a08e-42d7-ae2b-0a320f3399b7@132.243.200.56:8443?encryption=none
 vless://eb84f39f-b2e5-40ae-8838-dc7d030d580f@138.124.32.50:2443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=randomized&sni=use.typekit.net&pbk=jyAmrIladACAoSP0EEcUhxvYUNj0ftL132BFqhtcK2Q&sid=0ec0e06a8bb19bc1&spx=%2Fjs9819280#wifi%2096
 vless://ab1ddafb-9514-40ab-9e4b-a3878f70931d@95.85.254.10:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=_KTsOFhGnC0W28ZqO8_FApozMp7tJ9cVBTLKLAA_OR0&security=reality&sid=ae64c9b46bff174a&sni=pl.sky-vault.top&type=tcp&note=Telegram---@Raiv2mmr---Telegram---@Raiv2mmr---Telegram---@Raiv2mmr---Telegram---@Raiv2mmr---Telegram---@Raiv2mmr---Telegram---@Raiv2mmr---Telegram---@Raiv2mmr---Telegram---@Raiv2mmr---Telegram---@Raiv2mmr---#wifi%2097
 vless://14b02e2a-8930-4afb-8412-ea4a4954ca5b@38.180.192.104:443?encryption=none&type=ws&security=tls&path=Telegram@WangCai2&host=zgtwylnhh.cc.cd&sni=zgtwylnhh.cc.cd#wifi%2098
-vless://a8aa5392-73dc-47dd-be89-8042a4357fb7@159.195.69.251:8443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=fastsync.xyz&pbk=eHgRhHYifD2njbtjzgMsNPGnvbpAK8SSXC5-wFuQnQ4&sid=65b5280b52e0532c&spx=%2F#wifi%2099
 vless://12eac926-c4ec-4040-8fb8-f316e9fc0fd6@129.212.143.33:19001?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=www.speedtest.net&pbk=S-g0oP36DShii1uPOnZDSEhp_wQghX6h68PgMivOmD4#wifi%20100

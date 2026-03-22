@@ -34,7 +34,6 @@ HEADER = """# profile-title: 🏴WIFI🏴
 """
 
 ALLOWED_COUNTRIES = {"US", "DE", "NL", "GB", "FR", "FI", "SG", "JP", "PL", "TR"}
-BAD_SNI_KEYWORDS = []
 GRACE_PERIOD = 2 * 24 * 60 * 60
 MAX_TO_CHECK = 300
 MAX_SUB_LINKS = 200
@@ -142,10 +141,6 @@ def extract_sni_candidates(link: str) -> list[str]:
             if parsed.hostname not in candidates:
                 candidates.append(parsed.hostname)
     return candidates
-
-def is_sni_suspicious(sni: str) -> bool:
-    sni = (sni or "").lower()
-    return any(word in sni for word in BAD_SNI_KEYWORDS)
 
 
 def is_ipv6(host: str) -> bool:
@@ -305,15 +300,12 @@ def main() -> None:
         latency = 0
 
         for cand_sni in extract_sni_candidates(link):
-            if is_sni_suspicious(cand_sni):
-                continue
             latency = probe_vless_l7(link, cand_sni, timeout=5)
             if latency > 0:
                 break
 
         if latency <= 0:
             fallback_sni = extract_sni(link)
-            if fallback_sni and not is_sni_suspicious(fallback_sni):
                 latency = probe_vless_l7(link, fallback_sni, timeout=5)
 
         if latency <= 0:

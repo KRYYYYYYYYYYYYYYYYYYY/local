@@ -14,6 +14,9 @@ PINNED_FILE = 'test1/pinned.txt'
 RANK_FILE = 'test1/ranking.json'
 VETTED_FILE = 'test1/vetted.txt'
 THRESHOLD = 50
+PROBE_TIMEOUT = 3
+TOTAL_ATTEMPTS = 20
+SLEEP_BETWEEN_ATTEMPTS = 60
 
 # Блокировка для безопасной записи в файлы из разных потоков
 file_lock = threading.Lock()
@@ -77,7 +80,7 @@ def extract_sni_candidates(link: str) -> list[str]:
         candidates.append(parsed.hostname)
     return candidates
 
-def probe_vless_l7(link: str, target_sni: str, timeout_sec: int = 7) -> int:
+def probe_vless_l7(link: str, target_sni: str, timeout_sec: int = PROBE_TIMEOUT) -> int:
     if go_lib is None:
         return 0
 
@@ -114,23 +117,29 @@ def torture_check(link: str) -> bool:
         return False
 
     total_attempts = 20
-    for i in range(total_attempts):
+    for i in range(TOTAL_ATTEMPTS):
         ok = False
-        
+
+        tried_sni: set[str] = set()
         for cand_sni in extract_sni_candidates(link):
-            if probe_vless_l7(link, cand_sni, timeout_sec=7) > 0:
+            cand_sni = cand_sni.strip()
+            if not cand_sni or cand_sni in tried_sni:
+                continue
+            tried_sni.add(cand_sni)
+            if probe_vless_l7(link, cand_sni, timeout_sec=PROBE_TIMEOUT) > 0:
                 ok = True
                 break
 
         if not ok:
-            fallback_sni = extract_sni(link) or host
-            ok = probe_vless_l7(link, fallback_sni, timeout_sec=7) > 0
+            fallback_sni = (extract_sni(link) or host).strip()
+            if fallback_sni and fallback_sni not in tried_sni:
+                ok = probe_vless_l7(link, fallback_sni, timeout_sec=PROBE_TIMEOUT) > 0
 
         if not ok:
             return False
 
-        if i < total_attempts - 1:
-            time.sleep(60)
+        if i < TOTAL_ATTEMPTS - 1:
+            time.sleep(SLEEP_BETWEEN_ATTEMPTS)
 
     return True
 
@@ -211,6 +220,7 @@ def main_torturer():
     print(f"📊 Всего в базе: {len(ranking_db)} | В исключениях (Vetted/Pinned): {len(vetted_set | pinned_set)}")
 
     candidates = []
+    seen_endpoints: set[tuple[str, int]] = set()
 
     for base, data in ranking_db.items():
         rank = data.get("rank", 0) if isinstance(data, dict) else data
@@ -218,6 +228,13 @@ def main_torturer():
 
         # Берем либо сильных (на повышение), либо совсем слабых (на удаление)
         if (rank >= THRESHOLD or rank <= 0) and base not in vetted_set and base not in pinned_set:
+            host, port = extract_host_port(link)
+            endpoint_key = (host, port) if host and port else None
+            if endpoint_key and endpoint_key in seen_endpoints:
+                print(f"↪️ [INSPECTOR] skip duplicate endpoint {host}:{port}")
+                continue
+            if endpoint_key:
+                seen_endpoints.add(endpoint_key)
             candidates.append((base, link))
 
     if not candidates:
@@ -266,6 +283,16 @@ def main_torturer():
 
     with open(RANK_FILE, 'w', encoding='utf-8') as f:
         json.dump(ranking_db, f, ensure_ascii=False, indent=4)
+
+    ranked = []
+    for base, data in ranking_db.items():
+        if isinstance(data, dict):
+            ranked.append((base, int(data.get("rank", 0))))
+    ranked.sort(key=lambda x: x[1], reverse=True)
+    if ranked:
+        print("🏆 [INSPECTOR] TOP-10:")
+        for i, (base, score) in enumerate(ranked[:10], start=1):
+            print(f"   {i}) {score} — {base[:72]}")
     print("💾 Все изменения сохранены.")
     
 if __name__ == "__main__":

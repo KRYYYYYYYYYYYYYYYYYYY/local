@@ -306,7 +306,7 @@ def main() -> None:
 
         if latency <= 0:
             fallback_sni = extract_sni(link)
-                latency = probe_vless_l7(link, fallback_sni, timeout=5)
+            latency = probe_vless_l7(link, fallback_sni, timeout=5)
 
         if latency <= 0:
             fail_time = float(history.get(base, now))

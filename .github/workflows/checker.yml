@@ -37,6 +37,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          LD_LIBRARY_PATH: .
         run: python torture_bot.py
 
       - name: 💾 Save Results

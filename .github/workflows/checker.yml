@@ -22,6 +22,21 @@ jobs:
       - name: 📂 Checkout Code
         uses: actions/checkout@v4
 
+      - name: 🛠️ Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: false
+
+      - name: 🔧 Build Go L7 Library
+        run: |
+          rm -f go.mod go.sum
+          go mod init proxy_checker
+          go get github.com/xtls/xray-core@v1.8.24
+          go get github.com/xtls/xray-core/infra/conf/serial@v1.8.24
+          go mod tidy
+          go build -buildmode=c-shared -ldflags="-s -w" -o libchecker.so checker.go
+
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:

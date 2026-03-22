@@ -8,6 +8,7 @@ import time
 import urllib.parse
 import urllib.request
 
+
 # --- Пути ---
 INPUT_FILE = "test1/1.txt"
 OUTPUT_FILE = "kr/mob/wifi.txt"

@@ -253,10 +253,17 @@ def main() -> None:
     pinned_list = dedupe_links(load_lines(PINNED_FILE, contains="vless://"))
     deferred = load_lines(DEFERRED_FILE)
     current_base = load_lines(INPUT_FILE)
-    external = fetch_external_servers()
+    had_deferred_at_start = len(deferred) > 0
+    external_loaded = False
 
-    queue = dedupe_links(pinned_list + deferred + external + current_base)
-    print(f"📦 pinned={len(pinned_list)} queue={len(queue)}")
+    if had_deferred_at_start:
+        queue = dedupe_links(pinned_list + deferred + current_base)
+        print(f"📦 pinned={len(pinned_list)} deferred={len(deferred)} queue={len(queue)} (external postponed)")
+    else:
+        external = fetch_external_servers()
+        external_loaded = True
+        queue = dedupe_links(pinned_list + external + current_base)
+        print(f"📦 pinned={len(pinned_list)} deferred=0 external={len(external)} queue={len(queue)}")
 
     pinned_bases = {p.split("#", 1)[0].strip() for p in pinned_list}
 
@@ -284,7 +291,16 @@ def main() -> None:
     now = time.time()
     idx = 0
     checked_endpoints: set[tuple[str, str]] = set()
-    while len(working_for_sub) < MAX_SUB_LINKS and idx < len(queue):
+    while len(working_for_sub) < MAX_SUB_LINKS:
+        if idx >= len(queue):
+            if had_deferred_at_start and not external_loaded and checked < MAX_TO_CHECK:
+                print("🧩 deferred exhausted -> loading external sources now", flush=True)
+                external = fetch_external_servers()
+                queue = dedupe_links(queue + external)
+                external_loaded = True
+                print(f"📦 external loaded={len(external)} new_queue={len(queue)}", flush=True)
+                continue
+            break
         link = queue[idx]
         idx += 1
 
@@ -354,6 +370,20 @@ def main() -> None:
         working_for_sub.append(final)
         working_for_base.append(base)
         print(f"✅ {len(working_for_sub)}/{MAX_SUB_LINKS}: {host}:{port} {country} {latency}ms")
+        old_rank = 0
+        if isinstance(ranking_db.get(base), dict):
+            old_rank = int(ranking_db[base].get("rank", 0))
+        elif isinstance(ranking_db.get(base), int):
+            old_rank = int(ranking_db.get(base, 0))
+        new_rank = old_rank + 1
+        ranking_db[base] = {
+            "rank": new_rank,
+            "link": final,
+            "country": country,
+            "latency": int(latency),
+            "last_seen": int(now),
+        }
+        print(f"🏅 rank {new_rank}: {host}:{port}", flush=True)
         counter += 1
 
     if idx < len(queue):
@@ -376,6 +406,16 @@ def main() -> None:
 
     with open(RANKING_FILE, "w", encoding="utf-8") as f:
         json.dump(ranking_db, f, ensure_ascii=False, indent=2)
+
+    top_ranked: list[tuple[str, int]] = []
+    for base, data in ranking_db.items():
+        if isinstance(data, dict):
+            top_ranked.append((base, int(data.get("rank", 0))))
+    top_ranked.sort(key=lambda x: x[1], reverse=True)
+    if top_ranked:
+        print("📊 TOP ranks:")
+        for i, (base, score) in enumerate(top_ranked[:10], start=1):
+            print(f"  {i}. {score} — {base[:72]}")
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:

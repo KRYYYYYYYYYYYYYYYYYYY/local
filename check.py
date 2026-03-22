@@ -208,6 +208,7 @@ def fetch_external_servers() -> list[str]:
         success = False
         for attempt in range(3):
             try:
+                print(f"🌐 source {url} (attempt {attempt + 1}/3)", flush=True)
                 req = urllib.request.Request(url.strip(), headers=headers)
                 with urllib.request.urlopen(req, timeout=15) as response:
                     content = response.read().decode("utf-8")
@@ -218,7 +219,11 @@ def fetch_external_servers() -> list[str]:
                     break
             except Exception as exc:
                 wait_time = (attempt + 1) * 3
-                print(f"❌ download fail {url}: {exc}; retry {wait_time}s")
+                err_text = str(exc)
+                if "Temporary failure in name resolution" in err_text:
+                    print(f"⚠️ DNS glitch for {url}: {exc}; retry {wait_time}s", flush=True)
+                else:
+                    print(f"❌ download fail {url}: {exc}; retry {wait_time}s", flush=True)
                 time.sleep(wait_time)
         if not success:
             print(f"⚠️ source skipped: {url}")
@@ -278,6 +283,7 @@ def main() -> None:
     checked = 0
     now = time.time()
     idx = 0
+    checked_endpoints: set[tuple[str, str]] = set()
     while len(working_for_sub) < MAX_SUB_LINKS and idx < len(queue):
         link = queue[idx]
         idx += 1
@@ -296,6 +302,12 @@ def main() -> None:
         endpoint, host, port = extract_host_port(base)
         if not endpoint or not host or not port:
             continue
+
+        endpoint_key = (host, port)
+        if endpoint_key in checked_endpoints:
+            print(f"↪️ skip duplicate endpoint {host}:{port}", flush=True)
+            continue
+        checked_endpoints.add(endpoint_key)
 
         checked += 1
         latency = 0
@@ -318,6 +330,7 @@ def main() -> None:
                 latency = probe_vless_l7(link, fallback_sni, timeout=PROBE_TIMEOUT)
 
         if latency <= 0:
+            print(f"💀 dead/no-l7 {host}:{port}", flush=True)
             fail_time = float(history.get(base, now))
             if now - fail_time > 86400:
 
@@ -330,6 +343,7 @@ def main() -> None:
 
         country = get_country_code(host, countries_cache)
         if country not in ALLOWED_COUNTRIES:
+            print(f"🌍 skip {host}:{port} country={country}", flush=True)
             continue
 
         sub_link = base

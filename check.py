@@ -43,6 +43,13 @@ MAX_PINNED_IN_SUB = 50
 PROBE_TIMEOUT = 3
 CHECK_WORKERS = 6
 STRICT_L7 = os.getenv("CHECK_STRICT_L7", "0").strip().lower() in {"1", "true", "yes"}
+DEFAULT_USER_AGENTS = [
+    "Mozilla/5.0 (Linux; Android 13; SM-A336B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 16; SM-A336B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.7680.119 Mobile Safari/537.36",
+    "Mozilla/5.0 (Linux; Android 13; SM-A336B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.179 Mobile Safari/537.36 happ/3.15.1",
+    "Happ/3.15.1",
+    "okhttp/4.12.0 v2rayNG/1.12.28",
+]
 
 go_lib = None
 
@@ -114,6 +121,9 @@ def rank_score(base: str, ranking_db: dict) -> int:
     if isinstance(data, int):
         return int(data)
     return 0
+
+def pick_user_agent() -> str:
+    return DEFAULT_USER_AGENTS[int(time.time_ns()) % len(DEFAULT_USER_AGENTS)]
 
 
 def load_lines(path: str, contains: str | None = None) -> list[str]:
@@ -201,7 +211,7 @@ def get_country_code(host: str, cache: dict[str, str]) -> str:
 
     try:
         url = f"http://ip-api.com/json/{ip}?fields=status,countryCode"
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        req = urllib.request.Request(url, headers={"User-Agent": pick_user_agent()})
         with urllib.request.urlopen(req, timeout=3) as response:
             data = json.loads(response.read().decode("utf-8"))
             if data.get("status") == "success":
@@ -214,14 +224,12 @@ def get_country_code(host: str, cache: dict[str, str]) -> str:
 
 def fetch_external_servers() -> list[str]:
     all_configs: list[str] = []
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-
     for url in EXTERNAL_SOURCE_URL:
         success = False
         for attempt in range(3):
             try:
                 print(f"🌐 source {url} (attempt {attempt + 1}/3)", flush=True)
-                req = urllib.request.Request(url.strip(), headers=headers)
+                req = urllib.request.Request(url.strip(), headers={"User-Agent": pick_user_agent()})
                 with urllib.request.urlopen(req, timeout=15) as response:
                     content = response.read().decode("utf-8")
                     found = [line.strip() for line in content.splitlines() if "vless://" in line]

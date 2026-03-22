@@ -2,13 +2,10 @@ import ctypes
 import json
 import os
 import re
-import json
 import subprocess
-import ctypes
 import threading
 import time
 import urllib.parse
-import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import psutil
 

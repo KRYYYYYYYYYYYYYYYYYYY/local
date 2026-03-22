@@ -197,7 +197,14 @@ def main_torturer():
 
     try:
         with open(RANK_FILE, 'r', encoding='utf-8') as f:
-            ranking_db = json.load(f)
+            raw_ranking_db = json.load(f)
+            ranking_db = {}
+            if isinstance(raw_ranking_db, dict):
+                for base, data in raw_ranking_db.items():
+                    if isinstance(data, dict):
+                        ranking_db[base] = data
+                    elif isinstance(data, int):
+                        ranking_db[base] = {"rank": int(data), "link": base}
     except Exception:
         ranking_db = {}
         print("❌ Ошибка чтения JSON.")
@@ -261,18 +268,21 @@ def main_torturer():
                             f.write(full_link + "\n")
                     if isinstance(ranking_db.get(base), dict):
                         ranking_db[base]['rank'] = 0
+                    else:
+                        ranking_db[base] = {"rank": 0, "link": full_link}
                 else:
+                    old_rank = 0
                     if isinstance(ranking_db.get(base), dict):
-                        old_rank = ranking_db[base].get('rank', 0)
+                        old_rank = int(ranking_db[base].get('rank', 0))
 
-                        # Если он УЖЕ был 0 и снова провалился — в список на удаление
-                        if old_rank <= 0:
-                            dead_to_remove.append(base)
-                            print(f"🧹 {base[:20]}... удален (стабильный 0).")
-                        else:
-                            # Иначе просто штрафуем
-                            ranking_db[base]['rank'] = max(0, old_rank - 30)
-                            print(f"❌ {base[:20]}... провал (штраф -30).")
+                    # Если он УЖЕ был 0 и снова провалился — в список на удаление
+                    if old_rank <= 0:
+                        dead_to_remove.append(base)
+                        print(f"🧹 {base[:20]}... удален (стабильный 0).")
+                    else:
+                        # Иначе просто штрафуем
+                        ranking_db[base] = {"rank": max(0, old_rank - 30), "link": full_link}
+                        print(f"❌ {base[:20]}... провал (штраф -30).")
             except Exception:
                 pass
 

@@ -34,13 +34,15 @@ HEADER = """# profile-title: 🏴WIFI🏴
 # profile-update-interval: 2
 """
 
-ALLOWED_COUNTRIES = {"US", "DE", "NL", "GB", "FR", "FI", "SG", "JP", "PL", "TR"}
+ALLOWED_COUNTRIES = {"US", "DE", "NL", "GB", "FR", "FI", "SG", "JP", "PL", "TR", "RU"}
 GRACE_PERIOD = 2 * 24 * 60 * 60
 MAX_TO_CHECK = 300
+MAX_TOTAL_CHECK = 1800
 MAX_SUB_LINKS = 200
-MAX_PINNED_IN_SUB = 80
+MAX_PINNED_IN_SUB = 50
 PROBE_TIMEOUT = 3
 CHECK_WORKERS = 6
+STRICT_L7 = os.getenv("CHECK_STRICT_L7", "0").strip().lower() in {"1", "true", "yes"}
 
 go_lib = None
 
@@ -263,6 +265,14 @@ def probe_link_latency(link: str) -> int:
         return probe_vless_l7(link, fallback_sni, timeout=PROBE_TIMEOUT)
     return 0
 
+def probe_tcp_latency(host: str, port: str, timeout_sec: float = 1.8) -> int:
+    try:
+        start = time.time()
+        with socket.create_connection((host, int(port)), timeout=timeout_sec):
+            return int((time.time() - start) * 1000)
+    except Exception:
+        return 0
+
 
 def main() -> None:
     countries_cache = load_json("test1/countries_cache.json", {})
@@ -310,103 +320,108 @@ def main() -> None:
     now = time.time()
     idx = 0
     checked_endpoints: set[tuple[str, str]] = set()
-    candidates_to_probe: list[tuple[str, str, str, str]] = []
-    while len(candidates_to_probe) < MAX_TO_CHECK:
-        if idx >= len(queue):
-            if had_deferred_at_start and not external_loaded and checked < MAX_TO_CHECK:
-                print("🧩 deferred exhausted -> loading external sources now", flush=True)
-                external = fetch_external_servers()
-                queue = dedupe_links(queue + external)
-                external_loaded = True
-                print(f"📦 external loaded={len(external)} new_queue={len(queue)}", flush=True)
-                continue
-            break
-        link = queue[idx]
-        idx += 1
-
-        base = link.split("#", 1)[0].strip()
-        if base in pinned_bases or base in blacklist:
-            continue
-
-        if checked >= MAX_TO_CHECK:
-            deferred_next.extend(queue[idx - 1 :])
-            break
-
-        if not re.search(r"[a-f0-9\-]{36}@", base):
-            continue
-
-        endpoint, host, port = extract_host_port(base)
-        if not endpoint or not host or not port:
-            continue
-
-        endpoint_key = (host, port)
-        if endpoint_key in checked_endpoints:
-            print(f"↪️ skip duplicate endpoint {host}:{port}", flush=True)
-            continue
-        checked_endpoints.add(endpoint_key)
-
-        checked += 1
-        print(f"🔍 queued {checked}/{MAX_TO_CHECK} {host}:{port}", flush=True)
-        candidates_to_probe.append((base, link, host, port))
-
     workers = max(1, int(os.getenv("CHECK_WORKERS", str(CHECK_WORKERS))))
-    print(f"⚙️ start probing: candidates={len(candidates_to_probe)} workers={workers}", flush=True)
-    with ThreadPoolExecutor(max_workers=workers) as executor:
-        future_map = {
-            executor.submit(probe_link_latency, link): (base, link, host, port)
-            for base, link, host, port in candidates_to_probe
-        }
+    print(f"⚙️ probing mode: workers={workers} strict_l7={STRICT_L7}", flush=True)
+    while len(working_for_sub) < MAX_SUB_LINKS and checked < MAX_TOTAL_CHECK:
+        candidates_to_probe: list[tuple[str, str, str, str]] = []
+        while len(candidates_to_probe) < MAX_TO_CHECK and checked < MAX_TOTAL_CHECK:
+            if idx >= len(queue):
+                if had_deferred_at_start and not external_loaded:
+                    print("🧩 deferred exhausted -> loading external sources now", flush=True)
+                    external = fetch_external_servers()
+                    queue = dedupe_links(queue + external)
+                    external_loaded = True
+                    print(f"📦 external loaded={len(external)} new_queue={len(queue)}", flush=True)
+                    continue
+                break
 
-        for future in as_completed(future_map):
-            base, link, host, port = future_map[future]
-            latency = 0
-            try:
-                latency = int(future.result() or 0)
-            except Exception:
+            link = queue[idx]
+            idx += 1
+            base = link.split("#", 1)[0].strip()
+            if base in pinned_bases or base in blacklist:
+                continue
+            if not re.search(r"[a-f0-9\-]{36}@", base):
+                continue
+            endpoint, host, port = extract_host_port(base)
+            if not endpoint or not host or not port:
+                continue
+            endpoint_key = (host, port)
+            if endpoint_key in checked_endpoints:
+                continue
+            checked_endpoints.add(endpoint_key)
+
+            checked += 1
+            print(f"🔍 queued {checked}/{MAX_TOTAL_CHECK} {host}:{port}", flush=True)
+            candidates_to_probe.append((base, link, host, port))
+
+        if not candidates_to_probe:
+            break
+
+        print(f"⚙️ start probing batch: candidates={len(candidates_to_probe)} workers={workers}", flush=True)
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_map = {
+                executor.submit(probe_link_latency, link): (base, link, host, port)
+                for base, link, host, port in candidates_to_probe
+            }
+
+            for future in as_completed(future_map):
+                base, link, host, port = future_map[future]
+
                 latency = 0
 
-            if latency <= 0:
-                print(f"💀 dead/no-l7 {host}:{port}", flush=True)
-                fail_time = float(history.get(base, now))
-                if now - fail_time > 86400:
-                    blacklist.add(base)
-                elif now - fail_time <= GRACE_PERIOD:
-                    new_history[base] = fail_time
-                if base in ranking_db:
-                    ranking_db.pop(base, None)
-                continue
+                try:
+                    latency = int(future.result() or 0)
+                except Exception:
+                    latency = 0
 
-            country = get_country_code(host, countries_cache)
-            if country not in ALLOWED_COUNTRIES:
-                print(f"🌍 skip {host}:{port} country={country}", flush=True)
-                continue
-                
-            if len(working_for_sub) >= MAX_SUB_LINKS:
-                continue
+                if latency <= 0 and not STRICT_L7:
+                    tcp_latency = probe_tcp_latency(host, port, timeout_sec=1.8)
+                    if tcp_latency > 0:
+                        latency = tcp_latency + 800
+                        print(f"🟡 tcp-fallback alive {host}:{port} ({tcp_latency}ms)", flush=True)
 
-            sub_link = base
-            if "sni=" not in sub_link.lower() and not is_ipv6(host):
-                sub_link += ("&" if "?" in sub_link else "?") + f"sni={host}"
+                if latency <= 0:
+                    print(f"💀 dead/no-l7 {host}:{port}", flush=True)
+                    fail_time = float(history.get(base, now))
+                    if now - fail_time > 86400:
+                        blacklist.add(base)
+                    elif now - fail_time <= GRACE_PERIOD:
+                        new_history[base] = fail_time
+                    if base in ranking_db:
+                        ranking_db.pop(base, None)
+                    continue
 
-            final = rebuild_link_name(sub_link, f"wifi {counter} [{latency}ms]")
-            working_for_sub.append(final)
-            working_for_base.append(base)
-            print(f"✅ {len(working_for_sub)}/{MAX_SUB_LINKS}: {host}:{port} {country} {latency}ms")
-            old_rank = 0
-            if isinstance(ranking_db.get(base), dict):
-                old_rank = int(ranking_db[base].get("rank", 0))
-            elif isinstance(ranking_db.get(base), int):
-                old_rank = int(ranking_db.get(base, 0))
-            new_rank = old_rank + 1
-            ranking_db[base] = {
-                "rank": new_rank,
-                "link": final,
-                "country": country,
-                "latency": int(latency),
-                "last_seen": int(now),
-            }
-            print(f"🏅 rank {new_rank}: {host}:{port}", flush=True)
-            counter += 1
+                country = get_country_code(host, countries_cache)
+                if country not in ALLOWED_COUNTRIES:
+                    print(f"🌍 skip {host}:{port} country={country}", flush=True)
+                    continue
+
+                if len(working_for_sub) >= MAX_SUB_LINKS:
+                    continue
+
+                sub_link = base
+                if "sni=" not in sub_link.lower() and not is_ipv6(host):
+                    sub_link += ("&" if "?" in sub_link else "?") + f"sni={host}"
+
+                final = rebuild_link_name(sub_link, f"wifi {counter} [{latency}ms]")
+                working_for_sub.append(final)
+                working_for_base.append(base)
+                print(f"✅ {len(working_for_sub)}/{MAX_SUB_LINKS}: {host}:{port} {country} {latency}ms")
+                old_rank = 0
+                if isinstance(ranking_db.get(base), dict):
+                    old_rank = int(ranking_db[base].get("rank", 0))
+                elif isinstance(ranking_db.get(base), int):
+                    old_rank = int(ranking_db.get(base, 0))
+                new_rank = old_rank + 1
+                ranking_db[base] = {
+                    "rank": new_rank,
+                    "link": final,
+                    "country": country,
+                    "latency": int(latency),
+                    "last_seen": int(now),
+                }
+                print(f"🏅 rank {new_rank}: {host}:{port}", flush=True)
+                counter += 1
 
     if idx < len(queue):
         deferred_next.extend(queue[idx:])

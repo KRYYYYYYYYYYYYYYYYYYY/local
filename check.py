@@ -37,7 +37,8 @@ ALLOWED_COUNTRIES = {"US", "DE", "NL", "GB", "FR", "FI", "SG", "JP", "PL", "TR"}
 GRACE_PERIOD = 2 * 24 * 60 * 60
 MAX_TO_CHECK = 300
 MAX_SUB_LINKS = 200
-MAX_PINNED_IN_SUB = 50
+MAX_PINNED_IN_SUB = 80
+PROBE_TIMEOUT = 3
 
 go_lib = None
 
@@ -299,14 +300,22 @@ def main() -> None:
         checked += 1
         latency = 0
 
+        print(f"🔍 {checked}/{MAX_TO_CHECK} {host}:{port}", flush=True)
+
+        tried_sni: set[str] = set()
         for cand_sni in extract_sni_candidates(link):
-            latency = probe_vless_l7(link, cand_sni, timeout=5)
+            cand_sni = cand_sni.strip()
+            if not cand_sni or cand_sni in tried_sni:
+                continue
+            tried_sni.add(cand_sni)
+            latency = probe_vless_l7(link, cand_sni, timeout=PROBE_TIMEOUT)
             if latency > 0:
                 break
 
         if latency <= 0:
-            fallback_sni = extract_sni(link)
-            latency = probe_vless_l7(link, fallback_sni, timeout=5)
+            fallback_sni = extract_sni(link).strip()
+            if fallback_sni and fallback_sni not in tried_sni:
+                latency = probe_vless_l7(link, fallback_sni, timeout=PROBE_TIMEOUT)
 
         if latency <= 0:
             fail_time = float(history.get(base, now))

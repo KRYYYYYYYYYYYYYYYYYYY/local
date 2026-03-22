@@ -323,8 +323,10 @@ def main() -> None:
     workers = max(1, int(os.getenv("CHECK_WORKERS", str(CHECK_WORKERS))))
     print(f"⚙️ probing mode: workers={workers} strict_l7={STRICT_L7}", flush=True)
     while len(working_for_sub) < MAX_SUB_LINKS and checked < MAX_TOTAL_CHECK:
+        remaining_slots = MAX_SUB_LINKS - len(working_for_sub)
+        batch_target = min(MAX_TO_CHECK, max(8, remaining_slots * 2))
         candidates_to_probe: list[tuple[str, str, str, str]] = []
-        while len(candidates_to_probe) < MAX_TO_CHECK and checked < MAX_TOTAL_CHECK:
+        while len(candidates_to_probe) < batch_target and checked < MAX_TOTAL_CHECK:
             if idx >= len(queue):
                 if had_deferred_at_start and not external_loaded:
                     print("🧩 deferred exhausted -> loading external sources now", flush=True)
@@ -365,6 +367,8 @@ def main() -> None:
             }
 
             for future in as_completed(future_map):
+                if len(working_for_sub) >= MAX_SUB_LINKS:
+                    break
                 base, link, host, port = future_map[future]
 
                 latency = 0

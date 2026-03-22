@@ -1,17 +1,21 @@
-import socket
-import re
-import os
-import ssl
+import ctypes
+import ipaddress
 import json
+import os
+import re
+import socket
+import time
 import urllib.parse
 import urllib.request
-import time
-import requests
 
-# Настройки путей
-INPUT_FILE = 'test1/1.txt'
-OUTPUT_FILE = 'kr/mob/wifi.txt'
-STATUS_FILE = 'test1/status.json'
+# --- Пути ---
+INPUT_FILE = "test1/1.txt"
+OUTPUT_FILE = "kr/mob/wifi.txt"
+STATUS_FILE = "test1/status.json"
+BLACKLIST_FILE = "test1/blacklist.txt"
+DEFERRED_FILE = "test1/deferred.txt"
+PINNED_FILE = "test1/pinned.txt"
+RANKING_FILE = "test1/ranking.json"
 
 EXTERNAL_SOURCE_URL = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt",
@@ -19,561 +23,350 @@ EXTERNAL_SOURCE_URL = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS%2BAll_RUS.txt",
     "https://raw.githubusercontent.com/KiryaScript/white-lists/refs/heads/main/githubmirror/26.txt",
     "https://raw.githubusercontent.com/KiryaScript/white-lists/refs/heads/main/githubmirror/27.txt",
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt"
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt",
 ]
 
-GRACE_PERIOD = 2 * 24 * 60 * 60 # 48 часов
-
-HEADER = """
-# profile-title: 🏴WIFI🏴
+HEADER = """# profile-title: 🏴WIFI🏴
 # remark: 🏴WIFI🏴
 # announce: Подписка для использования на wifi.
-# hide-settings: 1
 # profile-update-interval: 2
-# subscription-userinfo: upload=0; download=0; expire=0
-# shadowrocket-userinfo: upload=0; download=0; expire=0
 """
 
 ALLOWED_COUNTRIES = {"US", "DE", "NL", "GB", "FR", "FI", "SG", "JP", "PL", "TR"}
+BAD_SNI_KEYWORDS = []
+GRACE_PERIOD = 2 * 24 * 60 * 60
+MAX_TO_CHECK = 300
+MAX_SUB_LINKS = 200
+MAX_PINNED_IN_SUB = 50
+
+go_lib = None
+
+
+def init_checker_lib() -> None:
+    global go_lib
+    lib_path = os.path.abspath("libchecker.so")
+    if not os.path.exists(lib_path):
+        print("❌ libchecker.so не найден, L7-проверка отключена")
+        return
+
+    go_lib = ctypes.cdll.LoadLibrary(lib_path)
+    go_lib.CheckVlessL7.argtypes = [
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_char_p,
+        ctypes.c_char_p,
+        ctypes.c_char_p,
+        ctypes.c_char_p,
+        ctypes.c_char_p,
+        ctypes.c_int,
+    ]
+    go_lib.CheckVlessL7.restype = ctypes.c_int
+
+def probe_vless_l7(link: str, target_sni: str, timeout: int = 5) -> int:
+    if go_lib is None:
+        return 0
+    try:
+        parsed = urllib.parse.urlparse(link)
+        params = urllib.parse.parse_qs(parsed.query)       
+        _, host, port = extract_host_port(link)
+        if not host or not port:
+            return 0
+            
+        uuid = parsed.username or ""
+        pbk = params.get("pbk", [""])[0]
+        sid = params.get("sid", [""])[0]
+        flow = params.get("flow", [""])[0]
+        return int(
+            go_lib.CheckVlessL7(
+                host.encode("utf-8"),
+                int(port),
+                uuid.encode("utf-8"),
+                (target_sni or "").encode("utf-8"),
+                pbk.encode("utf-8"),
+                sid.encode("utf-8"),
+                flow.encode("utf-8"),
+                int(timeout),
+            )
+        )
+
+    except Exception as exc:
+        print(f"⚠️ L7 checker error: {exc}")
+        return 0
+
+def load_json(path: str, default):
+    if not os.path.exists(path):
+        return default
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return default
+
+
+def load_lines(path: str, contains: str | None = None) -> list[str]:
+    if not os.path.exists(path):
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        lines = [line.strip() for line in f if line.strip()]
+    if contains:
+        return [line for line in lines if contains in line]
+    return lines
+
+
+def save_lines(path: str, lines: list[str]) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+
+
+def extract_sni(link: str) -> str:
+    parsed = urllib.parse.urlparse(link)
+    params = urllib.parse.parse_qs(parsed.query)
+    return params.get("sni", [""])[0]
+
+def extract_sni_candidates(link: str) -> list[str]:
+    parsed = urllib.parse.urlparse(link)
+    params = urllib.parse.parse_qs(parsed.query)
+    candidates: list[str] = []
+
+    for key in ("sni", "host"):
+        val = params.get(key, [""])[0].strip()
+        if val and val not in candidates:
+            candidates.append(val)
+
+    if parsed.hostname:
+        try:
+            ipaddress.ip_address(parsed.hostname)
+        except ValueError:
+            if parsed.hostname not in candidates:
+                candidates.append(parsed.hostname)
+    return candidates
+
+def is_sni_suspicious(sni: str) -> bool:
+    sni = (sni or "").lower()
+    return any(word in sni for word in BAD_SNI_KEYWORDS)
+
+
+def is_ipv6(host: str) -> bool:
+    if not host:
+        return False
+    try:
+        return isinstance(ipaddress.ip_address(host.strip("[]")), ipaddress.IPv6Address)
+    except ValueError:
+        return False
+
+def extract_host_port(link: str):
+    match = re.search(r"@(?:\[([0-9a-fA-F:]+)\]|([\w.-]+)):(\d+)", link)
+    if not match:
+        return None, None, None
+    host = match.group(1) or match.group(2)
+    return match.group(0), host, match.group(3)
+
 
 def rebuild_link_name(link: str, new_name: str) -> str:
     base, _, fragment = link.partition("#")
-
-    # Если это уже закреп — не трогаем
-    if fragment:
-        frag = urllib.parse.unquote(fragment).upper()
-        if "PINNED" in frag:
-            return link
-
     if not fragment:
         return f"{base}#{urllib.parse.quote(new_name)}"
 
-    fragment_dec = urllib.parse.unquote(fragment)
+    frag_decoded = urllib.parse.unquote(fragment)
+    if "PINNED" in frag_decoded.upper():
+        return link
 
-    # Пытаемся сохранить флаг/эмодзи
-    match = re.match(r"^([^\w\s\d]|[^\x00-\x7F])+", fragment_dec)
+    match = re.match(r"^([^\w\s\d]|[^\x00-\x7F])+", frag_decoded)
     if match:
         prefix = match.group(0).strip()
         return f"{base}#{urllib.parse.quote(prefix + ' ' + new_name)}"
 
     return f"{base}#{urllib.parse.quote(new_name)}"
-    
-    return f"{base}#{urllib.parse.quote(new_name)}"
 
-def is_ipv6(host: str) -> bool:
-    return ":" in host
+def get_country_code(host: str, cache: dict[str, str]) -> str:
+    ip = host
+    if not is_ipv6(host):
+        try:
+            ip = socket.gethostbyname(host) if not re.match(r"^\d{1,3}(\.\d{1,3}){3}$", host) else host
+        except Exception:
+            ip = host
 
-def extract_host_port(link: str):
-    # Поиск для обычного хоста или домена
-    match = re.search(r"(@)([\w.-]+):(\d+)", link)
-    if match:
-        # group(0) содержит '@host:port', group(2) - host, group(3) - port
-        return match.group(0), match.group(2), match.group(3)
-    
-    # Поиск для IPv6 в скобках
-    ipv6_match = re.search(r"(@)\[([0-9a-fA-F:]+)\]:(\d+)", link)
-    if ipv6_match:
-        return ipv6_match.group(0), ipv6_match.group(2), ipv6_match.group(3)
-        
-    return None, None, None
+    if ip in cache:
+        return cache[ip]
 
-
-def format_uri_host(host: str) -> str:
-    if is_ipv6(host) and not host.startswith("["):
-        return f"[{host}]"
-    return host
-
-def get_country_code(host: str) -> str:
     try:
-        url = f"http://ip-api.com/json/{host}?fields=status,countryCode"
-        with urllib.request.urlopen(url, timeout=3) as response:
+        url = f"http://ip-api.com/json/{ip}?fields=status,countryCode"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=3) as response:
             data = json.loads(response.read().decode("utf-8"))
             if data.get("status") == "success":
-                return data.get("countryCode", "Unknown")
-    except: pass
+                code = data.get("countryCode", "Unknown")
+                cache[ip] = code
+                return code
+    except Exception:
+        pass
     return "Unknown"
 
-def fetch_external_servers() -> list:
-    # Если вдруг в переменной осталась просто строка, превращаем её в список для совместимости
-    urls = [EXTERNAL_SOURCE_URL] if isinstance(EXTERNAL_SOURCE_URL, str) else EXTERNAL_SOURCE_URL
-    
-    all_configs = []
-    for url in urls:
-        if not url.strip(): continue
-        try:
-            print(f"📥 Загрузка из {url}")
-            with urllib.request.urlopen(url, timeout=8) as response:
-                configs = response.read().decode("utf-8").splitlines()
-                all_configs.extend(configs)
-        except Exception as e:
-            print(f"❌ Ошибка загрузки {url}: {e}")
+def fetch_external_servers() -> list[str]:
+    all_configs: list[str] = []
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+
+    for url in EXTERNAL_SOURCE_URL:
+        success = False
+        for attempt in range(3):
+            try:
+                req = urllib.request.Request(url.strip(), headers=headers)
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    content = response.read().decode("utf-8")
+                    found = [line.strip() for line in content.splitlines() if "vless://" in line]
+                    all_configs.extend(found)
+                    print(f"📥 {url}: +{len(found)}")
+                    success = True
+                    break
+            except Exception as exc:
+                wait_time = (attempt + 1) * 3
+                print(f"❌ download fail {url}: {exc}; retry {wait_time}s")
+                time.sleep(wait_time)
+        if not success:
+            print(f"⚠️ source skipped: {url}")
+
     return all_configs
 
-def main():
-    import subprocess
-    token = os.getenv("GH_TOKEN")
-    repo = os.getenv("GITHUB_REPOSITORY")
 
-    pinned_list = []
-    deferred_base = []
-    current_base = []
-    external_servers = []
-    ranking_db = {}
-    vetted_list = []
-    
-    blacklist = set()
-    if os.path.exists('test1/blacklist.txt'):
-        with open('test1/blacklist.txt', 'r') as f:
-            blacklist = {line.strip() for line in f if line.strip()}
-
-        # Загружаем "рейтинг выслуги"
-    ranking_file = 'test1/ranking.json'
-    ranking_db = {}
-    if os.path.exists(ranking_file):
-        try:
-            with open(ranking_file, "r") as f: ranking_db = json.load(f)
-        except: ranking_db = {}
-
-    # Загружаем текущих проверенных (чтобы не дублировать)
-    vetted_list = []
-    if os.path.exists('test1/vetted.txt'):
-        with open('test1/vetted.txt', 'r') as f:
-            vetted_list = [line.strip() for line in f if line.strip()]
+def dedupe_links(links: list[str]) -> list[str]:
+    unique: list[str] = []
+    seen: set[str] = set()
+    for link in links:
+        if "vless://" not in link:
+            continue
+        base = link.split("#", 1)[0].strip()
+        if base in seen:
+            continue
+        seen.add(base)
+        unique.append(link)
+    return unique
 
 
-    # --- ДОБАВЛЯЕМ ЗАГРУЗКУ СПЕЦФАЙЛОВ ТУТ ---
-    
-    # 1. Загружаем Закрепленные (Pinned)
-    pinned_list = []
-    if os.path.exists('test1/pinned.txt'):
-        with open('test1/pinned.txt', 'r', encoding='utf-8') as f:
-            # Читаем всё целиком, убираем пустые строки
-            pinned_list = [line.strip() for line in f if "vless://" in line]
-    
-    print(f"📦 Загружено закрепов из файла: {len(pinned_list)}")
+def main() -> None:
+    countries_cache = load_json("test1/countries_cache.json", {})
+    history = load_json(STATUS_FILE, {})
+    ranking_db = load_json(RANKING_FILE, {})
+    blacklist = set(load_lines(BLACKLIST_FILE))
+    pinned_list = dedupe_links(load_lines(PINNED_FILE, contains="vless://"))
+    deferred = load_lines(DEFERRED_FILE)
+    current_base = load_lines(INPUT_FILE)
+    external = fetch_external_servers()
 
-    clean_pinned = {}
-    for p in pinned_list:
-        base = p.split("#")[0].strip()
-        clean_pinned[base] = p  # последний вариант перезапишет предыдущий
+    queue = dedupe_links(pinned_list + deferred + external + current_base)
+    print(f"📦 pinned={len(pinned_list)} queue={len(queue)}")
 
-    pinned_list = list(clean_pinned.values())
+    pinned_bases = {p.split("#", 1)[0].strip() for p in pinned_list}
 
-    # 2. Загружаем Отложенные (Deferred)
-    deferred_base = []
-    if os.path.exists('test1/deferred.txt'):
-        with open('test1/deferred.txt', 'r', encoding='utf-8') as f:
-            deferred_base = [line.strip() for line in f if line.strip()]
+    working_for_sub: list[str] = []
+    working_for_base: list[str] = []
+    deferred_next: list[str] = []
+    new_history: dict[str, float] = {}
 
-    # ------------------------------------------
-
-    # Дальше твоя стандартная загрузка
-    current_base = []
-    if os.path.exists(INPUT_FILE):
-        with open(INPUT_FILE, "r", encoding="utf-8") as f:
-            current_base = f.read().splitlines()
-
-    external_servers = fetch_external_servers()
-    
-    # СОБИРАЕМ ОЧЕРЕДЬ: База + Отложенные + Новые
-    # Это гарантирует, что "старички" из очереди проверятся раньше новичков
-    all_lines = current_base + deferred_base + external_servers
-
-    # 2. Проверяем галочки в GitHub Issue (если есть токен)
-    if token and repo:
-        try:
-            gh_env = {**os.environ, "GH_TOKEN": token}
-
-            # --- 1. ПАНЕЛЬ CONTROL: ЧЕРНЫЙ СПИСОК ---
-            cmd_ctrl = ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'body', '--limit', '1']
-            ctrl_data = subprocess.check_output(cmd_ctrl, env=gh_env, stderr=subprocess.DEVNULL).decode()
-            if ctrl_data and ctrl_data != "[]":
-                issue = json.loads(ctrl_data)[0]
-                # Улучшенная регулярка: игнорирует текст после ссылки (например, "(wifi 1)")
-                checked = re.findall(r'- \[x\] (vless://[^\s)]+)', issue['body'])
-                if checked:
-                    for s in checked:
-                        blacklist.add(s.split('#')[0].strip())
-                    with open('test1/blacklist.txt', 'w', encoding='utf-8') as f:
-                        f.write("\n".join(sorted(list(blacklist)))) # Сортировка для порядка
-                    print(f"🚫 Control: {len(checked)} в бан.")
-
-            # --- 2. ПАНЕЛЬ PIN_CONTROL: КАНДИДАТЫ (PIN + BAN) ---
-            pin_data = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env=gh_env).decode()
-            if pin_data and pin_data != "[]":
-                issue_pin = json.loads(pin_data)[0]
-                body = issue_pin['body']
-                
-                # Ищем PIN_vless...
-                to_pin = re.findall(r'- \[x\] PIN_(vless://[^\s\n]+)', body)
-                if to_pin:
-                    with open('test1/pinned.txt', 'a', encoding='utf-8') as pf:
-                        for s in to_pin:
-                            s_clean = s.strip()
-                            base = s_clean.split("#")[0].strip()
-                            if all(base != p.split("#")[0].strip() for p in pinned_list):
-                                pf.write(s_clean + "\n")
-                                pinned_list.append(s_clean)
-                    print(f"💎 Pin: {len(to_pin)} закреплено.")
-
-                # Ищем BAN_vless...
-                to_ban_pin = re.findall(r'- \[x\] BAN_(vless://[^\s\n]+)', body)
-                if to_ban_pin:
-                    with open('test1/blacklist.txt', 'a', encoding='utf-8') as bf:
-                        for s in to_ban_pin:
-                            base = s.split("#")[0].strip()
-                            if base not in blacklist:
-                                bf.write(base + "\n")
-                                blacklist.add(base)
-                    print(f"🚫 Pin-Panel: {len(to_ban_pin)} в бан.")
-
-            # --- 3. ПАНЕЛЬ UNPIN_CONTROL: УДАЛЕНИЕ ЗАКРЕПОВ ---
-            unpin_data = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'body', '--limit', '1'], env=gh_env).decode()
-            if unpin_data and unpin_data != "[]":
-                issue_unp = json.loads(unpin_data)[0]
-                # Убираем лишние символы в конце регулярки
-                to_unpin = re.findall(r'- \[x\] (vless://[^\s)]+)', issue_unp['body'])
-                if to_unpin:
-                    to_unpin_bases = [u.split("#")[0].strip() for u in to_unpin]
-                    # Фильтруем список, оставляя только те, чьих баз нет в списке на удаление
-                    pinned_list = [s for s in pinned_list if s.split("#")[0].strip() not in to_unpin_bases]
-                    with open('test1/pinned.txt', 'w', encoding='utf-8') as pf:
-                        pf.write("\n".join(pinned_list) + ("\n" if pinned_list else ""))
-                    print(f"🔓 Unpin: {len(to_unpin)} откреплено.")
-
-        except Exception as e:
-            print(f"⚠️ Ошибка чтения команд GitHub: {e}")
-
-    # 1. Загрузка базы и истории
-    current_base = []
-    if os.path.exists(INPUT_FILE):
-        with open(INPUT_FILE, "r", encoding="utf-8") as f:
-            current_base = f.read().splitlines()
-
-    history = {}
-    if os.path.exists(STATUS_FILE):
-        try:
-            with open(STATUS_FILE, "r") as f: history = json.load(f)
-        except: history = {}
-
-# --- ИЗМЕНЕНИЕ ТУТ: МЕНЯЕМ ПОРЯДОК ОЧЕРЕДИ ---
-    # Сначала отложенные с прошлого раза, потом новые, потом старые из базы
-    all_lines = pinned_list + deferred_base + external_servers + current_base
-    
-    # Убираем дубликаты, сохраняя этот новый приоритетный порядок
-    unique_links = []
-    seen_parts = set()
-    for l in all_lines:
-        base = l.split("#")[0].strip()
-        if base not in seen_parts and "vless://" in l:
-            unique_links.append(l)
-            seen_parts.add(base)
-    
-    working_for_base = []
-    working_for_sub = []
-    new_deferred = []   # <--- ДОБАВЬ ЭТО (сюда пойдут те, кто не влез в лимит)
-    new_history = {}
-    now = time.time()
+    # 1) фиксированные в начало (до лимита закрепов)
     counter = 1
-    checked_today = 0   # <--- ДОБАВЬ ЭТО (счетчик реальных проверок)
-    MAX_TO_CHECK = 300  # <--- ДОБАВЬ ЭТО (лимит, чтобы скрипт не шел до конца очереди вечно)
-    seen_ips = set()
-    # ----------------------------------------------------------
-# --- ЦИКЛ ПРОВЕРКИ (ИЩЕМ 200 РАБОЧИХ) ---
-    print(f"📡 Начинаю проверку. Цель: 200 серверов. Всего в очереди: {len(unique_links)}")
-    
-    seen_parts = set()
-    
-    idx = 0
-    # Работаем, пока не набрали 200 в подписку ИЛИ пока не кончились ссылки в unique_links
-    while len(working_for_sub) < 200 and idx < len(unique_links):
-        link = unique_links[idx]
-        idx += 1 # Сдвигаем указатель
-        
-        clean_link = link.strip()
-        base_part = clean_link.split("#", 1)[0].strip()
-        
-        if base_part in seen_parts and not any(base_part in p for p in pinned_list):
+    for p in pinned_list:
+        if len(working_for_sub) >= MAX_PINNED_IN_SUB:
+            deferred_next.append(p)
             continue
-        
-        # --- БЛОК ЗАКРЕПОВ (PINNED) ---
-        # --- БЛОК ЗАКРЕПОВ (PINNED) ---
-        found_pinned_full = None
-        for p in pinned_list:
-            if base_part == p.split("#")[0].strip():
-                found_pinned_full = p
-                break
+        base = p.split("#", 1)[0].strip()
+        raw_name = urllib.parse.unquote(p.split("#", 1)[1]) if "#" in p else ""
+        flag_match = re.match(r"^([^\w\s\d]+)", raw_name)
+        flag = flag_match.group(1).strip() if flag_match else ""
+        fixed_name = f"{flag} 💎 [PINNED] {counter}".strip()
+        working_for_sub.append(f"{base}#{urllib.parse.quote(fixed_name)}")
+        counter += 1
 
-        if found_pinned_full:
-            seen_parts.add(base_part)
-        
-            # 1. Достаём только флаг из старого имени
-            raw_pinned_name = found_pinned_full.split("#")[-1].strip()
-            original_label = urllib.parse.unquote(raw_pinned_name)
-        
-            emoji_match = re.match(r'^([^\w\s\d]+)', original_label)
-            flag = emoji_match.group(1).strip() if emoji_match else ""
-        
-            # 2. Полностью перезаписываем имя
-            new_name = f"{flag} 💎 [PINNED] {counter}"
-        
-            # 3. Чистим базу
-            clean_base = base_part.split("#")[0].strip()
-        
-            # 4. Собираем финальную ссылку
-            final_linkk = f"{clean_base}#{urllib.parse.quote(new_name)}"
-        
-            working_for_sub.append(final_linkk)
-            print(f"💎 [PINNED] {counter} с флагом '{flag}' готов")
-        
-            counter += 1
+    # 2) обычная проверка
+    checked = 0
+    now = time.time()
+    idx = 0
+    while len(working_for_sub) < MAX_SUB_LINKS and idx < len(queue):
+        link = queue[idx]
+        idx += 1
+
+        base = link.split("#", 1)[0].strip()
+        if base in pinned_bases or base in blacklist:
             continue
-            
-        # --- ФИЛЬТРЫ ---
-        if base_part in blacklist:
+
+        if checked >= MAX_TO_CHECK:
+            deferred_next.extend(queue[idx - 1 :])
+            break
+
+        if not re.search(r"[a-f0-9\-]{36}@", base):
             continue
-        if not re.search(r'[a-f0-9\-]{36}@', base_part):
-            continue 
-    
-        endpoint, host, port = extract_host_port(base_part)
+
+        endpoint, host, port = extract_host_port(base)
         if not endpoint or not host or not port:
             continue
 
-        # --- ЭТАП 1: ХАРД-РЕЗОЛВИНГ + ПРОВЕРКА СВЯЗИ ---
-        resolved_ip = None
-        is_alive = False
-        try:
-            resolved_ip = socket.gethostbyname(host) if not is_ipv6(host) else host
-            if resolved_ip in seen_ips:
-                continue 
-            
-            start_time = time.time()
-            use_tls = "security=tls" in base_part.lower() or "security=reality" in base_part.lower()
-            
-            with socket.create_connection((resolved_ip, int(port)), timeout=4.0) as sock:
-                if use_tls:
-                    context = ssl.create_default_context()
-                    context.check_hostname = False
-                    context.verify_mode = ssl.CERT_NONE
-                    with context.wrap_socket(sock, server_hostname=host) as ssock:
-                        pass
-                else:
-                    sock.sendall(b'\x16\x03\x01\x00\x00')
-            
-            is_alive = True
-            seen_ips.add(resolved_ip) 
-        except:
-            is_alive = False
-    
-        # --- ЭТАП 2: ЕСЛИ СЕРВЕР РАБОТАЕТ ---
-        if is_alive:
-            if "security=none" in base_part.lower():
-                print(f"❌ НЕТ ШИФРОВАНИЯ: {host}")
+        checked += 1
+        latency = 0
+
+        for cand_sni in extract_sni_candidates(link):
+            if is_sni_suspicious(cand_sni):
                 continue
-    
-            country = get_country_code(host)
-            if country not in ALLOWED_COUNTRIES:
-                continue
-    
-            working_for_base.append(base_part)
-            ip_str = f"[{resolved_ip}]" if is_ipv6(resolved_ip) else resolved_ip
-            sub_link = base_part.replace(endpoint, f"@{ip_str}:{port}", 1)
-            
-            if "sni=" not in sub_link.lower() and not is_ipv6(host):
-                sep = "&" if "?" in sub_link else "?"
-                sub_link += f"{sep}sni={host}"
-            
-            final_link = rebuild_link_name(sub_link, f"wifi {counter}")
-            working_for_sub.append(final_link)
-            
-            print(f"✅ ОК {len(working_for_sub)}/200 ({country}): {host} -> {resolved_ip} (wifi {counter})")
-            counter += 1
-    
-        # --- ЭТАП 3: ЕСЛИ СЕРВЕР НЕ ОТВЕЧАЕТ ---
-        else:
-            if base_part in ranking_db:
-                del ranking_db[base_part]
-            if base_part in vetted_list:
-                vetted_list.remove(base_part)
-            
-            fail_time = history.get(base_part, now)
-            
-            if now - fail_time > 86400: 
-                print(f"🗑️ УДАЛЕН И ЗАБЛОКИРОВАН (1 день оффлайн): {host}")
-                with open('test1/blacklist.txt', 'a') as bl:
-                    bl.write(base_part + "\n")
-                continue 
-    
-            if now - fail_time < GRACE_PERIOD:
-                country = get_country_code(host)
-                if country in ALLOWED_COUNTRIES:
-                    # working_for_base.append(base_part)
-                    new_history[base_part] = fail_time
-                    # working_for_sub.append(rebuild_link_name(link, f"⏳ wifi {counter}"))
-                    print(f"⏳ DOWN ({country}): {host} (пошел нахуйц)")
-                    counter += 1
-            else:
-                print(f"🗑️ Удален (тайм-аут): {host}")
+            latency = probe_vless_l7(link, cand_sni, timeout=5)
+            if latency > 0:
+                break
 
-        # --- ВСЕ, ЧТО НЕ УСПЕЛИ ПРОВЕРИТЬ (если набрали 200 раньше конца списка) ---
-        new_deferred = unique_links[idx:] 
-    # --- КОНЕЦ ЦИКЛА ПРОВЕРКИ ---
-    # --- ЛОГИКА ОЧЕРЕДИ И ЛИМИТОВ (ИСПРАВЛЕНО) ---
-        
-     #   1. Разделяем то, что нашли, на две кучи
-    all_pinned = [l for l in working_for_sub if "💎 [PINNED]" in l]
-    all_others = [l for l in working_for_sub if "💎 [PINNED]" not in l]
-    
-    final_to_sub = []
-    seen_in_final = set()# То самое "сито" для адресов
-    
-    # 2. Сначала берем закрепы (Приоритет №1)
-    # Лимит 50 штук
-    for l in all_pinned:
-        if len(final_to_sub) >= 50: break
-        base = l.split("#")[0].strip()
-        if base not in seen_in_final:
-            final_to_sub.append(l)
-            seen_in_final.add(base)
-    # 3. Добираем обычные сервера, пока не станет 200 (Приоритет №2)
-    # Но только те, которых еще НЕТ в закрепах
-    for l in all_others:
-        if len(final_to_sub) >= 200: break
-        base = l.split("#")[0].strip()
-        if base not in seen_in_final: # ВОТ ОНА — ЗАЩИТА ОТ ДУБЛЯ
-            final_to_sub.append(l)
-            seen_in_final.add(base)
-    
-    # 4. Формируем deferred.txt (остатки)
-    # Сюда идет то, что не влезло + то, что вообще не проверялось 
-    leftover_from_others = [l for l in all_others if l.split("#")[0].strip() not in seen_in_final]
-    deferred_final = new_deferred + leftover_from_others
-    
-# 5. Сохраняем результат
-    
-    # Сначала сохраняем deferred.txt (очередь на потом)
-    with open('test1/deferred.txt', "w", encoding="utf-8") as f:
-        f.write("\n".join(deferred_final))
-    
-    # ФОРМИРУЕМ ПРАВИЛЬНЫЙ ТЕКСТ ДЛЯ ПОДПИСКИ
-    # .strip() убирает случайные пробелы в начале/конце хедера
-    # \n\n гарантирует, что между командами и ссылками будет пустая строка (важно для iPhone)
-    final_content = HEADER.strip() + "\n\n" + "\n".join(final_to_sub)
+        if latency <= 0:
+            fallback_sni = extract_sni(link)
+            if fallback_sni and not is_sni_suspicious(fallback_sni):
+                latency = probe_vless_l7(link, fallback_sni, timeout=5)
 
-    # ЗАПИСЫВАЕМ В ОСНОВНОЙ ФАЙЛ (kr/mob/wifi.txt)
-    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        f.write(final_content)
-        
-    # Сохраняем рабочую базу ссылок для следующего запуска чекера
-    os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
-    with open(INPUT_FILE, "w", encoding="utf-8") as f: 
-        f.write("\n".join(working_for_base))
-    
-    # Сохраняем историю и рейтинги
-    with open(STATUS_FILE, "w") as f: 
-        json.dump(new_history, f)
-    with open('test1/ranking.json', "w") as f:
-        json.dump(ranking_db, f)
+        if latency <= 0:
+            fail_time = float(history.get(base, now))
+            if now - fail_time > 86400:
 
-    print(f"🏁 План выполнен: {len(final_to_sub)} в подписке. Остаток в базе: {len(deferred_final)}")
-    # Базовые части закрепов
-    pinned_bases = {p.split("#")[0].strip() for p in pinned_list}
-    
-    # Сколько закрепов реально попало в подписку
-    count_pinned = sum(
-        1 for l in final_to_sub
-        if l.split("#")[0].strip() in pinned_bases
-    )
-    
-    print(f"💎 Закрепленных в подписке: {count_pinned} (из лимита 50)")
-    print(f"✅ Всего в wifi.txt: {len(final_to_sub)} (из лимита 200)")
-    
-    # 3. Сохранение (ТВОЙ БЛОК БЕЗ ИЗМЕНЕНИЙ НАДПИСЕЙ)
-    os.makedirs(os.path.dirname(INPUT_FILE), exist_ok=True)
-    with open(INPUT_FILE, "w", encoding="utf-8") as f: 
-        f.write("\n".join(working_for_base))
-    
-    with open(STATUS_FILE, "w") as f: 
-        json.dump(new_history, f)
+                blacklist.add(base)
+            elif now - fail_time <= GRACE_PERIOD:
+                new_history[base] = fail_time
+            if base in ranking_db:
+                ranking_db.pop(base, None)
+            continue
+
+        country = get_country_code(host, countries_cache)
+        if country not in ALLOWED_COUNTRIES:
+            continue
+
+        sub_link = base
+        if "sni=" not in sub_link.lower() and not is_ipv6(host):
+            sub_link += ("&" if "?" in sub_link else "?") + f"sni={host}"
+
+        final = rebuild_link_name(sub_link, f"wifi {counter} [{latency}ms]")
+        working_for_sub.append(final)
+        working_for_base.append(base)
+        print(f"✅ {len(working_for_sub)}/{MAX_SUB_LINKS}: {host}:{port} {country} {latency}ms")
+        counter += 1
+
+    if idx < len(queue):
+        deferred_next.extend(queue[idx:])
+
+    # финальные лимиты и дедуп
+    working_for_sub = dedupe_links(working_for_sub)[:MAX_SUB_LINKS]
+    deferred_next = dedupe_links(deferred_next)
+
+    # save
+    save_lines(DEFERRED_FILE, deferred_next)
+    save_lines(INPUT_FILE, dedupe_links(pinned_list + working_for_base))
+    save_lines(BLACKLIST_FILE, sorted(blacklist))
+
+    with open("test1/countries_cache.json", "w", encoding="utf-8") as f:
+        json.dump(countries_cache, f, ensure_ascii=False, indent=2)
+
+    with open(STATUS_FILE, "w", encoding="utf-8") as f:
+        json.dump(new_history, f, ensure_ascii=False, indent=2)
+
+    with open(RANKING_FILE, "w", encoding="utf-8") as f:
+        json.dump(ranking_db, f, ensure_ascii=False, indent=2)
 
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-    # Записываем чистый заголовок + перенос + список ссылок
-        f.write(HEADER.strip() + "\n" + "\n".join(final_to_sub))
+        f.write(HEADER.strip() + "\n\n" + "\n".join(working_for_sub))
 
-    print(f"🏁 Готово! Подписка обновлена.")
-    # --- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА С ГАЛОЧКАМИ ---
-    if token and repo:  # Теперь repo точно определена
-        try:
-            # Получаем текущее время
-            update_time = time.strftime("%d.%m.%Y %H:%M:%S")
-            
-            issue_body = f"### 🎮 Панель управления серверами\n"
-            issue_body += f"🕒 **Последнее обновление:** `{update_time}`\n\n"
-            issue_body += "Отметь [x] и сохрани, чтобы отправить в черный список:\n\n---\n\n"
-
-            find_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'number', '--limit', '1']
-            out = subprocess.check_output(find_cmd, env={**os.environ, "GH_TOKEN": token}).decode()
-            
-            if out and out != "[]":
-                issue_number = str(json.loads(out)[0]['number'])
-                for i, link in enumerate(working_for_base, 1):
-                    status = "[x]" if link in blacklist else "[ ]"
-                    issue_body += f"- {status} {link} (wifi {i})\n\n"
-                    issue_body += "---\n\n"
-                
-                with open("issue_body.txt", "w", encoding="utf-8") as f: 
-                    f.write(issue_body)
-                
-                subprocess.run(['gh', 'issue', 'edit', issue_number, '--repo', repo, '--body-file', 'issue_body.txt'], 
-                               env={**os.environ, "GH_TOKEN": token})
-                print(f"📝 Список галочек в Issue #{issue_number} обновлен.")
-
-            # --- ПАНЕЛЬ 2: КАНДИДАТЫ В ЗАКРЕП (PIN + BAN) ---
-            pin_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'number', '--limit', '1']
-            out_pin = subprocess.check_output(pin_cmd, env={**os.environ, "GH_TOKEN": token}).decode()
-            
-            if out_pin and out_pin != "[]":
-                num_pin = str(json.loads(out_pin)[0]['number'])
-                body_pin = f"### 💎 Кандидаты в закреп и бан\n🕒 Обновлено: `{update_time}`\n\n"
-                body_pin += "> **Инструкция:** `[x]` в PIN — закрепить, `[x]` в BAN — удалить навсегда.\n\n"
-                
-                # Используем working_for_base (те, что прошли проверку)
-                for i, link in enumerate(working_for_base, 1):
-                    # Берем чистую ссылку без имени для сравнения
-                    base_only = link.split("#")[0].strip()
-                    
-                    # Показываем только тех, кого нет в текущем pinned_list
-                    if all(base_only != p.split("#")[0].strip() for p in pinned_list):
-                        body_pin += f"📡 **Сервер {i}:** `{base_only}`\n"
-                        body_pin += f"- [ ] PIN_{base_only}\n"
-                        body_pin += f"- [ ] BAN_{base_only}\n\n---\n\n"
-                
-                with open("pin_body.txt", "w", encoding="utf-8") as f: 
-                    f.write(body_pin)
-                
-                subprocess.run(['gh', 'issue', 'edit', num_pin, '--repo', repo, '--body-file', 'pin_body.txt'], 
-                               env={**os.environ, "GH_TOKEN": token})
-                print(f"💎 Панель Pin/Ban #{num_pin} обновлена.")
-
-            # --- ПАНЕЛЬ 3: УПРАВЛЕНИЕ ЗАКРЕПАМИ (UNPIN) ---
-            unpin_cmd = ['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'number', '--limit', '1']
-            out_unp = subprocess.check_output(unpin_cmd, env={**os.environ, "GH_TOKEN": token}).decode()
-            if out_unp and out_unp != "[]":
-                num_unp = str(json.loads(out_unp)[0]['number'])
-                body_unp = f"### 👑 Ваши закрепленные сервера\n🕒 Обновлено: `{update_time}`\n\n"
-                for i, link in enumerate(pinned_list, 1):
-                    body_unp += f"- [ ] {link} (FIXED {i})\n\n---\n\n"
-                with open("unpin_body.txt", "w", encoding="utf-8") as f: 
-                    f.write(body_unp)
-                subprocess.run(['gh', 'issue', 'edit', num_unp, '--repo', repo, '--body-file', 'unpin_body.txt'], 
-                               env={**os.environ, "GH_TOKEN": token})
-            with open('test1/ranking.json', "w") as f:
-                json.dump(ranking_db, f)
-
-        except Exception as e:
-            print(f"⚠️ Не удалось обновить Issue: {e}")
+    print(f"🏁 done: sub={len(working_for_sub)} deferred={len(deferred_next)} checked={checked}")
 
 if __name__ == "__main__":
+    init_checker_lib()
     main()

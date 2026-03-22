@@ -107,6 +107,14 @@ def load_json(path: str, default):
     except Exception:
         return default
 
+def rank_score(base: str, ranking_db: dict) -> int:
+    data = ranking_db.get(base, 0)
+    if isinstance(data, dict):
+        return int(data.get("rank", 0))
+    if isinstance(data, int):
+        return int(data)
+    return 0
+
 
 def load_lines(path: str, contains: str | None = None) -> list[str]:
     if not os.path.exists(path):
@@ -277,7 +285,13 @@ def probe_tcp_latency(host: str, port: str, timeout_sec: float = 1.8) -> int:
 def main() -> None:
     countries_cache = load_json("test1/countries_cache.json", {})
     history = load_json(STATUS_FILE, {})
-    ranking_db = load_json(RANKING_FILE, {})
+    raw_ranking_db = load_json(RANKING_FILE, {})
+    ranking_db: dict[str, dict] = {}
+    for base, data in raw_ranking_db.items() if isinstance(raw_ranking_db, dict) else []:
+        if isinstance(data, dict):
+            ranking_db[base] = data
+        elif isinstance(data, int):
+            ranking_db[base] = {"rank": int(data), "link": base}
     blacklist = set(load_lines(BLACKLIST_FILE))
     pinned_list = dedupe_links(load_lines(PINNED_FILE, contains="vless://"))
     deferred = load_lines(DEFERRED_FILE)
@@ -295,6 +309,9 @@ def main() -> None:
         print(f"📦 pinned={len(pinned_list)} deferred=0 external={len(external)} queue={len(queue)}")
 
     pinned_bases = {p.split("#", 1)[0].strip() for p in pinned_list}
+    queue_non_pinned = [q for q in queue if q.split("#", 1)[0].strip() not in pinned_bases]
+    queue_non_pinned.sort(key=lambda q: rank_score(q.split("#", 1)[0].strip(), ranking_db), reverse=True)
+    queue = pinned_list + queue_non_pinned
 
     working_for_sub: list[str] = []
     working_for_base: list[str] = []

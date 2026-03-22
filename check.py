@@ -385,7 +385,9 @@ def main() -> None:
             break
 
         print(f"⚙️ start probing batch: candidates={len(candidates_to_probe)} workers={workers}", flush=True)
-        with ThreadPoolExecutor(max_workers=workers) as executor:
+        executor = ThreadPoolExecutor(max_workers=workers)
+        stop_batch_early = False
+        try:
             future_map = {
                 executor.submit(probe_link_latency, link): (base, link, host, port)
                 for base, link, host, port in candidates_to_probe
@@ -393,6 +395,7 @@ def main() -> None:
 
             for future in as_completed(future_map):
                 if len(working_for_sub) >= MAX_SUB_LINKS:
+                    stop_batch_early = True
                     break
                 base, link, host, port = future_map[future]
 
@@ -451,6 +454,8 @@ def main() -> None:
                 }
                 print(f"🏅 rank {new_rank}: {host}:{port}", flush=True)
                 counter += 1
+        finally:
+            executor.shutdown(wait=not stop_batch_early, cancel_futures=stop_batch_early)
 
     if idx < len(queue):
         deferred_next.extend(queue[idx:])

@@ -23,6 +23,23 @@ var probeTargets = []string{
 	"https://www.gstatic.com/generate_204",
 	"https://cp.cloudflare.com/generate_204",
 	"https://connectivitycheck.gstatic.com/generate_204",
+	"https://raw.githubusercontent.com/",
+	"https://cdn.jsdelivr.net/",
+	"https://pastebin.com/",
+}
+
+var appLikeTargets = map[string]bool{
+	"https://raw.githubusercontent.com/": true,
+	"https://cdn.jsdelivr.net/":          true,
+	"https://pastebin.com/":              true,
+}
+
+var probeUserAgents = []string{
+	"Mozilla/5.0 (Linux; Android 13; SM-A336B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Mobile Safari/537.36",
+	"Mozilla/5.0 (Linux; Android 16; SM-A336B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.7680.119 Mobile Safari/537.36",
+	"Mozilla/5.0 (Linux; Android 13; SM-A336B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.179 Mobile Safari/537.36 happ/3.15.1",
+	"Happ/3.15.1",
+	"okhttp/4.12.0 v2rayNG/1.12.28",
 }
 
 func activeProbeTargets() []string {
@@ -89,7 +106,7 @@ func buildConfigJSON(socksPort int, addr string, port int, uuid, flow, sni, pbk,
 	return json.Marshal(cfg)
 }
 
-func probeViaSocks(client *http.Client, target string, timeoutSec int) int {
+func probeViaSocks(client *http.Client, target string, timeoutSec int, userAgent string) int {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSec)*time.Second)
 	defer cancel()
 
@@ -97,7 +114,9 @@ func probeViaSocks(client *http.Client, target string, timeoutSec int) int {
 	if err != nil {
 		return 0
 	}
-	req.Header.Set("User-Agent", "Mozilla/5.0")
+	if strings.TrimSpace(userAgent) != "" {
+		req.Header.Set("User-Agent", userAgent)
+	}
 	start := time.Now()
 	resp, err := client.Do(req)
 	if err != nil {
@@ -186,11 +205,26 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 		Transport: transport,
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
+	minSuccess := 2
+	successCount := 0
+	appLikeSuccess := 0
+	bestLatency := 0
+	userAgent := probeUserAgents[time.Now().UnixNano()%int64(len(probeUserAgents))]
 	
 	for _, target := range activeProbeTargets() {
-		latency := probeViaSocks(client, target, timeout)
-		if latency > 0 {
-			return latency
+		latency := probeViaSocks(client, target, timeout, userAgent)
+		if latency <= 0 {
+			continue
+		}
+		successCount++
+		if appLikeTargets[target] {
+			appLikeSuccess++
+		}
+		if bestLatency == 0 || latency < bestLatency {
+			bestLatency = latency
+		}
+		if successCount >= minSuccess && appLikeSuccess >= 1 {
+			return bestLatency
 		}
 	}
 

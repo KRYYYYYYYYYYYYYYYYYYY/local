@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,6 +24,16 @@ var probeTargets = []string{
 	"https://cp.cloudflare.com/generate_204",
 	"https://connectivitycheck.gstatic.com/generate_204",
 }
+
+func activeProbeTargets() []string {
+	fast := strings.EqualFold(strings.TrimSpace(os.Getenv("CHECKER_CI_FAST")), "1") ||
+		strings.EqualFold(strings.TrimSpace(os.Getenv("CHECKER_CI_FAST")), "true")
+	if fast {
+		return probeTargets[:2]
+	}
+	return probeTargets
+}
+
 
 func pickFreeLocalPort() (int, error) {
 	l, err := net.Listen("tcp", "127.0.0.1:0")
@@ -176,7 +187,7 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
 	
-	for _, target := range probeTargets {
+	for _, target := range activeProbeTargets() {
 		latency := probeViaSocks(client, target, timeout)
 		if latency > 0 {
 			return latency

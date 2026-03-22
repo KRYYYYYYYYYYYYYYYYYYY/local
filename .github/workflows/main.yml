@@ -6,36 +6,59 @@ concurrency:
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # Запуск каждые 2 часа (00:00, 02:00 и т.д.)
-  workflow_dispatch:       # Оставляет кнопку для ручного запуска
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      issues: write # Важно: разрешаем боту изменять файлы в репо
+      issues: write 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
+      # --- УСТАНОВКА И СБОРКА XRAY L7 ЧЕКЕРА ---
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21' # Рекомендуется 1.21 для стабильной работы xray-core
+          cache: false
+
+      - name: Build Go L7 Library
+        run: |
+          rm -f go.mod go.sum
+          go mod init proxy_checker
+          # Тянем основное ядро и парсер JSON
+          go get github.com/xtls/xray-core@v1.8.24
+          go get github.com/xtls/xray-core/infra/conf/serial@v1.8.24
+          go mod tidy
+          # Компиляция с флагами для уменьшения веса
+          go build -buildmode=c-shared -ldflags="-s -w" -o libchecker.so checker.go
+          
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # ТЕПЕРЬ СТАВИМ ТУТ (когда Python уже готов)
-      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests cryptography
+          pip install requests cryptography certifi
 
+      - name: 🌪️ Setup "Censorship" Environment
+        run: |
+          sudo tc qdisc replace dev eth0 root netem delay 150ms 20ms loss 5%
+          sudo ifconfig eth0 mtu 1280
+      
       - name: Run checker
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
           GH_PROMPT_DISABLED: 1
-          GITHUB_REPOSITORY: ${{ github.repository }} # Даем доступ к управлению задачами
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          # Указываем системе искать .so файл в текущей директории
+          LD_LIBRARY_PATH: .
         run: python check.py
 
       - name: Commit and Push changes
@@ -43,13 +66,12 @@ jobs:
           git config --global user.name "Checker-Bot"
           git config --global user.email "bot@github.com"
           
-          # 1. Добавляем и СРАЗУ коммитим локально (это очистит индекс)
+          # Мы не хотим пушить тяжелую библиотеку .so в репозиторий
+          # Добавим её в игнор перед коммитом на всякий случай
+          echo "libchecker.so" >> .gitignore
+          echo "libchecker.h" >> .gitignore
+          
           git add .
           git commit -m "Auto-update: DB and Subscription" || echo "No changes to commit"
-          
-          # 2. Теперь подтягиваем изменения из репозитория
-          # Стратегия -X theirs скажет гиту: "Если есть конфликт в файлах, мои (новые) важнее"
           git pull --rebase -X theirs origin main
-          
-          # 3. Пушим
           git push origin main

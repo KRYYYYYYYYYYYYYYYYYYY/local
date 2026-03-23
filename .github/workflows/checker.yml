@@ -1,8 +1,12 @@
 name: 🛡️ Proxy Inquisitor & Monitor
 
 concurrency:
-  group: proxy-inquisitor-lock
-  cancel-in-progress: true
+  # Issues-события получают отдельную группу с cancel-in-progress: true —
+  # это позволяет новому issues-запуску вытеснить уже идущий issues-запуск.
+  # Все остальные события (schedule, push, workflow_dispatch) идут в общую
+  # группу без отмены, чтобы не прерывать плановые проверки кандидатов.
+  group: ${{ github.event_name == 'issues' && 'proxy-inquisitor-issues' || 'proxy-inquisitor-lock' }}
+  cancel-in-progress: ${{ github.event_name == 'issues' }}
 
 on:
   push:

@@ -1,22 +1,47 @@
 name: 🛡️ Proxy Inquisitor & Monitor
 
-# БЛОК ЗАЩИТЫ ОТ ОДНОВРЕМЕННЫХ ЗАПУСКОВ
 concurrency:
   group: proxy-inquisitor-lock
-  cancel-in-progress: false # Новый запуск будет ждать, пока старый не доделает "пытки"
+  cancel-in-progress: true
 
 on:
+  push:
+    paths:
+      - 'kr/mob/wifi.txt'
+      - 'test1/vetted.txt'
+      - 'test1/pinned.txt'
   workflow_dispatch:
   schedule:
     - cron: '0 * * * *'
+  issues:
+    types: [edited]
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # Даем инквизитору 6 часов (максимум для GitHub)
+    if: |
+      github.event_name == 'push' ||
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'issues' &&
+        github.event.action == 'edited' &&
+        github.event.sender.login != 'github-actions[bot]' &&
+        (
+          contains(github.event.issue.body, '- [x] 💀 **ПОДТВЕРДИТЬ_БАН**') ||
+          contains(github.event.issue.body, '- [X] 💀 **ПОДТВЕРДИТЬ_БАН**') ||
+          contains(github.event.issue.body, '- [x] ✅ **ПРИМЕНИТЬ_PIN_BAN**') ||
+          contains(github.event.issue.body, '- [X] ✅ **ПРИМЕНИТЬ_PIN_BAN**') ||
+          contains(github.event.issue.body, '- [x] 🏆 **ПОДТВЕРДИТЬ_ИЗБРАННОЕ**') ||
+          contains(github.event.issue.body, '- [X] 🏆 **ПОДТВЕРДИТЬ_ИЗБРАННОЕ**') ||
+          contains(github.event.issue.body, '- [x] 🔓 **ПОДТВЕРДИТЬ_РАСПИН**') ||
+          contains(github.event.issue.body, '- [X] 🔓 **ПОДТВЕРДИТЬ_РАСПИН**')
+        )
+      )
+    timeout-minutes: 360
     permissions:
       contents: write
-      issues: read # Даем право читать Issue для системы PIN
+      issues: write
 
     steps:
       - name: 📂 Checkout Code
@@ -45,10 +70,9 @@ jobs:
       - name: ⚙️ Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install psutil
+          pip install requests cryptography psutil
 
       - name: ⛓️ Run Torturer
-        # ДОБАВЛЯЕМ ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}

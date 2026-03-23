@@ -286,28 +286,34 @@ def process_all_controls(token: str, repo: str, vetted_list: list[str], pinned_l
                 vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
                 executed_any = True
 
-        # pin_control: PIN/BAN
-        out = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env=env_gh).decode('utf-8')
-        data = json.loads(out)
-        if data and "ПРИМЕНИТЬ_PIN_BAN" in data[0]['body']:
-            body = data[0]['body']
-            to_pin = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+PIN:\s+(vless://[^\n\r`\'"]+)', body)]
-            to_ban = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+BAN:\s+(vless://[^\n\r`\'"]+)', body)]
+         # pin_control: PIN/BAN — читаем все страницы (issues могут быть разбиты на несколько)
+        out = subprocess.check_output(
+            ['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control',
+             '--json', 'body', '--limit', '50', '--state', 'open'],
+            env=env_gh,
+        ).decode('utf-8')
+        all_pin_issues = json.loads(out)
+        # Обрабатываем только если хотя бы в одной странице стоит подтверждение
+        if any("ПРИМЕНИТЬ_PIN_BAN" in issue['body'] for issue in all_pin_issues):
             pinned_bases = {p.split('#')[0].strip() for p in pinned_list}
-            for full in to_pin:
-                base = full.split('#')[0].strip()
-                if base not in pinned_bases:
-                    pinned_list.append(full)
-                    pinned_bases.add(base)
-                vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
-                executed_any = True
-            for full in to_ban:
-                base = full.split('#')[0].strip()
-                add_to_blacklist(base)
-                remove_from_all(base)
-                ranking_db.pop(base, None)
-                vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
-                executed_any = True
+            for issue in all_pin_issues:
+                body = issue['body']
+                to_pin = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+PIN:\s+(vless://[^\n\r`\'"]+)', body)]
+                to_ban = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+BAN:\s+(vless://[^\n\r`\'"]+)', body)]
+                for full in to_pin:
+                    base = full.split('#')[0].strip()
+                    if base not in pinned_bases:
+                        pinned_list.append(full)
+                        pinned_bases.add(base)
+                    vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
+                    executed_any = True
+                for full in to_ban:
+                    base = full.split('#')[0].strip()
+                    add_to_blacklist(base)
+                    remove_from_all(base)
+                    ranking_db.pop(base, None)
+                    vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
+                    executed_any = True
 
         # unpin_control
         out = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'body', '--limit', '1'], env=env_gh).decode('utf-8')

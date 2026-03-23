@@ -322,23 +322,47 @@ def process_all_controls(token: str, repo: str, vetted_list: list[str], pinned_l
         print(f"⚠️ Ошибка обработки issue-команд: {e}")
 
     return vetted_list, pinned_list, executed_any
+    
+def kill_sibling_torturer(current_pid: int) -> bool:
+    """Убивает другой запущенный экземпляр torture_bot.py. Возвращает True если был убит."""
+    killed = False
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        if proc.info['pid'] == current_pid:
+            continue
+        cmdline = proc.info.get('cmdline')
+        if cmdline and 'torture_bot.py' in ' '.join(cmdline):
+            try:
+                p = psutil.Process(proc.info['pid'])
+                p.terminate()
+                p.wait(timeout=10)
+                print(f"🛑 Остановлен старый процесс (PID {proc.info['pid']}).")
+                killed = True
+            except Exception as e:
+                print(f"⚠️ Не удалось завершить процесс {proc.info['pid']}: {e}")
+    return killed
+
 
 def main_torturer():
     if go_lib is None:
         print("❌ Go checker не инициализирован. Выход.")
         return
 
-    # Проверка: не запущен ли уже другой такой же скрипт?
     current_pid = os.getpid()
-    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-        if proc.info['pid'] != current_pid:
-            cmdline = proc.info.get('cmdline')
-            if cmdline and 'torture_bot.py' in ' '.join(cmdline):
-                print(f"🛑 Обнаружен запущенный близнец (PID {proc.info['pid']}). Самоликвидация.")
-                return
-
+    event_name = os.getenv("GITHUB_EVENT_NAME", "")
     token = os.getenv("GH_TOKEN")
     repo = os.getenv("GH_REPO") or os.getenv("GITHUB_REPOSITORY")
+
+    # При issues-событии: убиваем старый процесс и продолжаем с приоритетом issues.
+    # При остальных событиях: если уже есть запущенный экземпляр — выходим.
+    if event_name == "issues":
+        kill_sibling_torturer(current_pid)
+    else:
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            if proc.info['pid'] != current_pid:
+                cmdline = proc.info.get('cmdline')
+                if cmdline and 'torture_bot.py' in ' '.join(cmdline):
+                    print(f"🛑 Обнаружен запущенный близнец (PID {proc.info['pid']}). Самоликвидация.")
+                    return
 
     if not os.path.exists(RANK_FILE):
         print(f"📭 Файл {RANK_FILE} не найден. Некого пытать.")
@@ -358,10 +382,9 @@ def main_torturer():
         ranking_db = {}
         print("❌ Ошибка чтения JSON.")
 
-    
     vetted_list = load_vless_lines(VETTED_FILE)
     pinned_list = load_vless_lines(PINNED_FILE)
-        
+
     vetted_list = process_pin_commands(token, repo, vetted_list)
 
     vetted_list, pinned_list, executed = process_all_controls(token, repo, vetted_list, pinned_list, ranking_db)
@@ -373,16 +396,18 @@ def main_torturer():
         with open(RANK_FILE, 'w', encoding='utf-8') as f:
             json.dump(ranking_db, f, ensure_ascii=False, indent=4)
         refresh_all_panels(token, repo, ranking_db, vetted_list, pinned_list)
-        print("✅ Issue-команды применены. Пытки пропущены (приоритет issues).")
+        print("✅ Issue-команды применены.")
+        # После обработки issues — продолжаем к кандидатам (не выходим).
+    else:
+        # Нет issue-команд: обновляем панели (актуализируем timestamp и состояние).
+        refresh_all_panels(token, repo, ranking_db, vetted_list, pinned_list)
+
+    if event_name not in {"schedule", "workflow_dispatch", "issues"}:
+        print("☕ Нет подтвержденных issue-команд и это не расписание/manual/issues. Выход.")
         return
 
-    event_name = os.getenv("GITHUB_EVENT_NAME", "")
-    if event_name not in {"schedule", "workflow_dispatch"}:
-        print("☕ Нет подтвержденных issue-команд и это не расписание/manual. Выход.")
-        return
-    
     vetted_set = {v.split('#')[0].strip() for v in vetted_list}
-    
+
     pinned_set = {p.split('#')[0].strip() for p in pinned_list}
 
     print(f"📊 Всего в базе: {len(ranking_db)} | В исключениях (Vetted/Pinned): {len(vetted_set | pinned_set)}")

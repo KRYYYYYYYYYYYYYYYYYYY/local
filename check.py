@@ -301,7 +301,7 @@ def main() -> None:
         elif isinstance(data, int):
             ranking_db[base] = {"rank": int(data), "link": base}
     blacklist = set(load_lines(BLACKLIST_FILE))
-    pinned_list = dedupe_links(load_lines(PINNED_FILE, contains="vless://"))
+    pinned_list = load_lines(PINNED_FILE, contains="vless://")
     deferred = load_lines(DEFERRED_FILE)
     current_base = load_lines(INPUT_FILE)
     had_deferred_at_start = len(deferred) > 0

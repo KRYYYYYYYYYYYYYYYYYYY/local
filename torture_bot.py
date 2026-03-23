@@ -13,6 +13,11 @@ import psutil
 PINNED_FILE = 'test1/pinned.txt'
 RANK_FILE = 'test1/ranking.json'
 VETTED_FILE = 'test1/vetted.txt'
+BLACKLIST_FILE = 'test1/blacklist.txt'
+WIFI_FILE = 'kr/mob/wifi.txt'
+DEFERRED_FILE = 'test1/deferred.txt'
+INPUT_FILE = 'test1/1.txt'
+FAVORITES_FILE = 'test1/favorites.txt'
 THRESHOLD = 50
 PROBE_TIMEOUT = 3
 TOTAL_ATTEMPTS = 20
@@ -174,6 +179,150 @@ def process_pin_commands(token, repo, vetted_list):
         pass
     return vetted_list
 
+def load_vless_lines(path: str) -> list[str]:
+    if not os.path.exists(path):
+        return []
+    with open(path, 'r', encoding='utf-8') as f:
+        return [l.strip() for l in f if 'vless://' in l]
+
+
+def add_to_blacklist(base_part: str) -> None:
+    existing = set(load_vless_lines(BLACKLIST_FILE))
+    if base_part not in existing:
+        with open(BLACKLIST_FILE, 'a', encoding='utf-8') as f:
+            f.write(base_part + "\n")
+
+
+def remove_from_all(base_part: str) -> None:
+    for path in [WIFI_FILE, DEFERRED_FILE, INPUT_FILE, VETTED_FILE]:
+        if not os.path.exists(path):
+            continue
+        with open(path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+        filtered = [l for l in lines if l.split('#')[0].strip() != base_part]
+        if len(filtered) != len(lines):
+            with open(path, 'w', encoding='utf-8') as f:
+                f.writelines(filtered)
+
+
+def update_issue(repo: str, label: str, body: str, env: dict) -> None:
+    try:
+        out = subprocess.check_output(
+            ['gh', 'issue', 'list', '--repo', repo, '--label', label, '--json', 'number', '--limit', '1'],
+            env=env,
+        ).decode('utf-8')
+        data = json.loads(out)
+        if not data:
+            return
+        num = str(data[0]['number'])
+        tmp_file = f"tmp_body_{label}.txt"
+        with open(tmp_file, 'w', encoding='utf-8') as f:
+            f.write(body)
+        subprocess.run(['gh', 'issue', 'edit', num, '--repo', repo, '--body-file', tmp_file], env=env, check=True)
+        if os.path.exists(tmp_file):
+            os.remove(tmp_file)
+    except Exception as e:
+        print(f"⚠️ Ошибка обновления панели {label}: {e}")
+
+
+def get_wifi_candidates(pinned_list: list[str], fav_list: list[str] | None = None) -> list[str]:
+    fav_list = fav_list or []
+    if not os.path.exists(WIFI_FILE):
+        return []
+    excluded = {p.split('#')[0].strip() for p in pinned_list}
+    excluded.update({f.split('#')[0].strip() for f in fav_list})
+    out: list[str] = []
+    with open(WIFI_FILE, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if 'vless://' not in line:
+                continue
+            if line.split('#')[0].strip() not in excluded:
+                out.append(line)
+    return out
+
+
+def refresh_all_panels(token: str, repo: str, ranking_db: dict, vetted_list: list[str], pinned_list: list[str]) -> None:
+    if not token or not repo:
+        return
+    env_gh = {**os.environ, "GH_TOKEN": token}
+    ts = time.strftime("%d.%m.%Y %H:%M:%S")
+
+    body_ctrl = f"### 🎮 Панель Blacklist\n🕒 `{ts}`\n\n- [ ] 💀 **ПОДТВЕРДИТЬ_БАН**\n\n---\n\n"
+    for link in get_wifi_candidates(pinned_list, load_vless_lines(FAVORITES_FILE)):
+        body_ctrl += f"- [ ] {link}\n"
+    update_issue(repo, 'control', body_ctrl, env_gh)
+
+    body_pin = f"### 💎 Кандидаты в Элиту\n🕒 `{ts}`\n\n- [ ] ✅ **ПРИМЕНИТЬ_PIN_BAN**\n\n---\n\n"
+    for link in vetted_list:
+        body_pin += f"- [ ] PIN: {link}\n- [ ] BAN: {link}\n\n"
+    update_issue(repo, 'pin_control', body_pin, env_gh)
+
+    body_unpin = f"### 👑 Управление Закрепами\n🕒 `{ts}`\n\n- [ ] 🔓 **ПОДТВЕРДИТЬ_РАСПИН**\n\n---\n\n"
+    for link in pinned_list:
+        body_unpin += f"- [ ] {link}\n"
+    update_issue(repo, 'unpin_control', body_unpin, env_gh)
+
+
+def process_all_controls(token: str, repo: str, vetted_list: list[str], pinned_list: list[str], ranking_db: dict) -> tuple[list[str], list[str], bool]:
+    if not token or not repo:
+        return vetted_list, pinned_list, False
+    env_gh = {**os.environ, "GH_TOKEN": token}
+    executed_any = False
+
+    def checked_links(text: str) -> list[str]:
+        return [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+(vless://[^\n\r`\'"]+)', text)]
+
+    try:
+        # control: BAN
+        out = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'control', '--json', 'body', '--limit', '1'], env=env_gh).decode('utf-8')
+        data = json.loads(out)
+        if data and "ПОДТВЕРДИТЬ_БАН" in data[0]['body']:
+            for full in checked_links(data[0]['body']):
+                base = full.split('#')[0].strip()
+                add_to_blacklist(base)
+                remove_from_all(base)
+                ranking_db.pop(base, None)
+                vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
+                executed_any = True
+
+        # pin_control: PIN/BAN
+        out = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env=env_gh).decode('utf-8')
+        data = json.loads(out)
+        if data and "ПРИМЕНИТЬ_PIN_BAN" in data[0]['body']:
+            body = data[0]['body']
+            to_pin = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+PIN:\s+(vless://[^\n\r`\'"]+)', body)]
+            to_ban = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+BAN:\s+(vless://[^\n\r`\'"]+)', body)]
+            pinned_bases = {p.split('#')[0].strip() for p in pinned_list}
+            for full in to_pin:
+                base = full.split('#')[0].strip()
+                if base not in pinned_bases:
+                    pinned_list.append(full)
+                    pinned_bases.add(base)
+                vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
+                executed_any = True
+            for full in to_ban:
+                base = full.split('#')[0].strip()
+                add_to_blacklist(base)
+                remove_from_all(base)
+                ranking_db.pop(base, None)
+                vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
+                executed_any = True
+
+        # unpin_control
+        out = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'body', '--limit', '1'], env=env_gh).decode('utf-8')
+        data = json.loads(out)
+        if data and "ПОДТВЕРДИТЬ_РАСПИН" in data[0]['body']:
+            to_unpin = {x.split('#')[0].strip() for x in checked_links(data[0]['body'])}
+            if to_unpin:
+                pinned_list = [p for p in pinned_list if p.split('#')[0].strip() not in to_unpin]
+                executed_any = True
+
+    except Exception as e:
+        print(f"⚠️ Ошибка обработки issue-команд: {e}")
+
+    return vetted_list, pinned_list, executed_any
+
 def main_torturer():
     if go_lib is None:
         print("❌ Go checker не инициализирован. Выход.")
@@ -189,7 +338,7 @@ def main_torturer():
                 return
 
     token = os.getenv("GH_TOKEN")
-    repo = os.getenv("GH_REPO")
+    repo = os.getenv("GH_REPO") or os.getenv("GITHUB_REPOSITORY")
 
     if not os.path.exists(RANK_FILE):
         print(f"📭 Файл {RANK_FILE} не найден. Некого пытать.")
@@ -210,19 +359,31 @@ def main_torturer():
         print("❌ Ошибка чтения JSON.")
 
     
-    if os.path.exists(VETTED_FILE):
-        with open(VETTED_FILE, 'r', encoding='utf-8') as f:
-            vetted_list = [l.strip() for l in f if 'vless://' in l]
-    else:
-        vetted_list = []
+    vetted_list = load_vless_lines(VETTED_FILE)
+    pinned_list = load_vless_lines(PINNED_FILE)
         
     vetted_list = process_pin_commands(token, repo, vetted_list)
+
+    vetted_list, pinned_list, executed = process_all_controls(token, repo, vetted_list, pinned_list, ranking_db)
+    if executed:
+        with open(VETTED_FILE, 'w', encoding='utf-8') as f:
+            f.write("\n".join(vetted_list) + ("\n" if vetted_list else ""))
+        with open(PINNED_FILE, 'w', encoding='utf-8') as f:
+            f.write("\n".join(pinned_list) + ("\n" if pinned_list else ""))
+        with open(RANK_FILE, 'w', encoding='utf-8') as f:
+            json.dump(ranking_db, f, ensure_ascii=False, indent=4)
+        refresh_all_panels(token, repo, ranking_db, vetted_list, pinned_list)
+        print("✅ Issue-команды применены. Пытки пропущены (приоритет issues).")
+        return
+
+    event_name = os.getenv("GITHUB_EVENT_NAME", "")
+    if event_name not in {"schedule", "workflow_dispatch"}:
+        print("☕ Нет подтвержденных issue-команд и это не расписание/manual. Выход.")
+        return
+    
     vetted_set = {v.split('#')[0].strip() for v in vetted_list}
     
-    pinned_set = set()
-    if os.path.exists(PINNED_FILE):
-        with open(PINNED_FILE, 'r', encoding='utf-8') as f:
-            pinned_set = {l.split('#')[0].strip() for l in f if 'vless://' in l}
+    pinned_set = {p.split('#')[0].strip() for p in pinned_list}
 
     print(f"📊 Всего в базе: {len(ranking_db)} | В исключениях (Vetted/Pinned): {len(vetted_set | pinned_set)}")
 
@@ -303,6 +464,7 @@ def main_torturer():
         print("🏆 [INSPECTOR] TOP-10:")
         for i, (base, score) in enumerate(ranked[:10], start=1):
             print(f"   {i}) {score} — {base[:72]}")
+    refresh_all_panels(token, repo, ranking_db, load_vless_lines(VETTED_FILE), pinned_list)
     print("💾 Все изменения сохранены.")
     
 if __name__ == "__main__":

@@ -22,6 +22,7 @@ THRESHOLD = 50
 PROBE_TIMEOUT = 3
 TOTAL_ATTEMPTS = 20
 SLEEP_BETWEEN_ATTEMPTS = 60
+GITHUB_BODY_LIMIT = 65000  # GitHub GraphQL лимит ~65536, берём с запасом
 
 # Блокировка для безопасной записи в файлы из разных потоков
 file_lock = threading.Lock()
@@ -225,6 +226,99 @@ def update_issue(repo: str, label: str, body: str, env: dict) -> None:
         print(f"⚠️ Ошибка обновления панели {label}: {e}")
 
 
+def split_body_pages(header: str, entries: list[str], limit: int = GITHUB_BODY_LIMIT) -> list[str]:
+    """Разбивает список записей на страницы, каждая не превышает limit байт."""
+    pages: list[str] = []
+    current = header
+    for entry in entries:
+        if len((current + entry).encode('utf-8')) > limit:
+            pages.append(current)
+            current = header + entry
+        else:
+            current += entry
+    if current.strip():
+        pages.append(current)
+    return pages if pages else [header]
+
+
+def update_pin_control_pages(repo: str, vetted_list: list[str], env: dict) -> None:
+    """Обновляет issue(s) pin_control с пагинацией — все записи vetted без потерь."""
+    ts = time.strftime("%d.%m.%Y %H:%M:%S")
+    header = f"### 💎 Кандидаты в Элиту\n🕒 `{ts}`\n\n- [ ] ✅ **ПРИМЕНИТЬ_PIN_BAN**\n\n---\n\n"
+
+    entries = []
+    for link in vetted_list:
+        entries.append(f"- [ ] PIN: {link}\n- [ ] BAN: {link}\n\n")
+
+    pages = split_body_pages(header, entries)
+    total_pages = len(pages)
+
+    # Получаем все существующие issues с лейблом pin_control (открытые), сортируем по номеру
+    try:
+        out = subprocess.check_output(
+            ['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control',
+             '--json', 'number,title', '--limit', '50', '--state', 'open'],
+            env=env,
+        ).decode('utf-8')
+        existing = sorted(json.loads(out), key=lambda x: x['number'])
+    except Exception as e:
+        print(f"⚠️ Не удалось получить список pin_control issues: {e}")
+        return
+
+    # Обновляем существующие страницы
+    for i, body in enumerate(pages):
+        page_label = f"Страница {i + 1}/{total_pages}" if total_pages > 1 else ""
+        safe_body = body
+        if i < len(existing):
+            num = str(existing[i]['number'])
+            tmp_file = f"tmp_body_pin_control_{i}.txt"
+            try:
+                with open(tmp_file, 'w', encoding='utf-8') as f:
+                    f.write(safe_body)
+                subprocess.run(
+                    ['gh', 'issue', 'edit', num, '--repo', repo, '--body-file', tmp_file],
+                    env=env, check=True,
+                )
+                if os.path.exists(tmp_file):
+                    os.remove(tmp_file)
+                if total_pages > 1:
+                    print(f"✅ pin_control обновлён (issue #{num}, {page_label})")
+            except Exception as e:
+                print(f"⚠️ Ошибка обновления pin_control #{num}: {e}")
+        else:
+            # Нужна новая страница — создаём новый issue
+            tmp_file = f"tmp_body_pin_control_{i}.txt"
+            try:
+                with open(tmp_file, 'w', encoding='utf-8') as f:
+                    f.write(safe_body)
+                title = f"💎 Кандидаты в Элиту{' — ' + page_label if page_label else ''}"
+                result = subprocess.run(
+                    ['gh', 'issue', 'create', '--repo', repo,
+                     '--title', title,
+                     '--label', 'pin_control',
+                     '--body-file', tmp_file],
+                    env=env, check=True, capture_output=True, text=True,
+                )
+                if os.path.exists(tmp_file):
+                    os.remove(tmp_file)
+                new_num = result.stdout.strip().split('/')[-1]
+                print(f"✅ pin_control создан новый issue #{new_num} ({page_label})")
+            except Exception as e:
+                print(f"⚠️ Ошибка создания нового pin_control issue: {e}")
+
+    # Закрываем лишние issues если страниц стало меньше
+    for i in range(total_pages, len(existing)):
+        num = str(existing[i]['number'])
+        try:
+            subprocess.run(
+                ['gh', 'issue', 'close', num, '--repo', repo, '--comment', 'Страница удалена: записей стало меньше.'],
+                env=env, check=True,
+            )
+            print(f"🗑️ Закрыт лишний pin_control issue #{num}")
+        except Exception as e:
+            print(f"⚠️ Ошибка закрытия pin_control #{num}: {e}")
+
+
 def get_wifi_candidates(pinned_list: list[str], fav_list: list[str] | None = None) -> list[str]:
     fav_list = fav_list or []
     if not os.path.exists(WIFI_FILE):
@@ -253,10 +347,7 @@ def refresh_all_panels(token: str, repo: str, ranking_db: dict, vetted_list: lis
         body_ctrl += f"- [ ] {link}\n"
     update_issue(repo, 'control', body_ctrl, env_gh)
 
-    body_pin = f"### 💎 Кандидаты в Элиту\n🕒 `{ts}`\n\n- [ ] ✅ **ПРИМЕНИТЬ_PIN_BAN**\n\n---\n\n"
-    for link in vetted_list:
-        body_pin += f"- [ ] PIN: {link}\n- [ ] BAN: {link}\n\n"
-    update_issue(repo, 'pin_control', body_pin, env_gh)
+    update_pin_control_pages(repo, vetted_list, env_gh)
 
     body_unpin = f"### 👑 Управление Закрепами\n🕒 `{ts}`\n\n- [ ] 🔓 **ПОДТВЕРДИТЬ_РАСПИН**\n\n---\n\n"
     for link in pinned_list:
@@ -286,28 +377,34 @@ def process_all_controls(token: str, repo: str, vetted_list: list[str], pinned_l
                 vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
                 executed_any = True
 
-        # pin_control: PIN/BAN
-        out = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control', '--json', 'body', '--limit', '1'], env=env_gh).decode('utf-8')
-        data = json.loads(out)
-        if data and "ПРИМЕНИТЬ_PIN_BAN" in data[0]['body']:
-            body = data[0]['body']
-            to_pin = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+PIN:\s+(vless://[^\n\r`\'"]+)', body)]
-            to_ban = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+BAN:\s+(vless://[^\n\r`\'"]+)', body)]
+        # pin_control: PIN/BAN — читаем все страницы (issues могут быть разбиты на несколько)
+        out = subprocess.check_output(
+            ['gh', 'issue', 'list', '--repo', repo, '--label', 'pin_control',
+             '--json', 'body', '--limit', '50', '--state', 'open'],
+            env=env_gh,
+        ).decode('utf-8')
+        all_pin_issues = json.loads(out)
+        # Обрабатываем только если хотя бы в одной странице стоит подтверждение
+        if any("ПРИМЕНИТЬ_PIN_BAN" in issue['body'] for issue in all_pin_issues):
             pinned_bases = {p.split('#')[0].strip() for p in pinned_list}
-            for full in to_pin:
-                base = full.split('#')[0].strip()
-                if base not in pinned_bases:
-                    pinned_list.append(full)
-                    pinned_bases.add(base)
-                vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
-                executed_any = True
-            for full in to_ban:
-                base = full.split('#')[0].strip()
-                add_to_blacklist(base)
-                remove_from_all(base)
-                ranking_db.pop(base, None)
-                vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
-                executed_any = True
+            for issue in all_pin_issues:
+                body = issue['body']
+                to_pin = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+PIN:\s+(vless://[^\n\r`\'"]+)', body)]
+                to_ban = [x.strip().rstrip(':') for x in re.findall(r'\[[xX]\]\s+BAN:\s+(vless://[^\n\r`\'"]+)', body)]
+                for full in to_pin:
+                    base = full.split('#')[0].strip()
+                    if base not in pinned_bases:
+                        pinned_list.append(full)
+                        pinned_bases.add(base)
+                    vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
+                    executed_any = True
+                for full in to_ban:
+                    base = full.split('#')[0].strip()
+                    add_to_blacklist(base)
+                    remove_from_all(base)
+                    ranking_db.pop(base, None)
+                    vetted_list = [v for v in vetted_list if v.split('#')[0].strip() != base]
+                    executed_any = True
 
         # unpin_control
         out = subprocess.check_output(['gh', 'issue', 'list', '--repo', repo, '--label', 'unpin_control', '--json', 'body', '--limit', '1'], env=env_gh).decode('utf-8')

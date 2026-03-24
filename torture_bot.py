@@ -419,21 +419,12 @@ def main_torturer():
     print(f"📊 Всего в базе: {len(ranking_db)} | В исключениях (Vetted/Pinned): {len(vetted_set | pinned_set)}")
 
     candidates = []
-    seen_endpoints: set[tuple[str, int]] = set()
-
     for base, data in ranking_db.items():
         rank = data.get("rank", 0) if isinstance(data, dict) else data
         link = data.get("link", base) if isinstance(data, dict) else base
 
         # Берем либо сильных (на повышение), либо совсем слабых (на удаление)
         if (rank >= THRESHOLD or rank <= 0) and base not in vetted_set and base not in pinned_set:
-            host, port = extract_host_port(link)
-            endpoint_key = (host, port) if host and port else None
-            if endpoint_key and endpoint_key in seen_endpoints:
-                print(f"↪️ [INSPECTOR] skip duplicate endpoint {host}:{port}")
-                continue
-            if endpoint_key:
-                seen_endpoints.add(endpoint_key)
             candidates.append((base, link))
 
     if not candidates:

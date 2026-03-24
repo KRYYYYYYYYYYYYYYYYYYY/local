@@ -344,7 +344,6 @@ def main() -> None:
     checked = 0
     now = time.time()
     idx = 0
-    checked_endpoints: set[tuple[str, str]] = set()
     workers = max(1, int(os.getenv("CHECK_WORKERS", str(CHECK_WORKERS))))
     print(f"⚙️ probing mode: workers={workers} strict_l7={STRICT_L7}", flush=True)
     while len(working_for_sub) < MAX_SUB_LINKS and checked < MAX_TOTAL_CHECK:
@@ -367,16 +366,11 @@ def main() -> None:
             base = link.split("#", 1)[0].strip()
             if base in pinned_bases or base in blacklist:
                 continue
-            if not re.search(r"[a-f0-9\-]{36}@", base):
+            if not re.search(r"[A-Fa-f0-9\-]{36}@", base):
                 continue
             endpoint, host, port = extract_host_port(base)
             if not endpoint or not host or not port:
                 continue
-            endpoint_key = (host, port)
-            if endpoint_key in checked_endpoints:
-                continue
-            checked_endpoints.add(endpoint_key)
-
             checked += 1
             print(f"🔍 queued {checked}/{MAX_TOTAL_CHECK} {host}:{port}", flush=True)
             candidates_to_probe.append((base, link, host, port))

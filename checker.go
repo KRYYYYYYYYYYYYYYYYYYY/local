@@ -7,9 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -51,6 +51,10 @@ func activeProbeTargets() []string {
 	return probeTargets
 }
 
+func shouldUseFastMode() bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv("CHECKER_CI_FAST")), "1") ||
+		strings.EqualFold(strings.TrimSpace(os.Getenv("CHECKER_CI_FAST")), "true")
+}
 
 func pickFreeLocalPort() (int, error) {
 	l, err := net.Listen("tcp", "127.0.0.1:0")
@@ -147,7 +151,7 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 
 	// 1. БЫСТРЫЙ TCP ПРОБ (из crazy_xray_checker)
 	// Если порт закрыт, выходим за 500мс, не запуская Xray
-	d := net.Dialer{Timeout: 500 * time.Millisecond}
+	d := net.Dialer{Timeout: 1200 * time.Millisecond}
 	conn, err := d.Dial("tcp", net.JoinHostPort(addr, fmt.Sprint(cPort)))
 	if err != nil {
 		return 0
@@ -159,7 +163,7 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 		return 0
 	}
 
-		// 2. ГЕНЕРАЦИЯ КОНФИГА (без ручной строковой сборки)
+	// 2. ГЕНЕРАЦИЯ КОНФИГА (без ручной строковой сборки)
 	configJSON, err := buildConfigJSON(socksPort, addr, cPort, uuid, flow, sni, pbk, sid)
 	if err != nil || !json.Valid(configJSON) {
 		return 0
@@ -206,12 +210,15 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
 	minSuccess := 2
+	if shouldUseFastMode() {
+		minSuccess = 1
+	}
 	successCount := 0
 	appLikeSuccess := 0
 	bestLatency := 0
-	userAgent := probeUserAgents[time.Now().UnixNano()%int64(len(probeUserAgents))]
-	
-	for _, target := range activeProbeTargets() {
+
+	for i, target := range activeProbeTargets() {
+		userAgent := probeUserAgents[(time.Now().UnixNano()+int64(i))%int64(len(probeUserAgents))]
 		latency := probeViaSocks(client, target, timeout, userAgent)
 		if latency <= 0 {
 			continue
@@ -226,6 +233,9 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 		if successCount >= minSuccess && appLikeSuccess >= 1 {
 			return bestLatency
 		}
+	}
+	if successCount >= minSuccess {
+		return bestLatency
 	}
 
 	return 0

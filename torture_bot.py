@@ -6,6 +6,7 @@ import subprocess
 import threading
 import time
 import urllib.parse
+import uuid as uuidlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import psutil
 
@@ -96,7 +97,11 @@ def probe_vless_l7(link: str, target_sni: str, timeout_sec: int = PROBE_TIMEOUT)
     try:
         parsed = urllib.parse.urlparse(link)
         params = urllib.parse.parse_qs(parsed.query)
-        uuid = parsed.username or ""
+        raw_uuid = urllib.parse.unquote(parsed.username or "").strip()
+        try:
+            uuid = str(uuidlib.UUID(raw_uuid))
+        except Exception:
+            return 0
         pbk = params.get("pbk", [""])[0]
         sid = params.get("sid", [""])[0]
         flow = params.get("flow", [""])[0]
@@ -115,6 +120,18 @@ def probe_vless_l7(link: str, target_sni: str, timeout_sec: int = PROBE_TIMEOUT)
         )
     except Exception:
         return 0
+
+
+def has_valid_uuid(link: str) -> bool:
+    parsed = urllib.parse.urlparse(link)
+    raw_uuid = urllib.parse.unquote(parsed.username or "").strip()
+    if not raw_uuid:
+        return False
+    try:
+        uuidlib.UUID(raw_uuid)
+        return True
+    except Exception:
+        return False
 
 def torture_check(link: str) -> bool:
     host, port = extract_host_port(link)
@@ -419,21 +436,17 @@ def main_torturer():
     print(f"📊 Всего в базе: {len(ranking_db)} | В исключениях (Vetted/Pinned): {len(vetted_set | pinned_set)}")
 
     candidates = []
-    seen_endpoints: set[tuple[str, int]] = set()
-
     for base, data in ranking_db.items():
         rank = data.get("rank", 0) if isinstance(data, dict) else data
         link = data.get("link", base) if isinstance(data, dict) else base
 
         # Берем либо сильных (на повышение), либо совсем слабых (на удаление)
-        if (rank >= THRESHOLD or rank <= 0) and base not in vetted_set and base not in pinned_set:
-            host, port = extract_host_port(link)
-            endpoint_key = (host, port) if host and port else None
-            if endpoint_key and endpoint_key in seen_endpoints:
-                print(f"↪️ [INSPECTOR] skip duplicate endpoint {host}:{port}")
-                continue
-            if endpoint_key:
-                seen_endpoints.add(endpoint_key)
+        if (
+            (rank >= THRESHOLD or rank <= 0)
+            and base not in vetted_set
+            and base not in pinned_set
+            and has_valid_uuid(link)
+        ):
             candidates.append((base, link))
 
     if not candidates:

@@ -7,9 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"os"
 	"net/http"
 	"net/url"
+	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -21,8 +22,10 @@ import (
 
 var probeTargets = []string{
 	"https://www.gstatic.com/generate_204",
+	"https://www.google.com/generate_204",
 	"https://cp.cloudflare.com/generate_204",
 	"https://connectivitycheck.gstatic.com/generate_204",
+	"https://clients3.google.com/generate_204",
 	"https://raw.githubusercontent.com/",
 	"https://cdn.jsdelivr.net/",
 	"https://pastebin.com/",
@@ -42,6 +45,8 @@ var probeUserAgents = []string{
 	"okhttp/4.12.0 v2rayNG/1.12.28",
 }
 
+var uuidRegex = regexp.MustCompile(`(?i)^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
+
 func activeProbeTargets() []string {
 	fast := strings.EqualFold(strings.TrimSpace(os.Getenv("CHECKER_CI_FAST")), "1") ||
 		strings.EqualFold(strings.TrimSpace(os.Getenv("CHECKER_CI_FAST")), "true")
@@ -51,6 +56,10 @@ func activeProbeTargets() []string {
 	return probeTargets
 }
 
+func shouldUseFastMode() bool {
+	return strings.EqualFold(strings.TrimSpace(os.Getenv("CHECKER_CI_FAST")), "1") ||
+		strings.EqualFold(strings.TrimSpace(os.Getenv("CHECKER_CI_FAST")), "true")
+}
 
 func pickFreeLocalPort() (int, error) {
 	l, err := net.Listen("tcp", "127.0.0.1:0")
@@ -130,6 +139,21 @@ func probeViaSocks(client *http.Client, target string, timeoutSec int, userAgent
 	return 0
 }
 
+func probeTargetWithFallbackUA(client *http.Client, target string, timeoutSec int, seed int64) int {
+	if len(probeUserAgents) == 0 {
+		return probeViaSocks(client, target, timeoutSec, "")
+	}
+	primary := probeUserAgents[seed%int64(len(probeUserAgents))]
+	if latency := probeViaSocks(client, target, timeoutSec, primary); latency > 0 {
+		return latency
+	}
+	secondary := "okhttp/4.12.0 v2rayNG/1.12.28"
+	if strings.EqualFold(primary, secondary) {
+		return 0
+	}
+	return probeViaSocks(client, target, timeoutSec, secondary)
+}
+
 //export CheckVlessL7
 func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C.char, cSid *C.char, cFlow *C.char, timeout int) int {
 	addr := strings.TrimSpace(C.GoString(cAddr))
@@ -141,13 +165,16 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 	if addr == "" || uuid == "" || sni == "" || pbk == "" || cPort <= 0 {
 		return 0
 	}
+	if !uuidRegex.MatchString(uuid) {
+		return 0
+	}
 	if timeout <= 0 {
 		timeout = 5
 	}
 
 	// 1. БЫСТРЫЙ TCP ПРОБ (из crazy_xray_checker)
 	// Если порт закрыт, выходим за 500мс, не запуская Xray
-	d := net.Dialer{Timeout: 500 * time.Millisecond}
+	d := net.Dialer{Timeout: 1200 * time.Millisecond}
 	conn, err := d.Dial("tcp", net.JoinHostPort(addr, fmt.Sprint(cPort)))
 	if err != nil {
 		return 0
@@ -159,7 +186,7 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 		return 0
 	}
 
-		// 2. ГЕНЕРАЦИЯ КОНФИГА (без ручной строковой сборки)
+	// 2. ГЕНЕРАЦИЯ КОНФИГА (без ручной строковой сборки)
 	configJSON, err := buildConfigJSON(socksPort, addr, cPort, uuid, flow, sni, pbk, sid)
 	if err != nil || !json.Valid(configJSON) {
 		return 0
@@ -206,13 +233,15 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
 	minSuccess := 2
+	if shouldUseFastMode() {
+		minSuccess = 1
+	}
 	successCount := 0
 	appLikeSuccess := 0
 	bestLatency := 0
-	userAgent := probeUserAgents[time.Now().UnixNano()%int64(len(probeUserAgents))]
-	
-	for _, target := range activeProbeTargets() {
-		latency := probeViaSocks(client, target, timeout, userAgent)
+
+	for i, target := range activeProbeTargets() {
+		latency := probeTargetWithFallbackUA(client, target, timeout, time.Now().UnixNano()+int64(i))
 		if latency <= 0 {
 			continue
 		}
@@ -226,6 +255,9 @@ func CheckVlessL7(cAddr *C.char, cPort int, cUuid *C.char, cSni *C.char, cPbk *C
 		if successCount >= minSuccess && appLikeSuccess >= 1 {
 			return bestLatency
 		}
+	}
+	if successCount >= minSuccess {
+		return bestLatency
 	}
 
 	return 0

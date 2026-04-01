@@ -30,7 +30,7 @@ EXTERNAL_SOURCE_URL = [
 
 HEADER = """# profile-title: 🏴WIFI🏴
 # remark: 🏴WIFI🏴
-# announce: Подписка для использования на wifi. P.s. Подписка бесплатная, поэтому не гарантирует хороших серверов, в общем, а тем более 24/7. 
+# announce: Старая подписка, обновляться будет через неопределенное время.
 # profile-update-interval: 2
 """
 

@@ -34,15 +34,14 @@ vless://816be889-2d68-4941-acf5-94662015811c@vpn5.osaku.ru:12436?security=realit
 vless://0ca20960-99aa-4c92-b44d-e08829ef1a69@vpn3.osaku.ru:30385?security=reality&encryption=none&pbk=BudozUb-DKLwfXzhtlvp_FR8iZoOWwwOvr9K_jd9uQw&headerType=none&fp=chrome&spx=%2F&allowinsecure=0&type=tcp&sni=yahoo.com&sid=6232ac20545869#%F0%9F%87%A9%F0%9F%87%AA+Frankfurt+3+%28100Mbps%29
 vless://7a0ae662-eee7-44c0-8998-d575870bd749@64.188.106.202:38765?security=reality&encryption=none&pbk=fUyUwpKV_0yleQhE_dZF0TuD1lw3BJ-Jo9M6iOaEFEY&headerType=none&fp=chrome&spx=%2F&allowinsecure=0&type=tcp&sni=aws.amazon.com&sid=d789a31a7a7014#%F0%9F%87%A9%F0%9F%87%AAPremiumFrankfurt2_1Gbps
 vless://513d2421-7ab5-49c1-b300-c71c3525ce26@64.188.106.201:16579?security=reality&encryption=none&pbk=H0LmyOHq4pLUS06_gdmP4SjvrwsLTcBO3Y5K-T-hIAA&headerType=none&fp=chrome&spx=%2F&allowinsecure=0&type=tcp&sni=www.intel.com&sid=6d7a#%F0%9F%87%A9%F0%9F%87%AAPremiumFrankfurt1_1Gbps
-vless://6461860a-d367-4d47-8e82-7d8e1047a152@8.39.125.249:2087?type=ws&security=tls&encryption=none&fp=chrome&sni=aier.eu.cc&host=aier.eu.cc
 vless://6461860a-d367-4d47-8e82-7d8e1047a152@8.39.125.71:2083?type=ws&security=tls&fp=chrome&sni=aier.eu.cc&host=aier.eu.cc
+vless://6202b230-417c-4d8e-b624-0f71afa9c75d@167.88.160.144:8443?type=ws&security=tls&encryption=none&fp=chrome&sni=sni.111000.indevs.in&host=sni.111000.indevs.in
+vless://6461860a-d367-4d47-8e82-7d8e1047a152@8.39.125.249:2087?type=ws&security=tls&encryption=none&fp=chrome&sni=aier.eu.cc&host=aier.eu.cc
 vless://6461860a-d367-4d47-8e82-7d8e1047a152@8.35.211.23:2083?type=ws&security=tls&fp=chrome&sni=aier.eu.cc&host=aier.eu.cc
 vless://6461860a-d367-4d47-8e82-7d8e1047a152@8.35.211.236:8443?type=ws&security=tls&encryption=none&sni=aier.eu.cc&host=aier.eu.cc
-vless://5dc15e15-f285-4a9d-959b-0e4fbdd77b63@cf.008500.xyz:443?type=ws&security=tls&encryption=none&fp=chrome&sni=powered-by-surena.configfarsi695fcee895881.workers.dev&host=powered-by-surena.configfarsi695fcee895881.workers.dev
-vless://050fb692-dba7-4b69-b1fd-182c8e1c53eb@195.63.131.2:443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=SAw2LG0CxynFfpOpX9-5PZOxlz7eQloRLSnbQh9pRUs&sni=www.samsung.com
 vless://6d916d55-fead-4ff3-a3a9-83e175ea8ad7@ru198.mechvpn.online:443?type=tcp&security=tls&encryption=none&flow=xtls-rprx-vision&fp=chrome&sni=ru198.mechvpn.online&alpn=h3%2Ch2%2Chttp/1.1
 vless://ce069292-c8bf-40dd-a6b1-87818a1e64e9@101.32.116.73:443?type=ws&security=tls&encryption=none&sni=2-ee1.pages.dev&host=2-ee1.pages.dev
-vless://e060f013-53e5-4d88-bf5e-f93baa562ac5@138.124.180.46:443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=9mJq2cP3srX_6K1YfMDp1yndvo5CtgL6TEVQ8tm4fVc&sni=www.google.com
+vless://0eca1f22-e5a1-4888-a0fa-c2345e87cf2f@wl-ru-vk-02.ray-balance.space:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=cdnv-img.perekrestok.ru&fp=safari&pbk=MNbAG72pXVO11PRzMRw7puKjDnmkig2mvEmdjow53Wc&packetEncoding=xudp
 vless://6202b230-417c-4d8e-b624-0f71afa9c75d@57.128.177.206:443?type=ws&security=tls&encryption=none&sni=sni.111000.v6.navy&host=sni.111000.v6.navy
 vless://6461860a-d367-4d47-8e82-7d8e1047a152@8.39.125.205:2087?type=ws&security=tls&encryption=none&sni=aier.eu.cc&host=aier.eu.cc
 vless://caa3af29-3b04-4099-9772-c64a1b7cca34@103.27.157.161:7443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=5QAO98ot2U7TcGs_f6EEaQjCzNOJLNHqPf6smYsdFVI&sid=d82fb387&sni=chat.deepseek.com
@@ -198,3 +197,4 @@ vless://0f604226-6aed-43be-a3ca-58ea26f7b185@78.17.12.201:443?type=tcp&security=
 vless://d428091c-e6eb-48f9-9a07-b44eb886ac90@94.241.138.98:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ru3.csbeta60.com&fp=qq&security=reality&pbk=2x7TX3xvkAEk96cNP-i9TAsfeTaNF5dcaOHvbjH-cSs&sid=89c9996b63633977&packetEncoding=xudp
 vless://90c9c25c-df6c-4438-83d3-ef97166a9184@89.19.208.200:443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=A3PWLCRX9oeSyPvrmrwj2jUXcLo2uCwAISRBHtNE1Xw&sni=5post-gate.x5.ru
 vless://3b7e7ab6-feb0-4c12-b575-b5b2b8e7b8e5@de5.lazeroe.com:443?allowinsecure=0&echfq=none&encryption=none&fp=chrome&mode=auto&path=/ws&pbk=i1kgdvvNoTAdTsmFcdFBItn1wakoTNZHC1F7nTCpLlo&security=reality&sid=6f9ae5be33ead6f9&sni=de5.lazeroe.com&type=xhttp
+vless://39eb8c33-ee7f-4980-b3e5-684aaf390f56@ev.zoom.us:8443?encryption=none&host=darknet-free.alexid.org&path=/&security=tls&sni=darknet-free.alexid.org&type=ws

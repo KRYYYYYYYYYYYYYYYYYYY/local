@@ -7,6 +7,7 @@ import socket
 import time
 import urllib.parse
 import urllib.request
+import uuid as uuidlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -84,7 +85,11 @@ def probe_vless_l7(link: str, target_sni: str, timeout: int = 5) -> int:
         if not host or not port:
             return 0
             
-        uuid = parsed.username or ""
+        raw_uuid = urllib.parse.unquote(parsed.username or "").strip()
+        try:
+            uuid = str(uuidlib.UUID(raw_uuid))
+        except Exception:
+            return 0
         pbk = params.get("pbk", [""])[0]
         sid = params.get("sid", [""])[0]
         flow = params.get("flow", [""])[0]
@@ -104,6 +109,18 @@ def probe_vless_l7(link: str, target_sni: str, timeout: int = 5) -> int:
     except Exception as exc:
         print(f"⚠️ L7 checker error: {exc}")
         return 0
+
+
+def has_valid_uuid(link: str) -> bool:
+    parsed = urllib.parse.urlparse(link)
+    raw_uuid = urllib.parse.unquote(parsed.username or "").strip()
+    if not raw_uuid:
+        return False
+    try:
+        uuidlib.UUID(raw_uuid)
+        return True
+    except Exception:
+        return False
 
 def load_json(path: str, default):
     if not os.path.exists(path):
@@ -344,7 +361,6 @@ def main() -> None:
     checked = 0
     now = time.time()
     idx = 0
-    checked_endpoints: set[tuple[str, str]] = set()
     workers = max(1, int(os.getenv("CHECK_WORKERS", str(CHECK_WORKERS))))
     print(f"⚙️ probing mode: workers={workers} strict_l7={STRICT_L7}", flush=True)
     while len(working_for_sub) < MAX_SUB_LINKS and checked < MAX_TOTAL_CHECK:
@@ -367,16 +383,11 @@ def main() -> None:
             base = link.split("#", 1)[0].strip()
             if base in pinned_bases or base in blacklist:
                 continue
-            if not re.search(r"[a-f0-9\-]{36}@", base):
+            if not has_valid_uuid(base):
                 continue
             endpoint, host, port = extract_host_port(base)
             if not endpoint or not host or not port:
                 continue
-            endpoint_key = (host, port)
-            if endpoint_key in checked_endpoints:
-                continue
-            checked_endpoints.add(endpoint_key)
-
             checked += 1
             print(f"🔍 queued {checked}/{MAX_TOTAL_CHECK} {host}:{port}", flush=True)
             candidates_to_probe.append((base, link, host, port))

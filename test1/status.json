@@ -1,7 +1,8 @@
 {
-  "vless://6838017e-160d-434b-84ee-a94c35e25272@89.222.123.211:16923?encryption=none&type=grpc&serviceName=neurex&security=reality&sni=api-maps.yandex.ru&fp=firefox&pbk=_QeslG3rHGM7DoM99pYC8-jpc16pM2MbNZ6NRMoxmHA&sid=10ffb85da1c2d986": 1785344747.8789418,
-  "vless://c7e9c591-2764-423a-afca-efbd010fd396@31.133.0.159:2053?fp=chrome&host=forfreeuse.sub-flow.online&path=%2F&security=tls&sni=forfreeuse.sub-flow.online&type=ws": 1785344747.8789418,
-  "vless://884d811f-577b-421e-aabb-608660b0ecfa@31.77.169.70:9830?encryption=none&security=reality&sni=dl.google.com&pbk=bnRIb3Er1i-K6NGGByCO9UbGfOvu43ZoiK7ulPd1SzU&type=grpc&authority=&serviceName=grpc-tunnel&mode=gun&fp=safari": 1785344747.8789418,
+  "vless://b0aeb6f0-ff78-4316-ba8f-673d8bedd94b@5.35.33.225:443?encryption=none&type=ws&path=/rw&packetEncoding=xudp": 1785351558.8053453,
   "vless://33cbc251-1ed2-49bd-bd23-e1d3d36137d6@jp-1.coinbridge.nl:443?type=grpc&headerType=none&security=reality&encryption=none&sni=google.com&fp=random&pbk=kPBXTe2KCp55GrHS_qU_sF7ohUcT8Vu-e8i6Yd9MERI&sid=d5c7f84e37e0c12d&serviceName=data-sync": 1785344747.8789418,
-  "vless://c7e9c591-2764-423a-afca-efbd010fd396@147.45.196.240:2053?fp=chrome&host=forfreeuse.sub-flow.online&path=%2F&security=tls&sni=forfreeuse.sub-flow.online&type=ws": 1785344747.8789418
+  "vless://c7e9c591-2764-423a-afca-efbd010fd396@89.111.172.106:2053?encryption=none&security=tls&sni=forfreeuse.sub-flow.online&type=ws&host=forfreeuse.sub-flow.online&path=%2F&allowInsecure=0&insecure=0&fp=chrome": 1785351558.8053453,
+  "vless://884d811f-577b-421e-aabb-608660b0ecfa@31.77.169.70:9830?encryption=none&security=reality&sni=dl.google.com&pbk=bnRIb3Er1i-K6NGGByCO9UbGfOvu43ZoiK7ulPd1SzU&type=grpc&authority=&serviceName=grpc-tunnel&mode=gun&fp=safari": 1785344747.8789418,
+  "vless://9a6ee382-75c3-4cc5-bacd-66494cf99daa@138.124.70.44:8443?security=reality&encryption=none&pbk=UZn-GKszDMErkbxDZAMbPmOMBk2nwEc7Av5uhZFMkgI&headerType=none&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=www.tesla.com&sid=7a3f9c2e1b8d4506": 1785351558.8053453,
+  "vless://bf0899bc-5abd-40b8-b376-f108e2d8cb6f@vs-de7.vibesignal.space:443?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=cdnjs.cloudflare.com&fp=edge&pbk=tIhG_kpCdobHSuOL8G-zqmbk-hkYBkWZbcTBKZ-erjw&sid=04c24c5bdd4c1164": 1785351558.8053453
 }

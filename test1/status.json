@@ -1,7 +1,5 @@
 {
-  "vless://02e2d68f-9982-4467-ad47-00cbeeae30e6@147.45.44.109:443?encryption=none&fp=firefox&pbk=7Gs-7X7yCPm6RhIawkRb6CTsRSGweR4HHJvm-lLNiQ8&security=reality&serviceName=grpc&sid=b5729e7a25792fe4&sni=ru8.cdn-global.pro&type=grpc": 1786525392.972813,
-  "vless://53c76647-14d1-4df5-99cb-be99ad2e6bd9@fr213.mechvpn.online:443?type=tcp&headerType=none&security=tls&encryption=none&flow=xtls-rprx-vision&insecure=0": 1786525392.972813,
-  "vless://9f61cdf4-810d-4052-bbc7-2da0c8e20104@83.147.18.3:443?type=tcp&headerType=none&security=reality&encryption=none&sni=www.cloudflare.com&pbk=3iVJAIGPx6JMlhlRmfpGrHkSmLpHJ4CPvBBH7KsFrFA&sid=fd8cf7e1173f0edb&flow=xtls-rprx-vision&fp=chrome": 1786525392.972813,
-  "vless://d7d724b5-17ce-4f3c-877d-dfbf0f07afa1@150.251.113.34:443?type=tcp&headerType=none&security=reality&encryption=none&sni=www.cloudflare.com&pbk=8yMLSTbkpJFfbgTjNzotzz7U8OT6AERrclgKdKrXXW8&sid=150a627d15154cf2&flow=xtls-rprx-vision&fp=chrome": 1786525392.972813,
-  "vless://f9c6ae5c-a537-4ce1-8ad5-d1e579e0275f@209.200.246.86:443?security=reality&encryption=none&pbk=ECtV4BdcZKXG49uHtDX-71e1YVr7gu54ykbaBms9kh4&sni=www.cloudflare.com&sid=c2f3117b3268d0a6&type=tcp&flow=xtls-rprx-vision&fp=chrome": 1786525392.972813
+  "vless://53c76647-14d1-4df5-99cb-be99ad2e6bd9@ru156.mechvpn.online:443?type=tcp&headerType=none&security=tls&encryption=none&flow=xtls-rprx-vision&insecure=0&fp=safari": 1786532004.932776,
+  "vless://16a1eeb0-8408-4592-a469-ecd33751021e@lvksp.kintuso.com:443?security=tls&encryption=none&sni=lvksp.kintuso.com&alpn=h2%2Chttp%2F1.1&flow=xtls-rprx-vision&fp=edge": 1786532004.932776,
+  "vless://d80cd696-ec21-4afd-ad8e-cb65893535a4@78.17.40.188:2443?encryption=none&security=reality&sni=ads.x5.ru&pbk=rRg3JiP2006ldJYh2TDPAn7dtlXLcSHdgHgkGI_HZTE&sid=ef567890&type=grpc&serviceName=grpc&packetEncoding=xudp&fp=chrome": 1786532004.932776
 }

@@ -1,5 +1,5 @@
 {
-  "vless://5aab0d40-c509-4560-b048-ade921fdfb6a@70.39.178.231:46197?type=tcp&security=reality&encryption=none&fp=firefox&pbk=npJEB6VpYJ9iYTZ-z0IL06Xs7PEz0N3fZU_IRwftQ00&sid=f24c17bb7fc284&sni=updates.cdn-apple.com": 1786711364.785744,
-  "vless://218fd696-e3a2-4c33-b397-a5f13a82969e@162.35.231.6:443?security=reality&type=tcp&sni=media11.abvphelp.cc&pbk=O4of5fbG7Ns3fBdBF0bDU8Fa8q-mdk7YLgOgvAWPeF8&sid=f85aebea&spx=%2F&encryption=none&fp=chrome": 1786711364.785744,
-  "vless://50e636af-b554-4526-94ad-d0f4b34adecc@45.131.212.23:443?encryption=none&security=reality&type=tcp&sni=sellflow.org&fp=firefox&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&flow=xtls-rprx-vision": 1786711364.785744
+  "vless://c36589ce-367d-4ff4-bc9e-191682022597@fin.netdrug.ru:20870?type=xhttp&host=fin.netdrug.ru&path=%2Fxhttp&mode=stream-up&extra=%7B%0A++%22headers%22+%3A+%7B%0A%0A++%7D%2C%0A++%22xmux%22+%3A+%7B%0A++++%22cMaxReuseTimes%22+%3A+0%2C%0A++++%22hKeepAlivePeriod%22+%3A+10%2C%0A++++%22hMaxRequestTimes%22+%3A+%22600-900%22%2C%0A++++%22hMaxReusableSecs%22+%3A+%221800-3000%22%2C%0A++++%22maxConcurrency%22+%3A+%2216-32%22%2C%0A++++%22maxConnections%22+%3A+0%0A++%7D%2C%0A++%22xPaddingBytes%22+%3A+%22100-1000%22%0A%7D&security=tls&sni=fin.netdrug.ru&alpn=h2%2Chttp%2F1.1&encryption=none&fp=android": 1786718717.6147897,
+  "vless://22448df3-17f8-40a6-9199-babaca108b46@95.85.251.116:59631?mode=gun&security=reality&encryption=none&pbk=bymilcd_vnDoof7qAq4QpFTm-hMeFPZwXPTMFXdasSg&fp=chrome&spx=/HesarWeb&type=grpc&sni=google.com&sid=4b": 1786718717.6147897,
+  "vless://81df88b4-ab24-4510-dc5f-7ebdbf24ff0a@k1.cloud--vpn.site:443?security=tls&type=ws&path=%2F&host=c12.com&packetEncoding=none&sni=ssl.fastly.com&allowInsecure=0&insecure=0&fp=android": 1786718717.6147897
 }

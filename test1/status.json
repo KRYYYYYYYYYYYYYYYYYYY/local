@@ -1,7 +1,3 @@
 {
-  "vless://57284239-1ceb-439f-826e-cd25fcc1c1c5@selec156.apruxdomain.website:444?encryption=none&security=tls&sni=selec156.apruxdomain.website&alpn=http%2F1.1&type=ws&host=selec156.apruxdomain.website&path=%2Fapi%2Fv1%2Fstream%2Ffa598ce937&fp=android": 1786904140.9716854,
-  "vless://14da77da-4fb3-4e49-ac4f-7881ea19b267@neth6.lckdwn.ru:443?type=ws": 1786904140.9716854,
-  "vless://14da77da-4fb3-4e49-ac4f-7881ea19b267@neth6.lckdwn.ru:8443?security=tls&encryption=none&sni=neth6.lckdwn.ru&alpn=h2%2Chttp/1.1&fp=edge": 1786904140.9716854,
-  "vless://14da77da-4fb3-4e49-ac4f-7881ea19b267@177.3.212.127:8443?alpn=h2,http/1.1&encryption=none&fp=firefox&security=tls&sni=neth6.lckdwn.ru&type=tcp": 1786904140.9716854,
-  "vless://9e1e2fad-b6ca-474b-a28d-4b52c7891da0@87.121.218.169:8443?encryption=none&flow=xtls-rprx-vision&security=tls&sni=87.121.218.169&type=tcp&headerType=none": 1786904140.9716854
+  "vless://f50e364f-f5c9-4552-b0d9-13e4de24b9f0@tracker.mediahubcorp.uk:443?type=grpc&security=tls&serviceName=hub.v2.PushService": 1786911124.097392
 }

@@ -1,3 +1,4 @@
 {
-  "vless://7836b28e-8451-4596-ad3e-e3601b2335ba@64.188.82.152:443?encryption=none&host=cloudflare.vhub.pro&path=%2Fwebsocket&security=tls&sni=cloudflare.vhub.pro&type=ws": 1787372632.5326512
+  "vless://272b98b4-d02b-4dbc-bd8c-d8de5249b999@164.37.100.59:443?alpn=h2&authority=edge1.numberoneok.com&encryption=none&security=tls&serviceName=rpc.v1.SyncService&sni=edge1.numberoneok.com&type=grpc&fp=edge": 1787379823.2738657,
+  "vless://f50e364f-f5c9-4552-b0d9-13e4de24b9f0@download.mediahubcorp.uk:443?type=grpc&security=tls&serviceName=cloud.v2.StreamService": 1787379823.2738657
 }

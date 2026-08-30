@@ -1,8 +1,3 @@
 {
-  "vless://936b7663-a841-4b42-b639-6e3fab1dbf45@201.24.126.156:4100?path=/v1&security=none&encryption=none&host=live.ok.ru&type=ws": 1788047065.2367067,
-  "vless://9e94beb2-de41-40f6-bd26-37602fa74e22@api.yandex-cloud.org:443?flow=xtls-rprx-vision&encryption=none&security=reality&sni=api.yandex-cloud.org&fp=safari&pbk=IuvAXlAWBpeXehmEk0P-FIGTctUhny2H3UilbWWfJC0&sid=122218f4c1f172e4&type=tcp&headerType=none": 1788047065.2367067,
-  "vless://2dd48980-5c2a-4f3b-bc8f-e20a8ae24ab1@usab.mythos-wargame.fun:443?type=grpc&security=tls&fp=chrome&serviceName=edge.sync.v1": 1788047065.2367067,
-  "vless://1c342f96-08e4-4a74-bbd1-4746b7757c28@94.125.102.152:443?alpn=http%2F1.1&encryption=none&flow=xtls-rprx-vision&security=tls&sni=tc-pl-1.chankovich.space&type=tcp&fp=chrome": 1788047065.2367067,
-  "vless://1c342f96-08e4-4a74-bbd1-4746b7757c28@tc-pl-1.chankovich.space:443?encryption=none&type=tcp&flow=xtls-rprx-vision&security=tls&sni=tc-pl-1.chankovich.space&allowInsecure=0&alpn=http%2F1.1&fp=chrome": 1788047065.2367067,
-  "vless://148e52d4-c3fc-4527-b7e9-47c4a259cd61@187.124.98.130:3443?encryption=none&type=xhttp&security=reality&sni=www.w3.org&pbk=Umpo0XsyJ7j-Jw_UeM7vvAmqgEQKfypxs9lHhQZeHBs&sid=308f3df225572020&path=%2Fapi%2Fv1%2Ffeed%2Fd2be878c&mode=packet-up&extra=%7B%22xmux%22%3A%7B%22cMaxReuseTimes%22%3A%22400-800%22%2C%22maxConcurrency%22%3A%2216-32%22%2C%22hKeepAlivePeriod%22%3A0%2C%22hMaxRequestTimes%22%3A%22300-600%22%2C%22hMaxReusableSecs%22%3A%221800-3600%22%7D%2C%22xPaddingBytes%22%3A%22100-1000%22%2C%22scMaxEachPostBytes%22%3A%22524288-1048576%22%2C%22scMinPostsIntervalMs%22%3A%2230-100%22%7D&fp=chrome": 1788047065.2367067
+  "vless://19e4a904-2da5-4ba6-8768-6c0e9dd52ed0@82.115.21.139:443?security=none&encryption=none&headerType=none&type=tcp": 1788057064.8913636
 }

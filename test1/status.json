@@ -1,6 +1,7 @@
 {
-  "vless://4350213a-b4e7-262a-0bd7-bd16957cf71a@170.168.99.8:8443?mode=gun&security=reality&encryption=none&pbk=R8Mogel1wypEIpcUXnGmG1cuzT9POghNhqJcw4-CLx0&fp=chrome&type=grpc&serviceName=TunService&sni=cdn.steamstatic.com": 1789982823.4251032,
-  "vless://66ac188b-bd8d-4218-b9ba-0bad0e152cd0@79.137.184.158:443?type=xhttp&headerType=none&security=tls&encryption=none&sni=fin-02.hello-there.ru&alpn=h2%2Chttp%2F1.1&path=%2Fxh&host=fin-02.hello-there.ru&fp=android": 1789982823.4251032,
-  "vless://9c64f1aa-da4d-4c3e-9617-9bfbf1657a75@ge-a.sarky.ru:443?security=reality&encryption=none&pbk=RpjjScd4SIWgDGPtR_FJPRENMyWaPzb_hyA2cY98CDs&headerType=none&fp=firefox&type=tcp&flow=xtls-rprx-vision&sni=ge.sarky.ru&sid=e6240b9af8d53c17": 1789982823.4251032,
-  "vless://7fb42fab-ea8a-4f0f-af9e-55df8ae6cb1d@47.74.3.200:443?encryption=none&flow=xtls-rprx-vision&pbk=kb1uhDsBcfsCD6acCuFcVERW29dscNGIjKPd67NArVk&security=reality&sid=ab3b914f0c9d9de5&sni=www.logitech.com&type=tcp&fp=edge": 1789982823.4251032
+  "vless://366ae9eb-56b6-4ce7-a7c2-ab0e1f4ecf5c@vip-sg-2.hkd4fwmg.vip:42110?flow=xtls-rprx-vision&security=tls&sni=vip-sg-2.hkd4fwmg.vip": 1790006813.298645,
+  "vless://0bc09995-7ee6-462e-bfc3-75c880b9d675@fast18.slopllex.app:443?type=tcp&security=tls&flow=xtls-rprx-vision&fp=edge&sni=fast18.slopllex.app&fm={\"type\":\"fragment\",\"settings\":{\"packets\":\"tlshello\",\"lengths\":[\"3-5\",\"6-8\",\"10-20\"],\"delays\":[\"10-20\"],\"maxSplit\":\"3-6\"}}": 1790006813.298645,
+  "vless://3e0c1fbf-467a-49d7-abd2-3a158628f3d0@fin3.gigobingo.ru:443?type=tcp&headerType=none&security=reality&encryption=none&sni=fin3.gigobingo.ru&fp=firefox&pbk=Aj6Op88j_eYXxoBw095KS_NnKCBm5uwa874uumXdiDQ&sid=ef7c4e4302bd52d7&flow=xtls-rprx-vision": 1790006813.298645,
+  "vless://4bdeee92-97e8-414d-bef6-ec1d5e2ab73b@finkafsb.finiki.lol:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=finkafsb.finiki.lol&fp=random&pbk=YBKHp6R7xp2Ss2kxbvDNMFPpRrf3oh1wQ2dVMukPHmA&sid=d110331f200987ae&spx=%2F&type=tcp": 1790006813.298645,
+  "vless://9f5b9ca7-d0bb-4e50-a3ca-acf5968027fc@212.113.103.157:443?encryption=none&host=01sw.hello-there.ru&path=%2Fxh&security=tls&sni=01sw.hello-there.ru&type=xhttp&fp=android": 1790006813.298645
 }

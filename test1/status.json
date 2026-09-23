@@ -1,4 +1,4 @@
 {
-  "vless://0dca2cfe-98eb-4f9d-9a47-cf87510c558b@151.247.193.190:443?encryption=none&fp=firefox&security=tls&serviceName=cdn.v1.AssetService&sni=assets-fra.pleiades.codes&type=grpc": 1790121376.7482736,
-  "vless://0dca2cfe-98eb-4f9d-9a47-cf87510c558b@assets-fra.pleiades.codes:443?type=grpc&security=tls&fp=chrome&serviceName=cdn.v1.AssetService": 1790121376.7482736
+  "vless://89747660-c51f-4932-ace8-dc7d02983bae@151.101.110.221:443?encryption=none&security=tls&sni=menage.fastly.com&alpn=h3&type=xhttp&mode=packet-up&host=alem-tv.global.ssl.fastly.net&path=%2F&extra=%7B%22scMaxEachPostBytes%22%3A1000000%2C%22scMaxConcurrentPosts%22%3A100%2C%22scMinPostsIntervalMs%22%3A30%2C%22xPaddingBytes%22%3A%22100-1000%22%2C%22noGRPCHeader%22%3Afalse%7D&fp=chrome": 1790130550.5770435,
+  "vless://0325e30e-7505-477e-aa32-7f73a3cc0153@cdn7-02.cdn-vkvideo.com:443?type=tcp&security=reality&flow=xtls-rprx-vision&pbk=MpuwI3YH2g3YWHKLuQwwgD_qLo-UmUtZe8L1KXOKxhA&sid=b0d8f964b7ac8ac0&sni=cdn7-02.cdn-vkvideo.com&fp=chrome": 1790130550.5770435
 }

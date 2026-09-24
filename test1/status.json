@@ -1,18 +1,12 @@
 {
-  "vless://65c56e1f-5c41-40bc-b0b5-9346772476ca@91.228.154.112:2053?encryption=none&security=tls&sni=singapore.36109178.xyz&fp=edge&type=ws&path=%2Fstatic%2Fmedia%2Fvideo-chunk.f4v&host=singapore.36109178.xyz": 1790239978.3685246,
-  "vless://6a32736d-4b7f-4c35-a1cf-4489d49f2cfb@196.196.206.29:443?encryption=none&extra={\"xmux\":{\"maxConnections\":1,\"maxReuseTimes\":0}}&fp=firefox&security=tls&sni=6a32736d.ferrin.uk&type=xhttp": 1790239978.3685246,
-  "vless://7e081edf-f67b-49c8-a8f1-62425caf7ac7@93.190.9.7:3090?encryption=none&security=none&type=grpc&serviceName=vless&mode=multi": 1790239978.3685246,
-  "vless://3255d065-119c-4103-a422-ea9d301b0707@34.185.172.52:443?security=reality&pbk=-XH2d9x4wRi--KvR6XTcZW9HXbikI2_262zfYDr1uFw&sid=690ec9207866c84e&sni=www.cloudflare.com&type=tcp&headerType=none&host=www.cloudflare.com&path=%2F&fp=android": 1790239978.3685246,
-  "vless://43202c3e-466c-4dce-b834-c6f4378ba217@153.76.185.145:3090?encryption=none&security=none&type=grpc&serviceName=vless&mode=multi": 1790239978.3685246,
-  "vless://5afea0a3-cd66-43fd-b431-5203ce3e14c5@194.87.59.97:2085?encryption=none&security=none&type=grpc&serviceName=vless": 1790239978.3685246,
-  "vless://79e66d72-d0e1-4a73-ad10-9f687852d0b4@194.87.59.13:2085?encryption=none&security=none&type=grpc&serviceName=vless&mode=multi": 1790239978.3685246,
-  "vless://79e66d72-d0e1-4a73-ad10-9f687852d0b4@194.87.59.98:2085?encryption=none&security=none&type=grpc&serviceName=vless&mode=multi": 1790239978.3685246,
-  "vless://8e757d59-a8d2-4e59-8ba8-bd02e7a46d57@153.76.185.83:3090?encryption=none&security=none&type=grpc&serviceName=vless&mode=multi": 1790239978.3685246,
-  "vless://f477a134-fa2c-4573-8599-cd897ac89d98@194.87.59.16:2085?encryption=none&security=none&type=grpc&serviceName=vless&mode=multi": 1790239978.3685246,
-  "vless://ed492b33-c6b4-463f-8359-3634b0d44251@35.189.111.134:443?security=reality&type=tcp&sni=www.cloudflare.com&path=&flow=&pbk=matDwR2fEV41IhLs23SkP9dS6d6qiaRKS4ndb3uR1lk&sid=89ea42ae375d4933&fp=chrome": 1790239978.3685246,
-  "vless://4bdeee92-97e8-414d-bef6-ec1d5e2ab73b@196.196.206.37:443?encryption=none&flow=xtls-rprx-vision&pbk=YBKHp6R7xp2Ss2kxbvDNMFPpRrf3oh1wQ2dVMukPHmA&security=reality&sid=d110331f200987ae&sni=fintanil228.vvzzkontaktezzvv.garden&type=tcp&fp=android": 1790239978.3685246,
-  "vless://6db6b948-655f-4f68-a9e7-865050e05b31@93.123.101.30:4443?encryption=none&pbk=8WnlJPDokVAx8-yzAEqVJ2VQs-1L5b_839JLJQW-ITw&security=reality&sid=9fcb7c3f5d8a&sni=api.murka.fun&type=grpc&fp=android": 1790239978.3685246,
-  "vless://131b4772-9597-4c02-8323-6c7be3d7736d@93.190.9.22:3090?encryption=none&security=none&type=grpc&serviceName=vless": 1790239978.3685246,
-  "vless://131b4772-9597-4c02-8323-6c7be3d7736d@93.190.9.50:3090?encryption=none&security=none&type=grpc&serviceName=vless": 1790239978.3685246,
-  "vless://219b68e3-497a-4127-aec9-8a0142762fba@93.190.9.157:3090?type=grpc&mode=multi&serviceName=vless": 1790239978.3685246
+  "vless://cfe85028-dde5-4a3d-890e-f43696a2b5f3@2.27.17.229:46341?encryption=none&pbk=AzPeaqr_BqAdCSN2X9stYwa2iPr5hXvmAcKXpDMK8T4&security=reality&serviceName=grpc_common2&sid=2b819e&sni=www.sony-europe.com&type=grpc&fp=android": 1790260395.073445,
+  "vless://1a524663-4a74-4aad-b530-8618a540d857@23.137.249.110:20365?security=none&encryption=none&headerType=none&type=tcp": 1790260395.073445,
+  "vless://6db6b948-655f-4f68-a9e7-865050e05b31@vera.kyras.pw:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=vera.kyras.pw&pbk=7ZF54dpwd_FPKDWGIsZdP7pqJ1Q2kwmQBjeQ54xoKzI&sid=cdf67af2&type=tcp&fp=android": 1790260395.073445,
+  "vless://6db6b948-655f-4f68-a9e7-865050e05b31@93.123.101.30:443?encryption=none&flow=xtls-rprx-vision&pbk=VsDy8oI6dQcGEOpW-SLALsy0iPwzuol9r2UtBqtIYDk&security=reality&sid=2c9d1b&sni=api.murka.fun&type=tcp&fp=android": 1790260395.073445,
+  "vless://17f388d7-1fa2-440f-a8f4-720b72d19195@132.243.65.151:443?encryption=none&type=tcp&security=reality&sni=ee.global-cdn.org&flow=xtls-rprx-vision&headerType=none&pbk=RO5YMxxtJmZo2w370qG-seJ41toowHPbz6i2uXJ2gG0&sid=7a3f9e2b1c8d4f6a&spx=%2F&allowInsecure=1&fp=android": 1790260395.073445,
+  "vless://607fbd26-4bd6-4e16-a74b-a0d9894866e7@31.77.16.113:443?encryption=none&type=tcp&flow=xtls-rprx-vision&security=reality&sni=nl.mcloud.mov&pbk=fkZTYNydTBVO-1LSiTvDcyBMx-zBP5Am780jECmUgg0&spx=%2F&allowInsecure=1&fp=android": 1790260395.073445,
+  "vless://47f79fc1-0646-40e8-8a58-73e85d183d5a@2.27.41.167:43000?encryption=none&type=tcp&flow=xtls-rprx-vision&security=reality&sni=2.27.41.167&pbk=867pr04Eeb9bRXQzoJV1O36jDXGlFbc3s0f_xAwgpho&sid=f49105b04cfaefcf&spx=%2F&allowInsecure=1&fp=android": 1790260395.073445,
+  "vless://5535c74b-3c4c-4de3-a70e-f25c7946e52a@134.255.227.145:25809?type=ws&security=tls&sni=gang.gayvibe.dpdns.org&fp=android": 1790260395.073445,
+  "vless://5535c74b-3c4c-4de3-a70e-f25c7946e52a@gang.gayvibe.dpdns.org:25809?security=tls&sni=gang.gayvibe.dpdns.org&alpn=http%2F1.1&type=ws&host=gang.gayvibe.dpdns.org&path=%2F&encryption=none&fp=android": 1790260395.073445,
+  "vless://94dd5fa3-ce24-4b16-8534-2e6b64a97087@45.198.0.98:1337?security=reality&encryption=none&pbk=tm-eZylkXA8308bx_Gik886Gfc2uMVrjs-4SVVZlMUI&headerType=none&type=tcp&flow=xtls-rprx-vision&sni=www.booking.com&sid=d774703ebee04d5f&fp=android": 1790260395.073445
 }

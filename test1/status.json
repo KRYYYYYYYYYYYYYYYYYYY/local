@@ -1,1 +1,5 @@
-{}
+{
+  "vless://721075d0-2ebd-fbfa-f1a0-df0700000000@217.177.11.81:443?encryption=none&security=tls&sni=zsyue7v.bo9ry3c.workers.dev&alpn=http%2F1.1&fp=random&type=ws&path=%2Ftictok&host=zsyue7v.bo9ry3c.workers.dev": 1790676971.175277,
+  "vless://0dca2cfe-98eb-4f9d-9a47-cf87510c558b@143.246.208.113:443?encryption=none&fp=firefox&security=tls&serviceName=cdn.v1.AssetService&sni=assets-fr4.pleiades.codes&type=grpc": 1790676971.175277,
+  "vless://0dca2cfe-98eb-4f9d-9a47-cf87510c558b@assets-fr4.pleiades.codes:443?encryption=none&security=tls&sni=assets-fr4.pleiades.codes&type=grpc&serviceName=cdn.v1.AssetService": 1790676971.175277
+}

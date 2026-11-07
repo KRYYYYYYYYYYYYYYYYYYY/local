@@ -15114,11 +15114,11 @@
     "last_seen": 1793671024
   },
   "vless://727a9178-d7f0-4142-8205-b0d19959ded0@130.49.177.193:443?security=reality&flow=xtls-rprx-vision&pbk=DCpi9-1rSXxBnEIAQ9U3mTqHivk7vHJRV_T2pWw5vCc&sid=681fc2dd643bc2f3&sni=de-2.ffpn.pro&type=tcp&headerType=none&host=de-2.ffpn.pro&path=%2F&fp=ios": {
-    "rank": 12,
-    "link": "vless://727a9178-d7f0-4142-8205-b0d19959ded0@130.49.177.193:443?security=reality&flow=xtls-rprx-vision&pbk=DCpi9-1rSXxBnEIAQ9U3mTqHivk7vHJRV_T2pWw5vCc&sid=681fc2dd643bc2f3&sni=de-2.ffpn.pro&type=tcp&headerType=none&host=de-2.ffpn.pro&path=%2F&fp=ios#wifi%2064%20%5B1078ms%5D",
+    "rank": 13,
+    "link": "vless://727a9178-d7f0-4142-8205-b0d19959ded0@130.49.177.193:443?security=reality&flow=xtls-rprx-vision&pbk=DCpi9-1rSXxBnEIAQ9U3mTqHivk7vHJRV_T2pWw5vCc&sid=681fc2dd643bc2f3&sni=de-2.ffpn.pro&type=tcp&headerType=none&host=de-2.ffpn.pro&path=%2F&fp=ios#wifi%2059%20%5B1122ms%5D",
     "country": "DE",
-    "latency": 1078,
-    "last_seen": 1794067191
+    "latency": 1122,
+    "last_seen": 1794081241
   },
   "vless://d8dcb071-57db-4ed6-92af-bb4183a14168@goold.zovip2.ir:443?path=%2Fapi%2Fv3%2Fpulse&security=tls&alpn=http%2F1.1&encryption=none&insecure=0&host=goold.zovip2.ir&type=ws&allowInsecure=0&sni=goold.zovip2.ir&fp=android": {
     "rank": 1,
@@ -15155,235 +15155,284 @@
     "latency": 1464,
     "last_seen": 1793919769
   },
-  "vless://2bcfbfba-b446-4ad5-93ad-72af9e008f61@141.101.121.196:443?encryption=none&security=tls&sni=blackshadow.dpdns.org&type=ws&host=blackshadow.dpdns.org&path=%2F44.209.52.7-443": {
-    "rank": 5,
-    "link": "vless://2bcfbfba-b446-4ad5-93ad-72af9e008f61@141.101.121.196:443?encryption=none&security=tls&sni=blackshadow.dpdns.org&type=ws&host=blackshadow.dpdns.org&path=%2F44.209.52.7-443#wifi%2049%20%5B966ms%5D",
-    "country": "GB",
-    "latency": 966,
-    "last_seen": 1794067191
-  },
   "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.87:2096?security=tls&type=ws&path=%2Ffp%3Dchromefp%3Dchrome&host=go.iranfree.de5.net&packetEncoding=xudp&sni=go.iranfree.de5.net&fp=firefox&encryption=none": {
-    "rank": 5,
-    "link": "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.87:2096?security=tls&type=ws&path=%2Ffp%3Dchromefp%3Dchrome&host=go.iranfree.de5.net&packetEncoding=xudp&sni=go.iranfree.de5.net&fp=firefox&encryption=none#wifi%2039%20%5B948ms%5D",
+    "rank": 6,
+    "link": "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.87:2096?security=tls&type=ws&path=%2Ffp%3Dchromefp%3Dchrome&host=go.iranfree.de5.net&packetEncoding=xudp&sni=go.iranfree.de5.net&fp=firefox&encryption=none#wifi%2038%20%5B965ms%5D",
     "country": "US",
-    "latency": 948,
-    "last_seen": 1794067191
+    "latency": 965,
+    "last_seen": 1794081241
   },
   "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.87:443?encryption=none&security=tls&sni=go.iranfree.de5.net&fp=chrome&type=ws&path=%2F&host=go.iranfree.de5.net": {
-    "rank": 5,
-    "link": "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.87:443?encryption=none&security=tls&sni=go.iranfree.de5.net&fp=chrome&type=ws&path=%2F&host=go.iranfree.de5.net#wifi%2037%20%5B978ms%5D",
+    "rank": 6,
+    "link": "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.87:443?encryption=none&security=tls&sni=go.iranfree.de5.net&fp=chrome&type=ws&path=%2F&host=go.iranfree.de5.net#wifi%2043%20%5B949ms%5D",
     "country": "US",
-    "latency": 978,
-    "last_seen": 1794067191
+    "latency": 949,
+    "last_seen": 1794081241
   },
   "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.185:443?security=tls&sni=go.iranfree.de5.net&type=ws&host=go.iranfree.de5.net&path=/&fp=chrome": {
-    "rank": 5,
-    "link": "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.185:443?security=tls&sni=go.iranfree.de5.net&type=ws&host=go.iranfree.de5.net&path=/&fp=chrome#wifi%2048%20%5B2031ms%5D",
+    "rank": 6,
+    "link": "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.185:443?security=tls&sni=go.iranfree.de5.net&type=ws&host=go.iranfree.de5.net&path=/&fp=chrome#wifi%2051%20%5B967ms%5D",
     "country": "US",
-    "latency": 2031,
-    "last_seen": 1794067191
+    "latency": 967,
+    "last_seen": 1794081241
   },
   "vless://7b102311-43fd-4e8f-877e-8090623c101d@45.142.120.54:443?encryption=none&security=tls&sni=vp58.cc.cd&fp=chrome&type=ws&host=vp58.cc.cd&path=%2FTelegram%F0%9F%87%A8%F0%9F%87%B3%20%40VPNine1": {
-    "rank": 5,
-    "link": "vless://7b102311-43fd-4e8f-877e-8090623c101d@45.142.120.54:443?encryption=none&security=tls&sni=vp58.cc.cd&fp=chrome&type=ws&host=vp58.cc.cd&path=%2FTelegram%F0%9F%87%A8%F0%9F%87%B3%20%40VPNine1#wifi%2043%20%5B963ms%5D",
+    "rank": 6,
+    "link": "vless://7b102311-43fd-4e8f-877e-8090623c101d@45.142.120.54:443?encryption=none&security=tls&sni=vp58.cc.cd&fp=chrome&type=ws&host=vp58.cc.cd&path=%2FTelegram%F0%9F%87%A8%F0%9F%87%B3%20%40VPNine1#wifi%2044%20%5B965ms%5D",
     "country": "FI",
-    "latency": 963,
-    "last_seen": 1794067191
+    "latency": 965,
+    "last_seen": 1794081241
   },
   "vless://9f534ac4-3c58-4a16-8b74-13dff09a0cf1@188.164.248.151:2096?encryption=none&security=tls&sni=d39333476.pages.dev&fp=chrome&type=ws&host=d39333476.pages.dev&path=%2Fitem%2Fm": {
-    "rank": 5,
-    "link": "vless://9f534ac4-3c58-4a16-8b74-13dff09a0cf1@188.164.248.151:2096?encryption=none&security=tls&sni=d39333476.pages.dev&fp=chrome&type=ws&host=d39333476.pages.dev&path=%2Fitem%2Fm#wifi%2042%20%5B979ms%5D",
+    "rank": 6,
+    "link": "vless://9f534ac4-3c58-4a16-8b74-13dff09a0cf1@188.164.248.151:2096?encryption=none&security=tls&sni=d39333476.pages.dev&fp=chrome&type=ws&host=d39333476.pages.dev&path=%2Fitem%2Fm#wifi%2040%20%5B970ms%5D",
     "country": "NL",
-    "latency": 979,
-    "last_seen": 1794067191
+    "latency": 970,
+    "last_seen": 1794081241
   },
   "vless://fd62968a-2e97-41ea-9aa0-aa61aed78955@94.247.142.1:443?encryption=none&fp=chrome&host=simIlarcaTerpillarPvet-j5H6x4-1.simIlar-caterPillar-pVet.worKers.deV&path=%2F%3Fed%3D2560&pcs=B39EC30AEA34AE5F9ED15E201E93595E3C445890D16FAED6CEB26F844DBC1AEE&security=tls&sni=simIlarcaTerpillarPvet-j5H6x4-1.simIlar-caterPillar-pVet.worKers.deV&type=ws": {
-    "rank": 5,
-    "link": "vless://fd62968a-2e97-41ea-9aa0-aa61aed78955@94.247.142.1:443?encryption=none&fp=chrome&host=simIlarcaTerpillarPvet-j5H6x4-1.simIlar-caterPillar-pVet.worKers.deV&path=%2F%3Fed%3D2560&pcs=B39EC30AEA34AE5F9ED15E201E93595E3C445890D16FAED6CEB26F844DBC1AEE&security=tls&sni=simIlarcaTerpillarPvet-j5H6x4-1.simIlar-caterPillar-pVet.worKers.deV&type=ws#wifi%2044%20%5B956ms%5D",
+    "rank": 6,
+    "link": "vless://fd62968a-2e97-41ea-9aa0-aa61aed78955@94.247.142.1:443?encryption=none&fp=chrome&host=simIlarcaTerpillarPvet-j5H6x4-1.simIlar-caterPillar-pVet.worKers.deV&path=%2F%3Fed%3D2560&pcs=B39EC30AEA34AE5F9ED15E201E93595E3C445890D16FAED6CEB26F844DBC1AEE&security=tls&sni=simIlarcaTerpillarPvet-j5H6x4-1.simIlar-caterPillar-pVet.worKers.deV&type=ws#wifi%2045%20%5B952ms%5D",
     "country": "US",
-    "latency": 956,
-    "last_seen": 1794067191
+    "latency": 952,
+    "last_seen": 1794081241
   },
   "vless://5e610f80-fc6a-479d-8621-b672355b96a1@104.168.132.123:443?encryption=none&security=tls&sni=cf-1rm.pages.dev&fp=chrome&type=ws&path=%2F&host=cf-1rm.pages.dev": {
-    "rank": 5,
-    "link": "vless://5e610f80-fc6a-479d-8621-b672355b96a1@104.168.132.123:443?encryption=none&security=tls&sni=cf-1rm.pages.dev&fp=chrome&type=ws&path=%2F&host=cf-1rm.pages.dev#wifi%2051%20%5B1001ms%5D",
+    "rank": 6,
+    "link": "vless://5e610f80-fc6a-479d-8621-b672355b96a1@104.168.132.123:443?encryption=none&security=tls&sni=cf-1rm.pages.dev&fp=chrome&type=ws&path=%2F&host=cf-1rm.pages.dev#wifi%2047%20%5B967ms%5D",
     "country": "US",
-    "latency": 1001,
-    "last_seen": 1794067191
+    "latency": 967,
+    "last_seen": 1794081241
   },
   "vless://66969b2e-5e49-4750-9419-167d4bb64c07@103.31.4.202:443?&security=tls&fp=chrome&sni=wallweb11.wallwebc992h7.workers.dev&type=ws&headerType=none&host=wallweb11.wallwebc992h7.workers.dev&path=%2F": {
-    "rank": 5,
-    "link": "vless://66969b2e-5e49-4750-9419-167d4bb64c07@103.31.4.202:443?&security=tls&fp=chrome&sni=wallweb11.wallwebc992h7.workers.dev&type=ws&headerType=none&host=wallweb11.wallwebc992h7.workers.dev&path=%2F#wifi%2041%20%5B982ms%5D",
+    "rank": 6,
+    "link": "vless://66969b2e-5e49-4750-9419-167d4bb64c07@103.31.4.202:443?&security=tls&fp=chrome&sni=wallweb11.wallwebc992h7.workers.dev&type=ws&headerType=none&host=wallweb11.wallwebc992h7.workers.dev&path=%2F#wifi%2037%20%5B990ms%5D",
     "country": "US",
-    "latency": 982,
-    "last_seen": 1794067191
+    "latency": 990,
+    "last_seen": 1794081241
   },
   "vless://d342d11e-d424-4583-b36e-524ab1f0afa4@43.110.39.42:443?fp=chrome&host=edg-2oo.pages.dev&path=%2Fsection%2Fapp%3Fed%3D2560&security=tls&sni=edg-2oo.pages.dev&type=ws": {
-    "rank": 5,
-    "link": "vless://d342d11e-d424-4583-b36e-524ab1f0afa4@43.110.39.42:443?fp=chrome&host=edg-2oo.pages.dev&path=%2Fsection%2Fapp%3Fed%3D2560&security=tls&sni=edg-2oo.pages.dev&type=ws#wifi%2046%20%5B1999ms%5D",
+    "rank": 6,
+    "link": "vless://d342d11e-d424-4583-b36e-524ab1f0afa4@43.110.39.42:443?fp=chrome&host=edg-2oo.pages.dev&path=%2Fsection%2Fapp%3Fed%3D2560&security=tls&sni=edg-2oo.pages.dev&type=ws#wifi%2049%20%5B958ms%5D",
     "country": "US",
-    "latency": 1999,
-    "last_seen": 1794067191
+    "latency": 958,
+    "last_seen": 1794081241
   },
   "vless://d342d11e-d424-4583-b36e-524ab1f0afa4@47.77.201.227:443?fp=chrome&host=edg-2oo.pages.dev&path=%2Faccount%2Fpicture%2Fstudy%3Fed%3D2560&security=tls&sni=edg-2oo.pages.dev&type=ws": {
-    "rank": 5,
-    "link": "vless://d342d11e-d424-4583-b36e-524ab1f0afa4@47.77.201.227:443?fp=chrome&host=edg-2oo.pages.dev&path=%2Faccount%2Fpicture%2Fstudy%3Fed%3D2560&security=tls&sni=edg-2oo.pages.dev&type=ws#wifi%2040%20%5B968ms%5D",
+    "rank": 6,
+    "link": "vless://d342d11e-d424-4583-b36e-524ab1f0afa4@47.77.201.227:443?fp=chrome&host=edg-2oo.pages.dev&path=%2Faccount%2Fpicture%2Fstudy%3Fed%3D2560&security=tls&sni=edg-2oo.pages.dev&type=ws#wifi%2041%20%5B2019ms%5D",
     "country": "US",
-    "latency": 968,
-    "last_seen": 1794067191
+    "latency": 2019,
+    "last_seen": 1794081241
   },
   "vless://2ea2719c-23e1-4cde-b192-c8652d55d9e5@141.101.115.230:443?security=tls&type=ws&path=%2Fws&host=cfnode-11ivy8.pages.dev&packetEncoding=xudp&sni=cfnode-11ivy8.pages.dev&fp=chrome": {
-    "rank": 5,
-    "link": "vless://2ea2719c-23e1-4cde-b192-c8652d55d9e5@141.101.115.230:443?security=tls&type=ws&path=%2Fws&host=cfnode-11ivy8.pages.dev&packetEncoding=xudp&sni=cfnode-11ivy8.pages.dev&fp=chrome#wifi%2045%20%5B954ms%5D",
+    "rank": 6,
+    "link": "vless://2ea2719c-23e1-4cde-b192-c8652d55d9e5@141.101.115.230:443?security=tls&type=ws&path=%2Fws&host=cfnode-11ivy8.pages.dev&packetEncoding=xudp&sni=cfnode-11ivy8.pages.dev&fp=chrome#wifi%2039%20%5B1969ms%5D",
     "country": "US",
-    "latency": 954,
-    "last_seen": 1794067191
+    "latency": 1969,
+    "last_seen": 1794081241
   },
   "vless://2ea2719c-23e1-4cde-b192-c8652d55d9e5@141.101.123.232:443?security=tls&type=ws&path=%2Fws&host=cfnode-11ivy8.pages.dev&packetEncoding=xudp&sni=cfnode-11ivy8.pages.dev&fp=chrome": {
-    "rank": 5,
-    "link": "vless://2ea2719c-23e1-4cde-b192-c8652d55d9e5@141.101.123.232:443?security=tls&type=ws&path=%2Fws&host=cfnode-11ivy8.pages.dev&packetEncoding=xudp&sni=cfnode-11ivy8.pages.dev&fp=chrome#wifi%2047%20%5B977ms%5D",
+    "rank": 6,
+    "link": "vless://2ea2719c-23e1-4cde-b192-c8652d55d9e5@141.101.123.232:443?security=tls&type=ws&path=%2Fws&host=cfnode-11ivy8.pages.dev&packetEncoding=xudp&sni=cfnode-11ivy8.pages.dev&fp=chrome#wifi%2050%20%5B949ms%5D",
     "country": "GB",
-    "latency": 977,
-    "last_seen": 1794067191
+    "latency": 949,
+    "last_seen": 1794081241
   },
   "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.43:2053?sni=go.iranfree.de5.net&type=ws&host=go.iranfree.de5.net&path=/fp=chrome&security=tls": {
-    "rank": 5,
-    "link": "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.43:2053?sni=go.iranfree.de5.net&type=ws&host=go.iranfree.de5.net&path=/fp=chrome&security=tls#wifi%2038%20%5B943ms%5D",
+    "rank": 6,
+    "link": "vless://56e4896e-90a9-4fe0-8480-90d3d68b9928@8.35.211.43:2053?sni=go.iranfree.de5.net&type=ws&host=go.iranfree.de5.net&path=/fp=chrome&security=tls#wifi%2042%20%5B950ms%5D",
     "country": "US",
-    "latency": 943,
-    "last_seen": 1794067191
+    "latency": 950,
+    "last_seen": 1794081241
   },
   "vless://9f534ac4-3c58-4a16-8b74-13dff09a0cf1@8.35.211.73:2087?encryption=none&security=tls&sni=d39333476.pages.dev&fp=chrome&insecure=0&allowInsecure=0&ech=cloudflare-ech.com%2Bhttps%3A%2F%2Fdns.alidns.com%2Fdns-query&type=ws&host=d39333476.pages.dev&path=%2Fresource": {
-    "rank": 5,
-    "link": "vless://9f534ac4-3c58-4a16-8b74-13dff09a0cf1@8.35.211.73:2087?encryption=none&security=tls&sni=d39333476.pages.dev&fp=chrome&insecure=0&allowInsecure=0&ech=cloudflare-ech.com%2Bhttps%3A%2F%2Fdns.alidns.com%2Fdns-query&type=ws&host=d39333476.pages.dev&path=%2Fresource#wifi%2050%20%5B972ms%5D",
+    "rank": 6,
+    "link": "vless://9f534ac4-3c58-4a16-8b74-13dff09a0cf1@8.35.211.73:2087?encryption=none&security=tls&sni=d39333476.pages.dev&fp=chrome&insecure=0&allowInsecure=0&ech=cloudflare-ech.com%2Bhttps%3A%2F%2Fdns.alidns.com%2Fdns-query&type=ws&host=d39333476.pages.dev&path=%2Fresource#wifi%2046%20%5B953ms%5D",
     "country": "US",
-    "latency": 972,
-    "last_seen": 1794067191
+    "latency": 953,
+    "last_seen": 1794081241
   },
   "vless://1d16c6e0-1bbe-435b-b661-90043fee999c@199.68.156.123:443?security=tls&type=ws&path=%2FTelegram-WangCai2&host=notls.lukongtou.eu.org&packetEncoding=xudp&sni=notls.lukongtou.eu.org&fp=chrome": {
-    "rank": 5,
-    "link": "vless://1d16c6e0-1bbe-435b-b661-90043fee999c@199.68.156.123:443?security=tls&type=ws&path=%2FTelegram-WangCai2&host=notls.lukongtou.eu.org&packetEncoding=xudp&sni=notls.lukongtou.eu.org&fp=chrome#wifi%2052%20%5B971ms%5D",
+    "rank": 6,
+    "link": "vless://1d16c6e0-1bbe-435b-b661-90043fee999c@199.68.156.123:443?security=tls&type=ws&path=%2FTelegram-WangCai2&host=notls.lukongtou.eu.org&packetEncoding=xudp&sni=notls.lukongtou.eu.org&fp=chrome#wifi%2048%20%5B962ms%5D",
     "country": "US",
-    "latency": 971,
-    "last_seen": 1794067191
+    "latency": 962,
+    "last_seen": 1794081241
   },
   "vless://f8d52ece-fad4-478d-875d-df6eed3befa7@31.56.186.24:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=isYQuhKDrgc7IQ7G0LHywFnt57wffrkZ-er18DkVsBA&security=reality&sid=e6d589857d1cec5e&sni=fr.golangwikito.cfd&type=tcp": {
-    "rank": 5,
-    "link": "vless://f8d52ece-fad4-478d-875d-df6eed3befa7@31.56.186.24:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=isYQuhKDrgc7IQ7G0LHywFnt57wffrkZ-er18DkVsBA&security=reality&sid=e6d589857d1cec5e&sni=fr.golangwikito.cfd&type=tcp#wifi%2061%20%5B1115ms%5D",
+    "rank": 6,
+    "link": "vless://f8d52ece-fad4-478d-875d-df6eed3befa7@31.56.186.24:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=isYQuhKDrgc7IQ7G0LHywFnt57wffrkZ-er18DkVsBA&security=reality&sid=e6d589857d1cec5e&sni=fr.golangwikito.cfd&type=tcp#wifi%2062%20%5B1223ms%5D",
     "country": "NL",
-    "latency": 1115,
-    "last_seen": 1794067191
+    "latency": 1223,
+    "last_seen": 1794081241
   },
   "vless://558b26f6-061b-4079-9b84-ca13b3e90ae3@191.44.108.30:443?encryption=none&flow=xtls-rprx-vision&fp=&pbk=3pBHfffYFRPpe8Lt47cLSSgCgwNR-70blFzpEbm11AE&security=reality&sid=b2baf331493d3de1&sni=c8.qwyak.ru&type=tcp": {
-    "rank": 5,
-    "link": "vless://558b26f6-061b-4079-9b84-ca13b3e90ae3@191.44.108.30:443?encryption=none&flow=xtls-rprx-vision&fp=&pbk=3pBHfffYFRPpe8Lt47cLSSgCgwNR-70blFzpEbm11AE&security=reality&sid=b2baf331493d3de1&sni=c8.qwyak.ru&type=tcp#wifi%2063%20%5B2145ms%5D",
+    "rank": 6,
+    "link": "vless://558b26f6-061b-4079-9b84-ca13b3e90ae3@191.44.108.30:443?encryption=none&flow=xtls-rprx-vision&fp=&pbk=3pBHfffYFRPpe8Lt47cLSSgCgwNR-70blFzpEbm11AE&security=reality&sid=b2baf331493d3de1&sni=c8.qwyak.ru&type=tcp#wifi%2069%20%5B4977ms%5D",
     "country": "DE",
-    "latency": 2145,
-    "last_seen": 1794067191
+    "latency": 4977,
+    "last_seen": 1794081241
   },
   "vless://e267bd26-3816-002e-990f-8d6ec83bd25b@136.234.9.92:443?encryption=none&security=reality&type=xhttp&sni=git.medrocket.ru&fp=firefox&pbk=YHPoUNxsml4z6pYt-7djOb1lqnBjxCk4-2mk84pveyc&sid=3b5b38669a1a51c0&spx=%2F&path=%2Frepository&mode=packet-up&extra=%7B%22xmux%22%3A%7B%22cMaxReuseTimes%22%3A0%2C%22hKeepAlivePeriod%22%3A0%2C%22hMaxRequestTimes%22%3A%22600-900%22%2C%22hMaxReusableSecs%22%3A%221800-3000%22%2C%22maxConnections%22%3A2%7D%7D": {
-    "rank": 5,
-    "link": "vless://e267bd26-3816-002e-990f-8d6ec83bd25b@136.234.9.92:443?encryption=none&security=reality&type=xhttp&sni=git.medrocket.ru&fp=firefox&pbk=YHPoUNxsml4z6pYt-7djOb1lqnBjxCk4-2mk84pveyc&sid=3b5b38669a1a51c0&spx=%2F&path=%2Frepository&mode=packet-up&extra=%7B%22xmux%22%3A%7B%22cMaxReuseTimes%22%3A0%2C%22hKeepAlivePeriod%22%3A0%2C%22hMaxRequestTimes%22%3A%22600-900%22%2C%22hMaxReusableSecs%22%3A%221800-3000%22%2C%22maxConnections%22%3A2%7D%7D#wifi%2062%20%5B1088ms%5D",
+    "rank": 6,
+    "link": "vless://e267bd26-3816-002e-990f-8d6ec83bd25b@136.234.9.92:443?encryption=none&security=reality&type=xhttp&sni=git.medrocket.ru&fp=firefox&pbk=YHPoUNxsml4z6pYt-7djOb1lqnBjxCk4-2mk84pveyc&sid=3b5b38669a1a51c0&spx=%2F&path=%2Frepository&mode=packet-up&extra=%7B%22xmux%22%3A%7B%22cMaxReuseTimes%22%3A0%2C%22hKeepAlivePeriod%22%3A0%2C%22hMaxRequestTimes%22%3A%22600-900%22%2C%22hMaxReusableSecs%22%3A%221800-3000%22%2C%22maxConnections%22%3A2%7D%7D#wifi%2068%20%5B1148ms%5D",
     "country": "RU",
-    "latency": 1088,
-    "last_seen": 1794067191
+    "latency": 1148,
+    "last_seen": 1794081241
   },
   "vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.20:8443?encryption=none&security=tls&sni=u.srilankangrill.online&fp=safari&type=ws&host=u.srilankangrill.online&path=%2F": {
-    "rank": 4,
-    "link": "vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.20:8443?encryption=none&security=tls&sni=u.srilankangrill.online&fp=safari&type=ws&host=u.srilankangrill.online&path=%2F#wifi%2055%20%5B969ms%5D",
+    "rank": 5,
+    "link": "vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.20:8443?encryption=none&security=tls&sni=u.srilankangrill.online&fp=safari&type=ws&host=u.srilankangrill.online&path=%2F#wifi%2053%20%5B938ms%5D",
     "country": "US",
-    "latency": 969,
-    "last_seen": 1794067191
+    "latency": 938,
+    "last_seen": 1794081241
   },
   "vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.21:8443?encryption=none&security=tls&sni=u.srilankangrill.online&fp=safari&type=ws&host=u.srilankangrill.online&path=%2F": {
-    "rank": 4,
-    "link": "vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.21:8443?encryption=none&security=tls&sni=u.srilankangrill.online&fp=safari&type=ws&host=u.srilankangrill.online&path=%2F#wifi%2053%20%5B974ms%5D",
+    "rank": 5,
+    "link": "vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.21:8443?encryption=none&security=tls&sni=u.srilankangrill.online&fp=safari&type=ws&host=u.srilankangrill.online&path=%2F#wifi%2052%20%5B955ms%5D",
     "country": "US",
-    "latency": 974,
-    "last_seen": 1794067191
+    "latency": 955,
+    "last_seen": 1794081241
   },
   "vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@news.zoom.us:8443?encryption=none&security=tls&sni=u.srilankangrill.online&fp=firefox&type=ws&host=u.srilankangrill.online&path=%2F": {
-    "rank": 4,
-    "link": "vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@news.zoom.us:8443?encryption=none&security=tls&sni=u.srilankangrill.online&fp=firefox&type=ws&host=u.srilankangrill.online&path=%2F#wifi%2054%20%5B1354ms%5D",
+    "rank": 5,
+    "link": "vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@news.zoom.us:8443?encryption=none&security=tls&sni=u.srilankangrill.online&fp=firefox&type=ws&host=u.srilankangrill.online&path=%2F#wifi%2055%20%5B3082ms%5D",
     "country": "US",
-    "latency": 1354,
-    "last_seen": 1794067191
+    "latency": 3082,
+    "last_seen": 1794081241
   },
   "vless://0ef68b97-f878-4cea-b756-c56ea3632851@news.zoom.us:2087?path=%2F&security=tls&alpn=http%2F1.1&encryption=none&host=free.vkehi.store&type=ws&sni=free.vkehi.store&fp=android": {
-    "rank": 4,
-    "link": "vless://0ef68b97-f878-4cea-b756-c56ea3632851@news.zoom.us:2087?path=%2F&security=tls&alpn=http%2F1.1&encryption=none&host=free.vkehi.store&type=ws&sni=free.vkehi.store&fp=android#wifi%2056%20%5B1113ms%5D",
+    "rank": 5,
+    "link": "vless://0ef68b97-f878-4cea-b756-c56ea3632851@news.zoom.us:2087?path=%2F&security=tls&alpn=http%2F1.1&encryption=none&host=free.vkehi.store&type=ws&sni=free.vkehi.store&fp=android#wifi%2054%20%5B3976ms%5D",
     "country": "US",
-    "latency": 1113,
-    "last_seen": 1794067191
+    "latency": 3976,
+    "last_seen": 1794081241
   },
   "vless://90157e25-cee1-4217-921e-91f300bc1a24@novonl.subv.ru:443?type=tcp&security=reality&sni=golos.mail.ru&pbk=1vSZjvhZO01oAEH3b7eebR1qF5dLU1Dq2E7xu8pwGSs&sid=428ef87fd47a3a32&spx=%2F&encryption=none&flow=xtls-rprx-vision&fp=chrome": {
-    "rank": 4,
-    "link": "vless://90157e25-cee1-4217-921e-91f300bc1a24@novonl.subv.ru:443?type=tcp&security=reality&sni=golos.mail.ru&pbk=1vSZjvhZO01oAEH3b7eebR1qF5dLU1Dq2E7xu8pwGSs&sid=428ef87fd47a3a32&spx=%2F&encryption=none&flow=xtls-rprx-vision&fp=chrome#wifi%2068%20%5B1204ms%5D",
+    "rank": 5,
+    "link": "vless://90157e25-cee1-4217-921e-91f300bc1a24@novonl.subv.ru:443?type=tcp&security=reality&sni=golos.mail.ru&pbk=1vSZjvhZO01oAEH3b7eebR1qF5dLU1Dq2E7xu8pwGSs&sid=428ef87fd47a3a32&spx=%2F&encryption=none&flow=xtls-rprx-vision&fp=chrome#wifi%2060%20%5B1421ms%5D",
     "country": "NL",
-    "latency": 1204,
-    "last_seen": 1794067191
+    "latency": 1421,
+    "last_seen": 1794081241
   },
   "vless://86c7af80-c9cf-4265-ab77-da12b0bf8bb6@192.200.160.122:443?security=tls&sni=51.baklajann.ru&alpn=http%2F1.1&fp=firefox&type=ws&path=%2F&host=51.baklajann.ru": {
-    "rank": 3,
-    "link": "vless://86c7af80-c9cf-4265-ab77-da12b0bf8bb6@192.200.160.122:443?security=tls&sni=51.baklajann.ru&alpn=http%2F1.1&fp=firefox&type=ws&path=%2F&host=51.baklajann.ru#wifi%2058%20%5B951ms%5D",
+    "rank": 4,
+    "link": "vless://86c7af80-c9cf-4265-ab77-da12b0bf8bb6@192.200.160.122:443?security=tls&sni=51.baklajann.ru&alpn=http%2F1.1&fp=firefox&type=ws&path=%2F&host=51.baklajann.ru#wifi%2056%20%5B966ms%5D",
     "country": "US",
-    "latency": 951,
-    "last_seen": 1794067191
+    "latency": 966,
+    "last_seen": 1794081241
   },
   "vless://86c7af80-c9cf-4265-ab77-da12b0bf8bb6@194.156.26.125:443?security=tls&sni=186.baklajann.ru&alpn=http%2F1.1&fp=firefox&type=ws&path=%2F&host=186.baklajann.ru": {
-    "rank": 3,
-    "link": "vless://86c7af80-c9cf-4265-ab77-da12b0bf8bb6@194.156.26.125:443?security=tls&sni=186.baklajann.ru&alpn=http%2F1.1&fp=firefox&type=ws&path=%2F&host=186.baklajann.ru#wifi%2059%20%5B977ms%5D",
+    "rank": 4,
+    "link": "vless://86c7af80-c9cf-4265-ab77-da12b0bf8bb6@194.156.26.125:443?security=tls&sni=186.baklajann.ru&alpn=http%2F1.1&fp=firefox&type=ws&path=%2F&host=186.baklajann.ru#wifi%2057%20%5B943ms%5D",
     "country": "DE",
-    "latency": 977,
-    "last_seen": 1794067191
-  },
-  "vless://3c4aa500-e3ae-4778-837b-f02dfea8c85f@us2.qik-fin.uk:443?encryption=none&type=xhttp&security=tls&sni=us2.qik-fin.uk&fp=qq&alpn=h2&path=/static/js/chunk&host=us2.qik-fin.uk&mode=stream-one": {
-    "rank": 3,
-    "link": "vless://3c4aa500-e3ae-4778-837b-f02dfea8c85f@us2.qik-fin.uk:443?encryption=none&type=xhttp&security=tls&sni=us2.qik-fin.uk&fp=qq&alpn=h2&path=/static/js/chunk&host=us2.qik-fin.uk&mode=stream-one#wifi%2057%20%5B1169ms%5D",
-    "country": "US",
-    "latency": 1169,
-    "last_seen": 1794067191
+    "latency": 943,
+    "last_seen": 1794081241
   },
   "vless://4e4f1f70-5e56-4a76-bb9d-db087f4690c4@162.159.254.3:443?fp=safari&host=jp3.yohototo.top&path=%2Ftyxyws&security=tls&sni=jp3.yohototo.top&type=ws": {
-    "rank": 3,
-    "link": "vless://4e4f1f70-5e56-4a76-bb9d-db087f4690c4@162.159.254.3:443?fp=safari&host=jp3.yohototo.top&path=%2Ftyxyws&security=tls&sni=jp3.yohototo.top&type=ws#wifi%2060%20%5B1956ms%5D",
+    "rank": 4,
+    "link": "vless://4e4f1f70-5e56-4a76-bb9d-db087f4690c4@162.159.254.3:443?fp=safari&host=jp3.yohototo.top&path=%2Ftyxyws&security=tls&sni=jp3.yohototo.top&type=ws#wifi%2058%20%5B949ms%5D",
     "country": "US",
-    "latency": 1956,
-    "last_seen": 1794067191
+    "latency": 949,
+    "last_seen": 1794081241
   },
   "vless://a5acbf10-25ef-4ecc-a652-c8fcbcdb4ab1@77.112.133.160:36896?mode=auto&path=/&security=reality&encryption=none&extra={\"mode\":\"auto\",\"xPaddingBytes\":\"100-1000\"}&pbk=2XKHM7uQObdzgVnu2gubysdXLyBCpZRJtCtfOd4tcF0&fp=chrome&spx=/378c54211cf55ea&type=xhttp&sni=gateway-india.icloud.com&sid=14": {
-    "rank": 3,
-    "link": "vless://a5acbf10-25ef-4ecc-a652-c8fcbcdb4ab1@77.112.133.160:36896?mode=auto&path=/&security=reality&encryption=none&extra={\"mode\":\"auto\",\"xPaddingBytes\":\"100-1000\"}&pbk=2XKHM7uQObdzgVnu2gubysdXLyBCpZRJtCtfOd4tcF0&fp=chrome&spx=/378c54211cf55ea&type=xhttp&sni=gateway-india.icloud.com&sid=14#wifi%2067%20%5B972ms%5D",
+    "rank": 4,
+    "link": "vless://a5acbf10-25ef-4ecc-a652-c8fcbcdb4ab1@77.112.133.160:36896?mode=auto&path=/&security=reality&encryption=none&extra={\"mode\":\"auto\",\"xPaddingBytes\":\"100-1000\"}&pbk=2XKHM7uQObdzgVnu2gubysdXLyBCpZRJtCtfOd4tcF0&fp=chrome&spx=/378c54211cf55ea&type=xhttp&sni=gateway-india.icloud.com&sid=14#wifi%2065%20%5B1016ms%5D",
     "country": "US",
-    "latency": 972,
-    "last_seen": 1794067191
+    "latency": 1016,
+    "last_seen": 1794081241
   },
   "vless://3837e7a5-d40e-4b85-8700-5f9725a5a2cb@45.143.94.91:8443?flow=xtls-rprx-vision&type=raw&security=reality&sni=us1.cloudvienta.com&pbk=3Kgy_0tHtOzEn9_mEylNsBVlAHNngT6S4AuYy5wEOSU&sid=0c37b64d1935ebc1&fp=firefox": {
-    "rank": 3,
-    "link": "vless://3837e7a5-d40e-4b85-8700-5f9725a5a2cb@45.143.94.91:8443?flow=xtls-rprx-vision&type=raw&security=reality&sni=us1.cloudvienta.com&pbk=3Kgy_0tHtOzEn9_mEylNsBVlAHNngT6S4AuYy5wEOSU&sid=0c37b64d1935ebc1&fp=firefox#wifi%2066%20%5B1097ms%5D",
+    "rank": 4,
+    "link": "vless://3837e7a5-d40e-4b85-8700-5f9725a5a2cb@45.143.94.91:8443?flow=xtls-rprx-vision&type=raw&security=reality&sni=us1.cloudvienta.com&pbk=3Kgy_0tHtOzEn9_mEylNsBVlAHNngT6S4AuYy5wEOSU&sid=0c37b64d1935ebc1&fp=firefox#wifi%2064%20%5B1129ms%5D",
     "country": "RU",
-    "latency": 1097,
-    "last_seen": 1794067191
+    "latency": 1129,
+    "last_seen": 1794081241
   },
   "vless://bb190cdb-82ae-4212-b6cd-8ae9e6b768dd@ea0gmd8p.mtrxnet.click:53898?encryption=none&flow=xtls-rprx-vision&headerType=&pbk=aV_BHCeZ30y4-5rpUIHaWHMYAgogLsw4AE06Rw2X4WE&security=reality&sid=e202a94ad1711af2&sni=ea0gmd8p.mtrxnet.click&type=tcp": {
-    "rank": 3,
-    "link": "vless://bb190cdb-82ae-4212-b6cd-8ae9e6b768dd@ea0gmd8p.mtrxnet.click:53898?encryption=none&flow=xtls-rprx-vision&headerType=&pbk=aV_BHCeZ30y4-5rpUIHaWHMYAgogLsw4AE06Rw2X4WE&security=reality&sid=e202a94ad1711af2&sni=ea0gmd8p.mtrxnet.click&type=tcp#wifi%2069%20%5B1257ms%5D",
+    "rank": 4,
+    "link": "vless://bb190cdb-82ae-4212-b6cd-8ae9e6b768dd@ea0gmd8p.mtrxnet.click:53898?encryption=none&flow=xtls-rprx-vision&headerType=&pbk=aV_BHCeZ30y4-5rpUIHaWHMYAgogLsw4AE06Rw2X4WE&security=reality&sid=e202a94ad1711af2&sni=ea0gmd8p.mtrxnet.click&type=tcp#wifi%2061%20%5B1303ms%5D",
     "country": "RU",
-    "latency": 1257,
-    "last_seen": 1794067191
+    "latency": 1303,
+    "last_seen": 1794081241
   },
   "vless://92b368fe-8991-4345-a726-b512ba6da8da@parvaz.zqpm.ir:20753?security=reality&encryption=none&pbk=PF8LdirtBEOQ_w9-1-i3mhgeFYbIQ1iOu1FPCfxUHQo&host=%2F%3FTelegram---%40pirozi_ArGaP---%40pirozi_ArGaP---%40pirozi_ArGaP---%40pirozi_ArGaP&headerType=none&fp=chrome&type=tcp&sni=yahoo.com&sid=2efbb0033df59520": {
-    "rank": 3,
-    "link": "vless://92b368fe-8991-4345-a726-b512ba6da8da@parvaz.zqpm.ir:20753?security=reality&encryption=none&pbk=PF8LdirtBEOQ_w9-1-i3mhgeFYbIQ1iOu1FPCfxUHQo&host=%2F%3FTelegram---%40pirozi_ArGaP---%40pirozi_ArGaP---%40pirozi_ArGaP---%40pirozi_ArGaP&headerType=none&fp=chrome&type=tcp&sni=yahoo.com&sid=2efbb0033df59520#wifi%2070%20%5B1397ms%5D",
+    "rank": 4,
+    "link": "vless://92b368fe-8991-4345-a726-b512ba6da8da@parvaz.zqpm.ir:20753?security=reality&encryption=none&pbk=PF8LdirtBEOQ_w9-1-i3mhgeFYbIQ1iOu1FPCfxUHQo&host=%2F%3FTelegram---%40pirozi_ArGaP---%40pirozi_ArGaP---%40pirozi_ArGaP---%40pirozi_ArGaP&headerType=none&fp=chrome&type=tcp&sni=yahoo.com&sid=2efbb0033df59520#wifi%2075%20%5B1184ms%5D",
     "country": "US",
-    "latency": 1397,
-    "last_seen": 1794067191
+    "latency": 1184,
+    "last_seen": 1794081241
   },
-  "vless://3c4aa500-e3ae-4778-837b-f02dfea8c85f@172.86.86.21:443?security=tls&sni=us2.qik-fin.uk&alpn=h2&fp=qq&type=xhttp&path=%2Fstatic%2Fjs%2Fchunk&host=us2.qik-fin.uk&mode=stream-one": {
-    "rank": 2,
-    "link": "vless://3c4aa500-e3ae-4778-837b-f02dfea8c85f@172.86.86.21:443?security=tls&sni=us2.qik-fin.uk&alpn=h2&fp=qq&type=xhttp&path=%2Fstatic%2Fjs%2Fchunk&host=us2.qik-fin.uk&mode=stream-one#wifi%2065%20%5B986ms%5D",
+  "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:43116?flow=xtls-rprx-vision&pbk=rLU2xJNZPFvtHy49MygD-nta6OpJEbjarjAZ5vHwpVE&security=reality&sid=29ad689280e2f0ec&sni=v1-dy.ixigua.com&type=tcp&fp=chrome": {
+    "rank": 1,
+    "link": "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:43116?flow=xtls-rprx-vision&pbk=rLU2xJNZPFvtHy49MygD-nta6OpJEbjarjAZ5vHwpVE&security=reality&sid=29ad689280e2f0ec&sni=v1-dy.ixigua.com&type=tcp&fp=chrome#wifi%2063%20%5B1327ms%5D",
+    "country": "SG",
+    "latency": 1327,
+    "last_seen": 1794081241
+  },
+  "vless://667016ca-f02e-4b5f-bfc3-3d8ed81e9bec@87.248.149.50:443?pcs=8f40a40d49c7e830e78111a9846f43f322ba049cee043259c108f28a66c16b2a&security=tls&alpn=http%2F1.1&encryption=none&headerType=none&type=tcp&allowInsecure=0&sni=base.hosamobenl.co.uk": {
+    "rank": 1,
+    "link": "vless://667016ca-f02e-4b5f-bfc3-3d8ed81e9bec@87.248.149.50:443?pcs=8f40a40d49c7e830e78111a9846f43f322ba049cee043259c108f28a66c16b2a&security=tls&alpn=http%2F1.1&encryption=none&headerType=none&type=tcp&allowInsecure=0&sni=base.hosamobenl.co.uk#wifi%2066%20%5B1105ms%5D",
+    "country": "NL",
+    "latency": 1105,
+    "last_seen": 1794081241
+  },
+  "vless://667016ca-f02e-4b5f-bfc3-3d8ed81e9bec@base.hosamobenl.co.uk:443?alpn=http%2F1.1&encryption=none&headerType=none&insecure=0&security=tls&sni=base.hosamobenl.co.uk&type=tcp&fp=firefox": {
+    "rank": 1,
+    "link": "vless://667016ca-f02e-4b5f-bfc3-3d8ed81e9bec@base.hosamobenl.co.uk:443?alpn=http%2F1.1&encryption=none&headerType=none&insecure=0&security=tls&sni=base.hosamobenl.co.uk&type=tcp&fp=firefox#wifi%2067%20%5B1260ms%5D",
+    "country": "NL",
+    "latency": 1260,
+    "last_seen": 1794081241
+  },
+  "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-3-z.473221.xyz:13212?security=reality&type=tcp&sni=v1-dy.ixigua.com&flow=xtls-rprx-vision&pbk=4VguZbm-S2NkLpi7gLDsQMv2eDXP2LucxsvTiEt98yY&sid=961f7127a015ba&allowInsecure=1&fp=edge": {
+    "rank": 1,
+    "link": "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-3-z.473221.xyz:13212?security=reality&type=tcp&sni=v1-dy.ixigua.com&flow=xtls-rprx-vision&pbk=4VguZbm-S2NkLpi7gLDsQMv2eDXP2LucxsvTiEt98yY&sid=961f7127a015ba&allowInsecure=1&fp=edge#wifi%2070%20%5B1246ms%5D",
+    "country": "SG",
+    "latency": 1246,
+    "last_seen": 1794081241
+  },
+  "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:13239?security=reality&encryption=none&type=tcp&flow=xtls-rprx-vision&pbk=NJgrmuV1CFhj7PeKJoQfDQVagDcFITkfrM-a7sa_mWw&sid=8591c4d31f59a60d&sni=updates.cdn-apple.com&servername=updates.cdn-apple.com&spx=%2F&fp=edge": {
+    "rank": 1,
+    "link": "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:13239?security=reality&encryption=none&type=tcp&flow=xtls-rprx-vision&pbk=NJgrmuV1CFhj7PeKJoQfDQVagDcFITkfrM-a7sa_mWw&sid=8591c4d31f59a60d&sni=updates.cdn-apple.com&servername=updates.cdn-apple.com&spx=%2F&fp=edge#wifi%2071%20%5B3692ms%5D",
+    "country": "SG",
+    "latency": 3692,
+    "last_seen": 1794081241
+  },
+  "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:43113?encryption=none&flow=xtls-rprx-vision&pbk=EK3prcfF8VKm3CoTXWQguRj67LxGbkPIpKmEUKsMKGs&security=reality&sid=ff2c978a0b&sni=v1-dy.ixigua.com&spx=%2F&type=tcp&fp=safari": {
+    "rank": 1,
+    "link": "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:43113?encryption=none&flow=xtls-rprx-vision&pbk=EK3prcfF8VKm3CoTXWQguRj67LxGbkPIpKmEUKsMKGs&security=reality&sid=ff2c978a0b&sni=v1-dy.ixigua.com&spx=%2F&type=tcp&fp=safari#wifi%2072%20%5B2021ms%5D",
+    "country": "SG",
+    "latency": 2021,
+    "last_seen": 1794081241
+  },
+  "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:34761?type=tcp&security=reality&flow=xtls-rprx-vision&pbk=h1l2o1aPlR4WewN4YxtTYugJucyxhjvOHbfEHCHPEiU&sid=867357bc81a4&sni=v1-dy.ixigua.com&servername=v1-dy.ixigua.com&fp=edge": {
+    "rank": 1,
+    "link": "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:34761?type=tcp&security=reality&flow=xtls-rprx-vision&pbk=h1l2o1aPlR4WewN4YxtTYugJucyxhjvOHbfEHCHPEiU&sid=867357bc81a4&sni=v1-dy.ixigua.com&servername=v1-dy.ixigua.com&fp=edge#wifi%2073%20%5B2479ms%5D",
+    "country": "SG",
+    "latency": 2479,
+    "last_seen": 1794081241
+  },
+  "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:34759?encryption=none&security=reality&sni=v1-dy.ixigua.com&pbk=H0AETHQQIsu1c7ZHZ5RUgNaLYIVdMI6gJlMaBLBeX3o&sid=5e0eb283246c6911&type=tcp&headerType=none&insecure=0&flow=xtls-rprx-vision&fp=chrome": {
+    "rank": 1,
+    "link": "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:34759?encryption=none&security=reality&sni=v1-dy.ixigua.com&pbk=H0AETHQQIsu1c7ZHZ5RUgNaLYIVdMI6gJlMaBLBeX3o&sid=5e0eb283246c6911&type=tcp&headerType=none&insecure=0&flow=xtls-rprx-vision&fp=chrome#wifi%2074%20%5B1268ms%5D",
+    "country": "SG",
+    "latency": 1268,
+    "last_seen": 1794081241
+  },
+  "vless://4a02db06-cd14-433b-a05e-d723812be9c8@156.238.224.252:21521?encryption=none&flow=xtls-rprx-vision&pbk=GPEKqQY86dtZ5XQVS89zbUcTpL7tFsqFwyI0BCedckk&security=reality&sid=675d2c4a&sni=apple.com&type=tcp&fp=chrome": {
+    "rank": 1,
+    "link": "vless://4a02db06-cd14-433b-a05e-d723812be9c8@156.238.224.252:21521?encryption=none&flow=xtls-rprx-vision&pbk=GPEKqQY86dtZ5XQVS89zbUcTpL7tFsqFwyI0BCedckk&security=reality&sid=675d2c4a&sni=apple.com&type=tcp&fp=chrome#wifi%2076%20%5B5149ms%5D",
     "country": "US",
-    "latency": 986,
-    "last_seen": 1794067191
+    "latency": 5149,
+    "last_seen": 1794081241
+  },
+  "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:34760?security=reality&encryption=none&type=tcp&flow=xtls-rprx-vision&pbk=FKkMWruW5ySd0t091irE_09B9o9AipV8ztZftd4Odwc&sid=ab58b04c4a4407&sni=updates.cdn-apple.com&servername=updates.cdn-apple.com&spx=%2F&fp=edge": {
+    "rank": 1,
+    "link": "vless://65ec84f5-0dd4-4582-8b4f-592e50b22116@dddz-1-x.473221.xyz:34760?security=reality&encryption=none&type=tcp&flow=xtls-rprx-vision&pbk=FKkMWruW5ySd0t091irE_09B9o9AipV8ztZftd4Odwc&sid=ab58b04c4a4407&sni=updates.cdn-apple.com&servername=updates.cdn-apple.com&spx=%2F&fp=edge#wifi%2077%20%5B1244ms%5D",
+    "country": "SG",
+    "latency": 1244,
+    "last_seen": 1794081241
   }
 }
